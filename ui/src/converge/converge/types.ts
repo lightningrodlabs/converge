@@ -35,4 +35,43 @@ export type ConvergeSignal = {
   link_type: string;
 };
 
-export type EntryTypes = {};
+export type EntryTypes =
+ | ({ type: 'Proposal'; } & Proposal)
+ | ({ type: 'Criterion'; } & Criterion)
+ | ({  type: 'Deliberation'; } & Deliberation);
+
+
+
+export interface Deliberation { 
+  title: string;
+
+  description: string;
+
+  settings: string;
+}
+
+
+
+
+export interface Criterion { 
+  title: string;
+}
+
+export interface CreateCriterionInput {
+  criterion: Criterion;
+  deliberation: ActionHash;
+}
+
+
+
+
+export interface Proposal { 
+  title: string;
+
+  description: string;
+}
+
+export interface CreateProposalInput { 
+  proposal: Proposal;
+  deliberation: ActionHash;
+}

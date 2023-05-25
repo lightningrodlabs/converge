@@ -3,13 +3,22 @@
   import type { ActionHash, AppAgentClient } from '@holochain/client';
   import { AppAgentWebsocket } from '@holochain/client';
   import '@material/mwc-circular-progress';
+  import { view, viewHash, navigate } from './store.js';
 
   import { clientContext } from './contexts';
 
+  import CreateDeliberation from "./converge/converge/CreateDeliberation.svelte"
+  import AllDeliberations from "./converge/converge/AllDeliberations.svelte"
+    import CreateCriterion from './converge/converge/CreateCriterion.svelte';
+    import DeliberationDetail from './converge/converge/DeliberationDetail.svelte';
+  
   let client: AppAgentClient | undefined;
   let loading = true;
+  let store = undefined;
+  let currentHash: ActionHash | undefined;
+  let currentView: string | undefined;
 
-  $: client, loading;
+  $: client, loading, store;
 
   onMount(async () => {
     // We pass '' as url because it will dynamically be replaced in launcher environments
@@ -20,6 +29,14 @@
   setContext(clientContext, {
     getClient: () => client,
   });
+
+  view.subscribe(value => {
+    currentView = value;
+  });
+
+  viewHash.subscribe(value => {
+    currentHash = value;
+  });
 </script>
 
 <main>
@@ -27,24 +44,12 @@
     <div style="display: flex; flex: 1; align-items: center; justify-content: center">
       <mwc-circular-progress indeterminate />
     </div>
+  {:else if currentView == "deliberation"}
+      <DeliberationDetail deliberationHash={currentHash} />
   {:else}
     <div id="content" style="display: flex; flex-direction: column; flex: 1;">
-      <h2>EDIT ME! Add the components of your app here.</h2>
-
-      <span>Look in the <code>ui/src/DNA/ZOME</code> folders for UI elements that are generated with <code>hc scaffold entry-type</code>, <code>hc scaffold collection</code> and <code>hc scaffold link-type</code> and add them here as appropriate.</span>
-        
-      <span>For example, if you have scaffolded a "todos" dna, a "todos" zome, a "todo_item" entry type, and a collection called "all_todos", you might want to add an element here to create and list your todo items, with the generated <code>ui/src/todos/todos/AllTodos.svelte</code> and <code>ui/src/todos/todos/CreateTodo.svelte</code> elements.</span>
-          
-      <span>So, to use those elements here:</span>
-      <ol>
-        <li>Import the elements with:
-        <pre>
-import AllTodos from './todos/todos/AllTodos.svelte';
-import CreateTodo from './todos/todos/CreateTodo.svelte';
-        </pre>
-        </li>
-        <li>Replace this "EDIT ME!" section with <code>&lt;CreateTodo&gt;&lt;/CreateTodo&gt;&lt;AllTodos&gt;&lt;/AllTodos&gt;</code>.</li>
-        </ol>
+      <AllDeliberations />
+      <CreateDeliberation />
     </div>
   {/if}
 </main>
