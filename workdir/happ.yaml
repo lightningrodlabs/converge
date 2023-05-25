@@ -1,0 +1,19 @@
+---
+manifest_version: "1"
+name: converge
+description: ~
+roles:
+  - name: converge
+    provisioning:
+      strategy: create
+      deferred: false
+    dna:
+      bundled: "../dnas/converge/workdir/converge.dna"
+      modifiers:
+        network_seed: ~
+        properties: ~
+        origin_time: ~
+        quantum_time: ~
+      installed_hash: ~
+      _version: ~
+      clone_limit: 0

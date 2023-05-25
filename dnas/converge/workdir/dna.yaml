@@ -1,0 +1,19 @@
+---
+manifest_version: "1"
+name: converge
+integrity:
+  network_seed: ~
+  properties: ~
+  origin_time: 1685041341943049
+  zomes:
+    - name: converge_integrity
+      hash: ~
+      bundled: "../../../target/wasm32-unknown-unknown/release/converge_integrity.wasm"
+      dependencies: ~
+coordinator:
+  zomes:
+    - name: converge
+      hash: ~
+      bundled: "../../../target/wasm32-unknown-unknown/release/converge.wasm"
+      dependencies:
+        - name: converge_integrity
