@@ -122,11 +122,6 @@ async function fetchDeliberation() {
     <span style="white-space: pre-line">{ proposal.description }</span>
   </div>
 
-  <!-- {deliberationHash} -->
-  {#if deliberationHash}
-  <RateCriteria deliberationHash={deliberationHash} />
-  {/if}
-
 </div>
 {/if}
 

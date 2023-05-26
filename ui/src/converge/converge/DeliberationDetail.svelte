@@ -104,11 +104,11 @@ async function deleteDeliberation() {
 {:else}
 
 <div style="display: flex; flex-direction: column">
-  <div style="display: flex; flex-direction: row">
+  <!-- <div style="display: flex; flex-direction: row">
     <span style="flex: 1"></span>
     <mwc-icon-button style="margin-left: 8px" icon="edit" on:click={() => { editing = true; } }></mwc-icon-button>
     <mwc-icon-button style="margin-left: 8px" icon="delete" on:click={() => deleteDeliberation()}></mwc-icon-button>
-  </div>
+  </div> -->
 
   <div style="display: flex; flex-direction: row; margin-bottom: 16px">
     <span style="margin-right: 4px"><strong>Title:</strong></span>

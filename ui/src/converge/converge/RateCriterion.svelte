@@ -135,21 +135,6 @@ async function addSupport() {
   }
 }
 
-async function deleteCriterion() {
-  try {
-    await client.callZome({
-      cap_secret: null,
-      role_name: 'converge',
-      zome_name: 'converge',
-      fn_name: 'delete_criterion',
-      payload: criterionHash,
-    });
-    dispatch('criterion-deleted', { criterionHash: criterionHash });
-  } catch (e: any) {
-    errorSnackbar.labelText = `Error deleting the criterion: ${e.data.data}`;
-    errorSnackbar.show();
-  }
-}
 </script>
 
 <mwc-snackbar bind:this={errorSnackbar} leading>
@@ -164,21 +149,12 @@ async function deleteCriterion() {
 {:else}
 
 <div style="display: flex; flex-direction: column">
-  <!-- <div style="display: flex; flex-direction: row">
-    <span style="flex: 1"></span>
-    <mwc-icon-button style="margin-left: 8px" icon="delete" on:click={() => deleteCriterion()}></mwc-icon-button>
-  </div> -->
 
   <div style="display: flex; flex-direction: row; margin-bottom: 16px">
     <span style="margin-right: 4px"><strong>Title:</strong></span>
     <span style="white-space: pre-line">{ criterion.title }</span>
     {#if support}
-      {support}
-    {/if}
-    {#if sponsored}
-      <button on:click={() => removeSupport()}>Remove Support</button>
-    {:else}
-      <button on:click={() => addSupport()}>Add Support</button>
+    <span style="white-space: pre-line">{support}</span>
     {/if}
 
     <!-- {#each supporters as supporter}

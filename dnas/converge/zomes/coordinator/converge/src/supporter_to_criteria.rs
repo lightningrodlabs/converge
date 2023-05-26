@@ -4,22 +4,21 @@ use converge_integrity::*;
 pub struct AddCriterionForSupporterInput {
     pub base_supporter: AgentPubKey,
     pub target_criterion_hash: ActionHash,
+    pub percentage: String,
 }
 #[hdk_extern]
 pub fn add_criterion_for_supporter(
     input: AddCriterionForSupporterInput,
 ) -> ExternResult<()> {
-    create_link(
-        input.base_supporter.clone(),
-        input.target_criterion_hash.clone(),
-        LinkTypes::SupporterToCriteria,
-        (),
-    )?;
+    let tag_str = input.percentage; // This could be a &str or String
+    let tag_bytes = tag_str.as_bytes().to_vec(); // Convert to byte array
+    let tag = LinkTag(tag_bytes); // Create the LinkTag
+
     create_link(
         input.target_criterion_hash,
         input.base_supporter,
         LinkTypes::CriterionToSupporters,
-        (),
+        tag,
     )?;
     Ok(())
 }
@@ -40,14 +39,28 @@ pub fn get_criteria_for_supporter(supporter: AgentPubKey) -> ExternResult<Vec<Re
         .collect();
     Ok(records)
 }
+#[derive(Serialize, Deserialize, Debug)]
+pub struct AgentPubKeyWithTag {
+    pub agent: AgentPubKey,
+    pub tag: String,
+}
 #[hdk_extern]
 pub fn get_supporters_for_criterion(
     criterion_hash: ActionHash,
-) -> ExternResult<Vec<AgentPubKey>> {
+) -> ExternResult<Vec<AgentPubKeyWithTag>> {
     let links = get_links(criterion_hash, LinkTypes::CriterionToSupporters, None)?;
-    let agents: Vec<AgentPubKey> = links
+    let agents: Vec<AgentPubKeyWithTag> = links
         .into_iter()
-        .map(|link| AgentPubKey::from(EntryHash::from(link.target)))
+        .map(|link| {
+            let tag = link.tag;
+            let tag_str = String::from_utf8(tag.0).unwrap();
+            let agent = AgentPubKey::from(EntryHash::from(link.target));
+            let agent_with_tag = AgentPubKeyWithTag {
+                agent: agent.clone(),
+                tag: tag_str,
+            };
+            agent_with_tag
+        })
         .collect();
     Ok(agents)
 }

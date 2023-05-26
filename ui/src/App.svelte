@@ -11,6 +11,7 @@
   import AllDeliberations from "./converge/converge/AllDeliberations.svelte"
     import CreateCriterion from './converge/converge/CreateCriterion.svelte';
     import DeliberationDetail from './converge/converge/DeliberationDetail.svelte';
+    import ProposalDetail from './converge/converge/ProposalDetail.svelte';
   
   let client: AppAgentClient | undefined;
   let loading = true;
@@ -46,6 +47,8 @@
     </div>
   {:else if currentView == "deliberation"}
       <DeliberationDetail deliberationHash={currentHash} />
+  {:else if currentView == "proposal"}
+      <ProposalDetail proposalHash={currentHash} />
   {:else}
     <div id="content" style="display: flex; flex-direction: column; flex: 1;">
       <AllDeliberations />

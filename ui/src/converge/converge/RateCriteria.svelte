@@ -3,9 +3,8 @@ import { onMount, getContext } from 'svelte';
 import '@material/mwc-circular-progress';
 import type { EntryHash, Record, AgentPubKey, ActionHash, AppAgentClient, NewEntryAction } from '@holochain/client';
 import { clientContext } from '../../contexts';
-import ProposalListItem from './ProposalListItem.svelte';
+import RateCriterion from './RateCriterion.svelte';
 import type { ConvergeSignal } from './types';
-import { view, viewHash, navigate } from '../../store.js';
 
 export let deliberationHash: ActionHash;
 
@@ -19,24 +18,24 @@ $: hashes, loading, error;
 
 onMount(async () => {
 
-  await fetchProposals();
+  await fetchCriteria();
   client.on('signal', signal => {
     if (signal.zome_name !== 'converge') return;
     const payload = signal.payload as ConvergeSignal;
     if (payload.type !== 'EntryCreated') return;
-    if (payload.app_entry.type !== 'Proposal') return;
+    if (payload.app_entry.type !== 'Criterion') return;
     // hashes = [...hashes, payload.action.hashed.hash];
-    fetchProposals();
+    fetchCriteria();
   });
 });
 
-async function fetchProposals() {
+async function fetchCriteria() {
   try {
     const records = await client.callZome({
       cap_secret: null,
       role_name: 'converge',
       zome_name: 'converge',
-      fn_name: 'get_proposals_for_deliberation',
+      fn_name: 'get_criteria_for_deliberation',
       payload: deliberationHash,
     });
     hashes = records.map(r => r.signed_action.hashed.hash);
@@ -53,14 +52,15 @@ async function fetchProposals() {
   <mwc-circular-progress indeterminate></mwc-circular-progress>
 </div>
 {:else if error}
-<span>Error fetching the proposals: {error.data.data}.</span>
+<span>Error fetching the criteria: {error.data.data}.</span>
 {:else if hashes.length === 0}
-<span>No proposals found.</span>
+<span>No criteria found.</span>
 {:else}
 <div style="display: flex; flex-direction: column">
   {#each hashes as hash}
-    <div on:click={() => navigate('proposal', hash)} style="margin-bottom: 8px;">
-      <ProposalListItem proposalHash={hash} on:proposal-deleted={() => fetchProposals()} />
+    <div style="margin-bottom: 8px;">
+      <RateCriterion criterionHash={hash} />
+      <!-- <CriterionDetail criterionHash={hash}  on:criterion-deleted={() => fetchCriteria()}></CriterionDetail> -->
     </div>
   {/each}
 </div>
