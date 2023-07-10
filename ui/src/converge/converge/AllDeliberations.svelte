@@ -47,6 +47,9 @@ async function fetchDeliberations() {
 
 </script>
 
+<h1>Dashboard</h1>
+<h2>Your Deliberations</h2>
+
 {#if loading}
 <div style="display: flex; flex: 1; align-items: center; justify-content: center">
   <mwc-circular-progress indeterminate></mwc-circular-progress>
@@ -56,12 +59,11 @@ async function fetchDeliberations() {
 {:else if hashes.length === 0}
 <span>No deliberations found.</span>
 {:else}
-<div style="display: flex; flex-direction: column">
+<!-- <div style="display: flex; flex-direction: column"> -->
   {#each hashes as hash}
-    <div on:click={() => navigate('deliberation', hash)} style="margin-bottom: 8px;">
+    <span on:click={() => navigate('deliberation', hash)}>
       <DeliberationListItem deliberationHash={hash}  on:deliberation-deleted={() => fetchDeliberations()}></DeliberationListItem>
-    </div>
+    </span>
   {/each}
-</div>
+<!-- </div> -->
 {/if}
-

@@ -15,6 +15,7 @@ import CreateCriterion from './CreateCriterion.svelte';
 import AllCriteria from './AllCriteria.svelte';
 import CreateProposal from './CreateProposal.svelte';
 import AllProposals from './AllProposals.svelte';
+import type { ConvergeSignal } from './types';
 
 const dispatch = createEventDispatcher();
 
@@ -32,13 +33,61 @@ let editing = false;
 
 let errorSnackbar: Snackbar;
 
-$: editing,  error, loading, record, deliberation;
+let participants;
+let proposals;
+
+$: editing,  error, loading, record, deliberation, participants, proposals;
 
 onMount(async () => {
   if (deliberationHash === undefined) {
     throw new Error(`The deliberationHash input is required for the DeliberationDetail element`);
   }
   await fetchDeliberation();
+
+  try {
+    const records = await client.callZome({
+      cap_secret: null,
+      role_name: 'converge',
+      zome_name: 'converge',
+      fn_name: 'get_criteria_for_deliberation',
+      payload: deliberationHash,
+    });
+    participants = records.map(r => r.signed_action.hashed.hash);
+  } catch (e) {
+    error = e;
+  }
+  loading = false;
+
+  client.on('signal', signal => {
+    if (signal.zome_name !== 'converge') return;
+    const payload = signal.payload as ConvergeSignal;
+    if (payload.type !== 'LinkCreated') return;
+    if (payload.link_type !== 'DeliberationToCriteria') return;
+    participants = [...participants, payload.action.hashed.content.target_address];
+  });
+
+  try {
+    const records = await client.callZome({
+      cap_secret: null,
+      role_name: 'converge',
+      zome_name: 'converge',
+      fn_name: 'get_proposals_for_deliberation',
+      payload: deliberationHash,
+    });
+    proposals = records.map(r => r.signed_action.hashed.hash);
+  } catch (e) {
+    error = e;
+  }
+  loading = false;
+
+  client.on('signal', signal => {
+    if (signal.zome_name !== 'converge') return;
+    const payload = signal.payload as ConvergeSignal;
+    if (payload.type !== 'LinkCreated') return;
+    if (payload.link_type !== 'DeliberationToProposals') return;
+
+    proposals = [...proposals, payload.action.hashed.content.target_address];
+  });
 });
 
 async function fetchDeliberation() {
@@ -103,11 +152,29 @@ async function deleteDeliberation() {
 ></EditDeliberation>
 {:else}
 
-<div style="display: flex; flex-direction: column">
+<div class="dashboard-section">
 
-  <div style="display: flex; flex-direction: row; margin-bottom: 16px">
-    <span style="margin-right: 4px"><strong>Title:</strong></span>
-    <span style="white-space: pre-line">{ deliberation.title }</span>
+  <div class="dashboard-item">
+    <div>{ deliberation.title }</div>
+    <!-- <div class="dashboard-item-details">  
+      Created | Last updated | Closes
+    </div> -->
+    <div class="dashboard-item-details">  
+    {#if participants}
+      {#if participants.length == 1}
+        <span>{participants.length} criterion</span>
+      {:else}
+        <span>{participants.length} criteria</span>
+      {/if}
+    {/if}
+    {#if proposals}
+      {#if proposals.length == 1}
+        <span>{proposals.length} | proposal</span>
+      {:else}
+        <span>{proposals.length} | proposals</span>
+      {/if}
+    {/if}
+    </div>
   </div>
 
 </div>

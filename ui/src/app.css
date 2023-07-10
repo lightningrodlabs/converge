@@ -2,3 +2,49 @@
   --mdc-theme-primary: #7B1FA2;
   --mdc-theme-secondary: #FF5722;
 }
+
+h1, h2 {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 300;
+  text-align: left;
+}
+
+h2 {
+  font-size: 1.2rem;
+  margin: 0.5;
+}
+
+.dashboard-section {
+  margin: 0.5rem 0;
+  display: flex;
+  flex-direction: column
+}
+
+.dashboard-item {
+  display: flex; flex-direction: row; margin-bottom: 16px;
+  border: 1px solid black;
+  border-radius: 4px;
+  margin: 0;
+  padding: 6px;
+  display: inline-block;
+  text-align: left;
+}
+
+.dashboard-item > div {
+  white-space: pre-line;
+  margin: 10px;
+}
+
+.dashboard-item span {
+  display: inline;
+}
+
+.dashboard-item-details {
+  font-size: 0.8em;
+}
+
+.deliberation-section {
+  border-top: 1px solid rgb(212, 212, 212);
+  padding-top: 1rem;
+  text-align: left;
+}

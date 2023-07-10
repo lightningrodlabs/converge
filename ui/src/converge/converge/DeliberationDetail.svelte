@@ -9,6 +9,8 @@ import '@material/mwc-circular-progress';
 import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
+import '@material/mwc-tab';
+import '@material/mwc-tab-bar';
 import EditDeliberation from './EditDeliberation.svelte'; 
 import { view, viewHash, navigate } from '../../store.js';
 import CreateCriterion from './CreateCriterion.svelte';
@@ -31,8 +33,9 @@ let deliberation: Deliberation | undefined;
 let editing = false;
 
 let errorSnackbar: Snackbar;
+let activeTab = 0;
 
-$: editing,  error, loading, record, deliberation;
+$: editing,  error, loading, record, deliberation, activeTab;
 
 onMount(async () => {
   if (deliberationHash === undefined) {
@@ -111,18 +114,27 @@ async function deleteDeliberation() {
   </div> -->
 
   <div style="display: flex; flex-direction: row; margin-bottom: 16px">
-    <span style="margin-right: 4px"><strong>Title:</strong></span>
-    <span style="white-space: pre-line">{ deliberation.title }</span>
+    <h1>{ deliberation.title }</h1>
   </div>
 
-  <div style="display: flex; flex-direction: row; margin-bottom: 16px">
-    <span style="margin-right: 4px"><strong>Description:</strong></span>
-    <span style="white-space: pre-line">{ deliberation.description }</span>
+  <div class="deliberation-section">
+    <div style="margin-right: 4px"><strong>Description</strong></div>
+    <p style="white-space: pre-line">{ deliberation.description }</p>
   </div>
 
-  <div style="display: flex; flex-direction: row; margin-bottom: 16px">
+  <!-- <div class="deliberation-section" style="display: flex; flex-direction: row; margin-bottom: 16px">
     <span style="margin-right: 4px"><strong>Settings:</strong></span>
     <span style="white-space: pre-line">{ deliberation.settings }</span>
+  </div> -->
+
+  <div class="deliberation-section">
+    <mwc-tab-bar>
+      <mwc-tab label="Criteria"></mwc-tab>
+      <mwc-tab label="Proposals"></mwc-tab>
+      <mwc-tab label="Activity"></mwc-tab>
+    </mwc-tab-bar>
+    
+    <p>Active tab: {activeTab + 1}</p>
   </div>
 
 </div>

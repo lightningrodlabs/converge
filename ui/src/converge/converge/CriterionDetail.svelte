@@ -6,6 +6,7 @@ import type { Record, ActionHash, AppAgentClient, EntryHash, AgentPubKey, DnaHas
 import { clientContext } from '../../contexts';
 import type { Criterion, ConvergeSignal } from './types';
 import '@material/mwc-circular-progress';
+import '@material/mwc-slider';
 import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
@@ -154,7 +155,6 @@ async function deleteCriterion() {
 
 <mwc-snackbar bind:this={errorSnackbar} leading>
 </mwc-snackbar>
-
 {#if loading}
 <div style="display: flex; flex: 1; align-items: center; justify-content: center">
   <mwc-circular-progress indeterminate></mwc-circular-progress>
@@ -162,6 +162,16 @@ async function deleteCriterion() {
 {:else if error}
 <span>Error fetching the criterion: {error.data.data}</span>
 {:else}
+
+<br>
+<mwc-slider
+  discrete
+  withTickMarks
+  step="1"
+  max="10"
+  value="5">
+</mwc-slider>
+<br>
 
 <div style="display: flex; flex-direction: column">
   <!-- <div style="display: flex; flex-direction: row">
@@ -175,6 +185,7 @@ async function deleteCriterion() {
     {#if support}
       {support}
     {/if}
+
     {#if sponsored}
       <button on:click={() => removeSupport()}>Remove Support</button>
     {:else}

@@ -13,6 +13,8 @@ import '@material/mwc-icon-button';
 const dispatch = createEventDispatcher();
 
 export let criterionHash: ActionHash;
+export let proposalHash: ActionHash;
+export let ratings: any[] | undefined;
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
@@ -24,10 +26,13 @@ let criterion: Criterion | undefined;
 let supporters: Array<string> | undefined;
 let sponsored: boolean | undefined;
 let support: number | undefined;
+let responded: boolean | undefined;
 
 let errorSnackbar: Snackbar;
   
-$:  error, loading, record, criterion, supporters, sponsored;
+$:  error, loading, record, criterion, supporters, sponsored, ratings, responded;
+
+$: responded = ratings.some(item => item["agentAsString"] === client.myPubKey.join(","));
 
 onMount(async () => {
   if (criterionHash === undefined) {
@@ -39,6 +44,7 @@ onMount(async () => {
     const payload = signal.payload as ConvergeSignal;
     if (!['LinkCreated', 'LinkDeleted'].includes(payload.type)) return;
     fetchSupport();
+    ratings = ratings
   });
 });
 
@@ -94,15 +100,15 @@ async function fetchSupport() {
   }
 }
 
-async function removeSupport() {
+async function removeRating() {
   try {
     record = await client.callZome({
       cap_secret: null,
       role_name: 'converge',
       zome_name: 'converge',
-      fn_name: 'remove_criterion_for_supporter',
+      fn_name: 'remove_criterion_for_proposal',
       payload: {
-        base_supporter: client.myPubKey,
+        base_proposal_hash: proposalHash,
         target_criterion_hash: criterionHash,
       },
     });
@@ -114,15 +120,15 @@ async function removeSupport() {
   }
 }
 
-async function addSupport() {
+async function addRating() {
   try {
     record = await client.callZome({
       cap_secret: null,
       role_name: 'converge',
       zome_name: 'converge',
-      fn_name: 'add_criterion_for_supporter',
+      fn_name: 'add_criterion_for_proposal',
       payload: {
-        base_supporter: client.myPubKey,
+        base_proposal_hash: proposalHash,
         target_criterion_hash: criterionHash,
         percentage: "1"
       },
@@ -156,6 +162,14 @@ async function addSupport() {
     {#if support}
     <span style="white-space: pre-line">{support}</span>
     {/if}
+
+    {#if responded}
+      <button on:click={() => removeRating()}>Remove Rating</button>
+    {:else}
+      <button on:click={() => addRating()}>Add Rating</button>
+    {/if}
+
+    {ratings.length}
 
     <!-- {#each supporters as supporter}
       <span style="white-space: pre-line">{ supporter }</span>

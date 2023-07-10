@@ -19,6 +19,8 @@
     "@material/mwc-slider": "^0.27.0",
     "@material/mwc-select": "^0.27.0",
     "@material/mwc-formfield": "^0.27.0",
+    "@material/mwc-tab": "^0.27.0",
+    "@material/mwc-tab-bar": "^0.27.0",
     "@msgpack/msgpack": "^2.7.2",
     "@vaadin/date-time-picker": "^23.2.8"
   },

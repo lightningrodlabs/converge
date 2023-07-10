@@ -49,10 +49,12 @@
       <DeliberationDetail deliberationHash={currentHash} />
   {:else if currentView == "proposal"}
       <ProposalDetail proposalHash={currentHash} />
+  {:else if currentView == "create-deliberation"}
+    <CreateDeliberation />
   {:else}
     <div id="content" style="display: flex; flex-direction: column; flex: 1;">
       <AllDeliberations />
-      <CreateDeliberation />
+      <button on:click={() => navigate("create-deliberation")}>Create Deliberation</button>
     </div>
   {/if}
 </main>

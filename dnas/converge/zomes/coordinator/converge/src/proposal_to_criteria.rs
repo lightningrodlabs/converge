@@ -4,19 +4,53 @@ use converge_integrity::*;
 pub struct AddCriterionForProposalInput {
     pub base_proposal_hash: ActionHash,
     pub target_criterion_hash: ActionHash,
+    pub percentage: String,
 }
 #[hdk_extern]
 pub fn add_criterion_for_proposal(
     input: AddCriterionForProposalInput,
 ) -> ExternResult<()> {
+    let tag_str = input.percentage; // This could be a &str or String
+    let tag_bytes = tag_str.as_bytes().to_vec(); // Convert to byte array
+    let tag = LinkTag(tag_bytes); // Create the LinkTag
     create_link(
         input.base_proposal_hash.clone(),
         input.target_criterion_hash.clone(),
         LinkTypes::ProposalToCriteria,
-        (),
+        tag,
     )?;
     Ok(())
 }
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Rating {
+    pub agent: AgentPubKey,
+    pub criterion: ActionHash,
+    pub tag: String,
+}
+
+#[hdk_extern]
+pub fn get_ratings_for_proposal(
+    proposal_hash: ActionHash,
+) -> ExternResult<Vec<Rating>> {
+    let links = get_links(proposal_hash, LinkTypes::ProposalToCriteria, None)?;
+    let output: Vec<Rating> = links
+        .into_iter()
+        .map(|link| {
+            let tag = link.tag;
+            let tag_str = String::from_utf8(tag.0).unwrap();
+            let agent = AgentPubKey::from(EntryHash::from(link.author));
+            let agent_with_tag = Rating {
+                agent: agent.clone(),
+                criterion: ActionHash::from(link.target),
+                tag: tag_str,
+            };
+            agent_with_tag
+        })
+        .collect();
+    Ok(output)
+}
+
 #[hdk_extern]
 pub fn get_criteria_for_proposal(
     proposal_hash: ActionHash,
@@ -51,8 +85,11 @@ pub fn remove_criterion_for_proposal(
         None,
     )?;
     for link in links {
-        if ActionHash::from(link.target.clone()).eq(&input.target_criterion_hash) {
-            delete_link(link.create_link_hash)?;
+        let me: AgentPubKey = agent_info()?.agent_latest_pubkey.into();
+        if link.author == me {
+            if ActionHash::from(link.target.clone()).eq(&input.target_criterion_hash) {
+                delete_link(link.create_link_hash)?;
+            }
         }
     }
     Ok(())

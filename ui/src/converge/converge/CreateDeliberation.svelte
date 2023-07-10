@@ -7,6 +7,9 @@ import '@material/mwc-button';
 import '@material/mwc-snackbar';
 import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-textfield';
+import '@material/mwc-radio';
+import '@material/mwc-formfield';
+import { view, viewHash, navigate } from '../../store.js';
 
 import '@material/mwc-textarea';
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
@@ -16,7 +19,7 @@ const dispatch = createEventDispatcher();
 
 let title: string = '';
 let description: string = '';
-let settings: string = '';
+let settings: any = {scoring: 'classic'};
 
 let errorSnackbar: Snackbar;
 
@@ -30,7 +33,7 @@ async function createDeliberation() {
   const deliberationEntry: Deliberation = { 
     title: title!,
     description: description!,
-    settings: settings!,
+    settings: JSON.stringify(settings!),
   };
   
   try {
@@ -42,6 +45,7 @@ async function createDeliberation() {
       payload: deliberationEntry,
     });
     dispatch('deliberation-created', { deliberationHash: record.signed_action.hashed.hash });
+    navigate("deliberation", record.signed_action.hashed.hash)
   } catch (e) {
     errorSnackbar.labelText = `Error creating the deliberation: ${e.data.data}`;
     errorSnackbar.show();
@@ -52,21 +56,35 @@ async function createDeliberation() {
 <mwc-snackbar bind:this={errorSnackbar} leading>
 </mwc-snackbar>
 <div style="display: flex; flex-direction: column">
-  <span style="font-size: 18px">Create Deliberation</span>
+  <h1>New Deliberation</h1>
+  <h2>Deliberation Details</h2>
   
 
-  <div style="margin-bottom: 16px">
-    <mwc-textarea outlined label="Title" value={ title } on:input={e => { title = e.target.value;} } required></mwc-textarea>          
+  <div style="margin-bottom: 16px; text-align: left;">
+    <mwc-textfield style="width: 100%" outlined label="Title" value={ title } on:input={e => { title = e.target.value;} } required></mwc-textfield>          
   </div>
             
-  <div style="margin-bottom: 16px">
-    <mwc-textfield outlined label="Description" value={ description } on:input={e => { description = e.target.value; } } required></mwc-textfield>          
+  <div style="margin-bottom: 16px; text-align: left">
+    <mwc-textarea style="width: 100%" outlined label="Description" value={ description } on:input={e => { description = e.target.value; } } required></mwc-textarea>          
   </div>
             
-  <div style="margin-bottom: 16px">
-    <mwc-textfield outlined label="Settings" value={ settings } on:input={e => { settings = e.target.value; } } required></mwc-textfield>          
+  <!-- <div style="margin-bottom: 16px; text-align: left">
+    <mwc-formfield label="Weighted scoring">
+      <mwc-radio class="scoring-radio" name="group" value="weighted" on:change={(e) => {console.log(e.target.value)}}></mwc-radio>
+    </mwc-formfield>
+    <mwc-formfield label="Classic scoring">
+      <mwc-radio name="group" value="classic" on:change={(e) => {console.log(e.target.value)}}></mwc-radio>
+    </mwc-formfield>
   </div>
-            
+        
+  <div style="margin-bottom: 16px; text-align: left">
+    <mwc-formfield label="Evaluation method">
+      <mwc-radio class="scoring-radio" name="group" value="binary" on:change={(e) => {console.log(e.target.value)}}></mwc-radio>
+    </mwc-formfield>
+    <mwc-formfield label="Classic scoring">
+      <mwc-radio name="group" value="sliding" on:change={(e) => {console.log(e.target.value)}}></mwc-radio>
+    </mwc-formfield>
+  </div> -->
 
   <mwc-button 
     raised

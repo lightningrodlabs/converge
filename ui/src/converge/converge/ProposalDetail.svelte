@@ -124,7 +124,7 @@ async function fetchDeliberation() {
 
   <!-- {deliberationHash} -->
   {#if deliberationHash}
-  <RateCriteria deliberationHash={deliberationHash} />
+    <RateCriteria deliberationHash={deliberationHash} proposalHash={proposalHash} />
   {/if}
 
 </div>
