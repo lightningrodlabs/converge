@@ -1,0 +1,377 @@
+
+/* =====================DCAN CSS========================== */
+
+* {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+:root {
+  --mdc-theme-primary: #7B1FA2;
+  --mdc-theme-secondary: #FF5722;
+}
+
+body {
+  background-color: #e6ecf8;
+  color: #525252;
+  margin: 0;
+}
+
+main {
+  padding: 0 !important;
+}
+
+.invisible {
+  opacity: 0;
+  width: fit-content;
+}
+
+.role-outer {
+  background-color: white;
+  display: inline-block;
+  width: 100%;
+  margin: 6px 6px 6px 0px;
+  vertical-align: top;
+  box-shadow: 0px 0px 6px #00000019;
+  border: 1px solid #efefef;
+  padding: 14px 18px;
+  border-radius: 12px;
+  transition: all 0s ease;
+  width: calc(50% - 9px);
+}
+
+.role-item {
+  float: left;
+  margin-right: 6px;
+}
+
+.white-container {
+  background-color: white;
+  padding: 25px;
+  min-height: 70vh;
+  /* min-width: 68%; */
+  /* width: 94% !important; */
+  width: 85vw;
+  margin-left: 5vw;
+  border-radius: 20px;
+  text-align: left;
+}
+
+.invisible-outer {
+  background-color: transparent;
+  padding: 25px;
+  min-height: 70vh;
+  width: 85vw;
+  margin-left: 5vw;
+  border-radius: 20px;
+  text-align: left;
+}
+
+.dashboard-item {
+  list-style: none;
+  display: inline-block;
+  margin: 4px 4px 4px 0px;
+  vertical-align: top;
+  box-shadow: 0px 0px 6px #00000019;
+  border: 1px solid #efefef;
+  padding: 14px 18px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.action-title {
+  font: normal normal bold 18px Helvetica Neue;
+  margin-bottom: 8px;
+}
+
+.action-section {
+  display: inline-block;
+  width: 100%;
+  height: 30px;
+}
+
+.commit {
+  border: 0;
+  margin: 0;  cursor: pointer;
+  min-width: max-content;
+  background-color: #F2F5FB;
+  color: #003EB4E6;
+  border-radius: 8px;
+  padding: 4px 20px;
+  padding-top: 6px;
+  font: normal normal bold 18px/24px Roboto;
+  font-weight: bold;
+  font-size: 18px;
+  text-transform: none;
+  font-weight: 500;
+  margin-left: auto;
+  order: 2;
+  margin-bottom: -4px;
+  text-decoration: none;
+  float: right;
+  z-index: 1;
+  position: relative;
+}
+
+/* md-standard-icon-button { */
+/* my-profile { */
+  /* position: relative; */
+/* header { */
+  /* display: none; */
+/* } */
+
+.navbar {
+  /* width: 100vw; */
+  min-height: 58px;
+  border-radius: 0;
+  background-color: #ffffff;
+  border: none;
+  margin-bottom: 50px;
+  box-shadow: 0px 3px 6px #0000001A;
+  position: relative;
+  z-index: 1;
+}
+
+nav logo {
+  font-style: normal;
+  font-family: sans-serif;
+  float: left;
+  font-size: 2em;
+  font-weight: bold;
+  letter-spacing: -1px;
+}
+
+.converge-header {
+  margin-right: auto;
+  margin-left: auto;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.navbar-nav {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  margin: 0;
+}
+
+.navbar-nav > li {
+  float: left;
+}
+
+.nav > li {
+  position: relative;
+  display: block;
+}
+
+.float-right {
+  float: right;
+}
+
+.logo-image {
+  width: 84px;
+  margin: 5px;
+  position: relative;
+  display: inline-block !important;
+  margin-left: 20px;
+  padding: 5px;
+  background: white;
+  border-radius: 100%;
+  box-shadow: 0px 6px 4px -3px #0000001a;
+  float: left;
+}
+
+.icon {
+  width: 22px;
+  height: 22px;
+}
+
+.middle-of-header-right {
+  margin: 0 12px;
+}
+
+.notifications, .dashboard, .bulletin {
+  width: 24px;
+  height: 26px;
+  color: #d6ddeb;
+  /* margin: 0 10px; */
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+update-profile {
+  position: absolute;
+  left: 25vw;
+  top: 20vh;
+  background-color: rgb(223, 223, 223);
+  padding: 100px;
+  border-radius: 200px;
+  z-index: 1;
+}
+
+/* .dashboard, .bulletin {
+  width: 26px;
+  color: #d6ddeb;
+  margin: 0 6px;
+  cursor: pointer;
+} */
+
+#notifications {
+  padding-left: 0;
+}
+
+#notifications li {
+  padding: 6px 4px;
+  background-color: white;
+  margin: 6px 6px 6px 0px;
+  vertical-align: top;
+  box-shadow: 0px 0px 6px #00000019;
+  padding: 14px 18px;
+  border-radius: 12px;
+  list-style: none;
+  cursor: pointer;
+}
+
+#notifications-count {
+  position: relative;
+  top: -14px;
+  right: -10px;
+  font-size: 11px;
+  font-weight: bold;
+  color: white;
+  background-color: #ffc400;;
+  padding: 2px;
+  border-radius: 10px;
+  width: 12px;
+  height: 12px;
+}
+
+h1 {
+  font-family: inherit;
+  font-weight: 500;
+  line-height: 1.1;
+  color: inherit;
+  text-align: left;
+}
+
+.new-action-button {
+  /* background-color: #1952bb; */
+  background-color: #9200a1;
+  padding: 8px 10px 8px 10px !important;
+  color: white !important;
+  border-radius: 4px;
+  margin: 6px;
+  font-family: Helvetica Neue;
+  font-size: 14px;
+  /* margin: 0px 20px; */
+  margin: 0;
+  font-weight: 500;
+  display: block;
+  text-decoration: none;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+.new-action-button > * {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* mwc-textfield, mwc-textarea {
+  border: 0;
+  background-color: #D5DAE540;
+  border-radius: 6px;
+  padding: 10px;
+  font-family: Roboto;
+  font-size: 14px;
+  font-weight: lighter;
+  width: 100%;
+  --mdc-ripple-color: transparent;
+  --mdc-text-field-idle-line-color: transparent;
+  --mdc-text-field-hover-line-color: transparent;
+  --mdc-text-field-disabled-line-color: transparent;
+} */
+
+.mdc-line-ripple {
+  display: none !important;
+}
+
+label:hover {
+  background-color: inherit;
+}
+
+h2 {
+  font-family: Roboto;
+  font-weight: 500;
+  font-size: 16px;
+  color: black;
+  text-align: left;
+}
+
+.participation-progress {
+  height: 100%;
+  float: left;
+  max-width: 101%;
+}
+
+.participation-meter {
+  height: 7px !important;
+  width: 200px;
+  background-color: #f4f5f8;
+  position: relative;
+  top: 4px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  display: inline-block;
+  width: 100%;
+}
+
+.role {
+  text-align: left;
+  /* background-color: #D5DAE540; */
+}
+
+.role > mwc-textfield {
+  display: inline-block;
+  width: 200px;
+}
+
+.dates {
+  text-align: left;
+}
+
+.dates > * {
+  width: 100px;
+  display: inline;
+  margin-right: 10px;
+}
+
+vaadin-date-time-picker {
+  width: 30%;
+}
+
+#created-roles {
+  text-align: left;
+}
+
+.created-role {
+  margin: 20px;
+  text-align: left;
+  width: fit-content;
+  display: inline-block;
+}
+
+.created-role > div {
+  display: inline-block;
+}
+
+/* transition all elements*/
+* {
+  transition: all 0.2s ease-in-out;
+}
+
+/* .form-container {
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+  margin: auto;
+} */

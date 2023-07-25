@@ -110,15 +110,15 @@ async function fetchRatings() {
 {:else if hashes.length === 0}
 <span>No criteria found.</span>
 {:else}
-<div style="display: flex; flex-direction: column">
+<div style="display: flex; flex: 1; flex-direction: column">
   {#each hashes as hash}
-    <div style="margin-bottom: 8px;">
+    <!-- <div style="margin-bottom: 8px;"> -->
       {#if allRatings && allRatings[hash.join(',')]}
         <RateCriterion criterionHash={hash} proposalHash={proposalHash} ratings={allRatings[hash.join(',')]} />
       {:else}
         <RateCriterion criterionHash={hash} proposalHash={proposalHash} ratings={[]} />
       {/if}
-    </div>
+    <!-- </div> -->
   {/each}
 </div>
 {/if}

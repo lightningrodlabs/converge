@@ -27,6 +27,8 @@ let supporters: Array<string> | undefined;
 let sponsored: boolean | undefined;
 let support: number | undefined;
 let responded: boolean | undefined;
+let openEvaluation = true;
+let addEvaluationPercentage = 5;
 
 let errorSnackbar: Snackbar;
   
@@ -145,6 +147,7 @@ async function addRating() {
 
 <mwc-snackbar bind:this={errorSnackbar} leading>
 </mwc-snackbar>
+  
 
 {#if loading}
 <div style="display: flex; flex: 1; align-items: center; justify-content: center">
@@ -154,22 +157,116 @@ async function addRating() {
 <span>Error fetching the criterion: {error.data.data}</span>
 {:else}
 
+
+<div class="criterion">
+  <div style="display: flex; flex-direction: column; font-size: .8em">
+    <div class="vertical-progress-bar-container">
+  
+    {#if support}
+    {#each Array.from({ length: 35 * support / supporters.length }) as _, index}
+      <div class="progress-line" style="opacity: {support / supporters.length}"></div>
+    {/each}
+    {/if}
+    </div>
+  </div>
+  <div class="two-sides">
+    <div style="display: flex; flex-direction: column">
+      <!-- <div style="display: flex; flex-direction: row">
+        <span style="flex: 1"></span>
+        <mwc-icon-button style="margin-left: 8px" icon="delete" on:click={() => deleteCriterion()}></mwc-icon-button>
+      </div> -->
+  
+      <div style="display: flex; flex-direction: row; margin-bottom: 16px">
+        <span style="white-space: pre-line">{ criterion.title }</span>
+        <!-- {#each supporters as supporter}
+          <span style="white-space: pre-line">{ supporter }</span>
+        {/each} -->
+      </div>
+  
+      <!-- <span style="white-space: pre-line">{ criterion.objections }</span> -->
+      {#if support}
+        <!-- <div style="display: flex; flex-direction: row; margin-bottom: 16px; font-size: .8em">
+          {supporters.length} supporters
+        </div> -->
+        <div style="display: flex; flex-direction: row; font-size: .8em">
+          <!-- {JSON.stringify(support / supporters.length)} average support -->
+          {support} support
+        </div>
+      {:else}
+        <div style="display: flex; flex-direction: row; font-size: .8em">
+          0 supporters
+        </div>
+      {/if}
+  
+    </div>
+  
+    <div style="display: flex; flex-direction: column; margin-bottom: 16px; font-size: .8em">
+        {#if sponsored}
+          <div style="display: flex; flex-direction: row; margin-bottom: 16px; font-size: .8em">
+            <mwc-button dense outlined on:click={() => removeRating()}>Remove evaluation</mwc-button>
+          </div>
+        {:else if openEvaluation}
+          <div style="text-align: center; flex-direction: row; font-size: 1em">
+            <span style="white-space: pre-line;">How well is this criterion met by the proposal?</span>
+          </div>
+          <div style="display: flex; flex-direction: row;  font-size: .8em">
+          <!-- <input type="number" bind:value={support} /> -->
+            <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative;">NOT
+            MET</span>
+            <mwc-slider
+              on:change={e => {
+                addEvaluationPercentage = Math.max(e.detail.value, 1)
+                addRating()
+              }}
+              value={addEvaluationPercentage}
+              class="star-slider"
+              step="1"
+              max="10"
+              >
+            </mwc-slider>
+            <span style="white-space: pre-line; text-align: center; top: 12px; position: relative;">FULLY
+              MET</span>
+          </div>
+          <!-- <div style="text-align: center; flex-direction: row; mfont-size: .8em"> -->
+            <!-- <button on:click={() => openEvaluation = false}>Cancel</button> -->
+            <!-- <mwc-button dense outlined on:click={() => openSupport = false}>Cancel</mwc-button> -->
+            
+            <!-- <button on:click={() => addRating()}>Save</button> -->
+            <!-- <mwc-button class="custom-button" dense raised on:click={() => addSupport()}>Save</mwc-button> -->
+          <!-- </div> -->
+        {:else}
+          <div style="display: flex; flex-direction: row; font-size: .8em">
+  
+            <!-- <button on:click={() => openEvaluation = true}>Add evaluation</button> -->
+            <mwc-button class="custom-button" dense outlined on:click={() => openEvaluation = true}>Add evaluation</mwc-button>
+  
+          <!-- <button on:click={() => addRating()}>Add evaluation</button> -->
+          </div>
+        {/if}
+    </div>
+  </div>
+  </div>
+
+
+
+
+
+
+
+
+
+
+{#if false}
+<div class="criterion">
 <div style="display: flex; flex-direction: column">
 
   <div style="display: flex; flex-direction: row; margin-bottom: 16px">
-    <span style="margin-right: 4px"><strong>Title:</strong></span>
     <span style="white-space: pre-line">{ criterion.title }</span>
     {#if support}
     <span style="white-space: pre-line">{support}</span>
     {/if}
 
-    {#if responded}
-      <button on:click={() => removeRating()}>Remove Rating</button>
-    {:else}
-      <button on:click={() => addRating()}>Add Rating</button>
-    {/if}
-
-    {ratings.length}
+    <!-- {ratings.length} -->
 
     <!-- {#each supporters as supporter}
       <span style="white-space: pre-line">{ supporter }</span>
@@ -177,5 +274,16 @@ async function addRating() {
   </div>
 
 </div>
+<div style="display: flex; flex-direction: column">
+  <div style="display: flex; flex-direction: row; margin-bottom: 16px">
+    {#if responded}
+      <button on:click={() => removeRating()}>Remove Rating</button>
+    {:else}
+      <button on:click={() => addRating()}>Add Rating</button>
+    {/if}
+  </div>
+</div>
+</div>
+{/if}
 {/if}
 

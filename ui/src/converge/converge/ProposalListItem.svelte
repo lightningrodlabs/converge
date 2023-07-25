@@ -10,6 +10,7 @@ import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
 import RateCriteria from './RateCriteria.svelte';
+import '@material/mwc-linear-progress';
 
 const dispatch = createEventDispatcher();
 
@@ -53,6 +54,7 @@ async function fetchProposal() {
     });
     if (record) {
       proposal = decode((record.entry as any).Present.entry) as Proposal;
+      console.log(proposal)
     }
   } catch (e) {
     error = e;
@@ -106,22 +108,42 @@ async function fetchDeliberation() {
 <span>Error fetching the proposal: {error.data.data}</span>
 {:else}
 
-<div style="display: flex; flex-direction: column">
-  <!-- <div style="display: flex; flex-direction: row">
-    <span style="flex: 1"></span>
-    <mwc-icon-button style="margin-left: 8px" icon="delete" on:click={() => deleteProposal()}></mwc-icon-button>
+<div class="criterion">
+  <div style="display: flex; flex-direction: column; font-size: .8em">
+    <div class="vertical-progress-bar-container">
+  
+    {#if true}
+    {#each Array.from({ length: 35 * 10 / 16 }) as _, index}
+      <div class="progress-line" style="opacity: {10 / 16}"></div>
+    {/each}
+    {/if}
+    </div>
+  </div>
+<div class="two-sides">
+
+  <div style="display: flex; flex: 1; flex-direction: column">
+    <div style="display: flex; flex-direction: row; margin-bottom: 16px">
+      <span style="white-space: pre-line">{ proposal.title }</span>
+    </div>
+
+    <!-- <div style="flex: 1; display: flex; flex-direction: row;">
+      <mwc-linear-progress progress="0.5" style="flex-grow: 1;"></mwc-linear-progress>
+    </div> -->
+    
+    <div class="overflow-content" style="display: flex; flex-direction: row; margin-bottom: 16px; font-size: 0.8em; position: relative;">
+      <span style="white-space: pre-line">{ proposal.description }</span>
+    </div>
+
+  </div>
+  <!-- <div style="display: flex; flex-direction: column">
+    <div style="display: flex; flex-direction: row; margin-bottom: 16px; font-size: .8em">
+      <button on:click={() => console.log("clicked")}>Evaluate</button>
+    </div>
   </div> -->
-
-  <div style="display: flex; flex-direction: row; margin-bottom: 16px">
-    <span style="margin-right: 4px"><strong>Title:</strong></span>
-    <span style="white-space: pre-line">{ proposal.title }</span>
-  </div>
-
-  <div style="display: flex; flex-direction: row; margin-bottom: 16px">
-    <span style="margin-right: 4px"><strong>Description:</strong></span>
-    <span style="white-space: pre-line">{ proposal.description }</span>
-  </div>
-
+  <!-- <div> -->
+    <!-- <mwc-linear-progress progress="0.5"></mwc-linear-progress> -->
+  <!-- </div> -->
+</div>
 </div>
 {/if}
 

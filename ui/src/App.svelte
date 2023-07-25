@@ -12,6 +12,7 @@
     import CreateCriterion from './converge/converge/CreateCriterion.svelte';
     import DeliberationDetail from './converge/converge/DeliberationDetail.svelte';
     import ProposalDetail from './converge/converge/ProposalDetail.svelte';
+    import Header from './converge/converge/Header.svelte';
   
   let client: AppAgentClient | undefined;
   let loading = true;
@@ -40,7 +41,9 @@
   });
 </script>
 
-<main>
+<main class="converge-container">
+  <Header />
+  <div class="white-container">
   {#if loading}
     <div style="display: flex; flex: 1; align-items: center; justify-content: center">
       <mwc-circular-progress indeterminate />
@@ -54,9 +57,10 @@
   {:else}
     <div id="content" style="display: flex; flex-direction: column; flex: 1;">
       <AllDeliberations />
-      <button on:click={() => navigate("create-deliberation")}>Create Deliberation</button>
+      <!-- <button on:click={() => navigate("create-deliberation")}>Create Deliberation</button> -->
     </div>
   {/if}
+  </div>
 </main>
 
 <style>

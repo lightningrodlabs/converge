@@ -117,15 +117,22 @@ async function fetchDeliberation() {
     <span style="white-space: pre-line">{ proposal.title }</span>
   </div>
 
-  <div style="display: flex; flex-direction: row; margin-bottom: 16px">
+  <div class="deliberation-section" style="display: flex; flex-direction: row; margin-bottom: 16px">
     <span style="margin-right: 4px"><strong>Description:</strong></span>
     <span style="white-space: pre-line">{ proposal.description }</span>
   </div>
 
-  <!-- {deliberationHash} -->
-  {#if deliberationHash}
-    <RateCriteria deliberationHash={deliberationHash} proposalHash={proposalHash} />
-  {/if}
+  <div class="deliberation-section" style="display: flex; flex-direction: row; margin-bottom: 16px">
+    <span style="margin-right: 4px"><strong>Evaluate criteria</strong></span>
+  </div>
+  <div style="flex-direction: row; margin-bottom: 16px">
+    <span style="white-space: pre-line">
+      <!-- {deliberationHash} -->
+      {#if deliberationHash}
+        <RateCriteria deliberationHash={deliberationHash} proposalHash={proposalHash} />
+      {/if}
+    </span>
+  </div>
 
 </div>
 {/if}

@@ -48,3 +48,119 @@ h2 {
   padding-top: 1rem;
   text-align: left;
 }
+
+/* .white-container {
+  background-color: white;
+  padding: 25px;
+  min-height: 70vh;
+  min-width: 68%;
+  width: 100% !important;
+  border-radius: 20px;
+}
+
+.converge-container {
+  margin-right: auto;
+  margin-left: auto;
+  padding-left: 15px;
+  padding-right: 15px;
+  margin-top: 20px;
+} */
+
+body {
+  background-color: #e6ecf8;
+  color: #525252;
+}
+
+.search-button {
+  width: 1em;
+  display: inline-block;
+  border: 1px solid gray;
+  padding: 5px 5px 0px 5px;
+  position: relative;
+  top: 3px;
+  border-radius: 4px;
+}
+
+.add-button {
+  height: 28px;
+  position: relative;
+  top: -1px;
+}
+
+.backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent gray background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.popup-container {
+  background-color: white;
+  padding: 20px;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.star-slider {
+  width: 340px;
+  height: 44px;
+}
+
+.criterion {
+  border: 1px solid gray;
+  border-radius: 5px;
+  display: flex; 
+  flex: 1;
+  height: 100px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  /* max-width: 600px; */
+}
+
+.two-sides {
+  padding: 10px;
+  display: flex;
+  flex: 1;
+  justify-content: space-between;
+}
+
+.vertical-progress-bar-container {
+  width: 24px;
+  height: 100%;
+  /* background-color: #f0f0f0;*/
+  border-right: 1px solid #8b8989;
+  /* border-radius: 3px; */
+  display: flex;
+  flex-direction: column-reverse;
+  overflow: hidden;
+}
+
+.vertical-progress {
+  background-color: #007bff; /* Set the progress color */
+  border-radius: 8px; /* Optional: Add rounded corners */
+}
+
+.progress-line {
+  width: 100%;
+  height: 1px; /* Set the height of each line */
+  background-color: #ff00ee; /* Set the progress color */
+  margin-top: 2px; /* Add a top margin */
+}
+
+.overflow-content::after {
+  content: "";
+  position: absolute;
+  /* bottom: 0; */
+  /* left: 0; */
+  width: 100%;
+  height: 56px;
+  /* border-radius: 26px; */
+  background: linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.805));
+}

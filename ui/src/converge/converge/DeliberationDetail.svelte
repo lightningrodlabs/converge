@@ -5,6 +5,8 @@ import { decode } from '@msgpack/msgpack';
 import type { Record, ActionHash, AppAgentClient, EntryHash, AgentPubKey, DnaHash } from '@holochain/client';
 import { clientContext } from '../../contexts';
 import type { Deliberation } from './types';
+import FaSort from 'svelte-icons/fa/FaSort.svelte';
+import FaSearch from 'svelte-icons/fa/FaSearch.svelte';
 import '@material/mwc-circular-progress';
 import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-snackbar';
@@ -31,11 +33,25 @@ let record: Record | undefined;
 let deliberation: Deliberation | undefined;
 
 let editing = false;
+let criterionFormPopup = false;
+let proposalFormPopup = false;
 
 let errorSnackbar: Snackbar;
-let activeTab = 0;
+let activeTab = "criteria";
+let criteriaCount = 0;
+let proposalCount = 0;
 
-$: editing,  error, loading, record, deliberation, activeTab;
+let sortByOptions = [
+  { value: "support", label: "Support" },
+  { value: "objections", label: "Objections" },
+];
+let selectedSortBy = "support";
+
+$: editing,  error, loading, record, deliberation, activeTab, criterionFormPopup, proposalFormPopup, criteriaCount, proposalCount;
+
+function sortItems() {
+  // items = items.slice().sort((a, b) => b[selectedSortBy] - a[selectedSortBy]);
+}
 
 onMount(async () => {
   if (deliberationHash === undefined) {
@@ -61,6 +77,19 @@ async function fetchDeliberation() {
     if (record) {
       deliberation = decode((record.entry as any).Present.entry) as Deliberation;
     }
+  } catch (e) {
+    error = e;
+  }
+
+  try {
+    const records = await client.callZome({
+      cap_secret: null,
+      role_name: 'converge',
+      zome_name: 'converge',
+      fn_name: 'get_proposals_for_deliberation',
+      payload: deliberationHash,
+    });
+    proposalCount = records.length;
   } catch (e) {
     error = e;
   }
@@ -113,14 +142,22 @@ async function deleteDeliberation() {
     <mwc-icon-button style="margin-left: 8px" icon="delete" on:click={() => deleteDeliberation()}></mwc-icon-button>
   </div> -->
 
+  <div style="display: flex; flex-direction: row; margin-bottom: 0px">
+    <h1>{ deliberation.title }</h1>
+  </div>
+
   <div style="display: flex; flex-direction: row; margin-bottom: 16px">
+    <span style="white-space: pre-line">{ deliberation.description }</span>
+  </div>
+
+  <!-- <div style="display: flex; flex-direction: row; margin-bottom: 16px">
     <h1>{ deliberation.title }</h1>
   </div>
 
   <div class="deliberation-section">
     <div style="margin-right: 4px"><strong>Description</strong></div>
     <p style="white-space: pre-line">{ deliberation.description }</p>
-  </div>
+  </div> -->
 
   <!-- <div class="deliberation-section" style="display: flex; flex-direction: row; margin-bottom: 16px">
     <span style="margin-right: 4px"><strong>Settings:</strong></span>
@@ -129,20 +166,45 @@ async function deleteDeliberation() {
 
   <div class="deliberation-section">
     <mwc-tab-bar>
-      <mwc-tab label="Criteria"></mwc-tab>
-      <mwc-tab label="Proposals"></mwc-tab>
-      <mwc-tab label="Activity"></mwc-tab>
+      <mwc-tab on:click={() => {activeTab = "criteria"}} label="Criteria ({criteriaCount})"></mwc-tab>
+      <mwc-tab on:click={() => {activeTab = "proposals"}}  label="Proposals ({proposalCount})"></mwc-tab>
+      <mwc-tab on:click={() => {activeTab = "activity"}}  label="Activity"></mwc-tab>
     </mwc-tab-bar>
     
-    <p>Active tab: {activeTab + 1}</p>
+    <!-- <p>Active tab: {activeTab}</p> -->
   </div>
 
 </div>
 
-<AllCriteria deliberationHash={deliberationHash} />
-<CreateCriterion deliberationHash={deliberationHash} />
+{#if activeTab == "criteria"}
+  <!--<FaSort/> -->
+  <p>What characteristics should a proposal have?</p>
+  <select bind:value={selectedSortBy} on:change={sortItems}>
+    {#each sortByOptions as option}
+    <option value={option.value}>  Sort by: {option.label}</option>
+    {/each}
+  </select>
+  <div class="search-button"><FaSearch/></div>
+  <button on:click={() => {criterionFormPopup = true; console.log(criterionFormPopup)}} class="add-button">Add criterion</button>
+  <!-- <mwc-button dense outlined>Add criterion</mwc-button> -->
+  <!-- {#if criterionForm} -->
+  <CreateCriterion deliberationHash={deliberationHash} bind:criterionFormPopup />
+  <!-- {/if} -->
+  <br><br>
+  <AllCriteria deliberationHash={deliberationHash} bind:criteriaCount />
+{:else if activeTab == "proposals"}
+  <p>What solutions would meet our criteria?</p>
+  <select bind:value={selectedSortBy} on:change={sortItems}>
+    {#each sortByOptions as option}
+    <option value={option.value}>  Sort by: {option.label}</option>
+    {/each}
+  </select>
+  <div class="search-button"><FaSearch/></div>
+  <button on:click={() => {proposalFormPopup = true; console.log(proposalFormPopup)}} class="add-button">Add proposal</button>
 
-<CreateProposal deliberationHash={deliberationHash} />
-<AllProposals deliberationHash={deliberationHash} />
+  <CreateProposal deliberationHash={deliberationHash} bind:proposalFormPopup/>
+  <br><br>
+  <AllProposals deliberationHash={deliberationHash} bind:proposalCount/>
+{/if}
 {/if}
 

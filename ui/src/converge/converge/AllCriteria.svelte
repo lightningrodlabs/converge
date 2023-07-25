@@ -7,6 +7,7 @@ import CriterionDetail from './CriterionDetail.svelte';
 import type { ConvergeSignal } from './types';
 
 export let deliberationHash: ActionHash;
+export let criteriaCount = 0;
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
@@ -38,6 +39,7 @@ async function fetchCriteria() {
       fn_name: 'get_criteria_for_deliberation',
       payload: deliberationHash,
     });
+    criteriaCount = records.length;
     hashes = records.map(r => r.signed_action.hashed.hash);
   } catch (e) {
     error = e;
