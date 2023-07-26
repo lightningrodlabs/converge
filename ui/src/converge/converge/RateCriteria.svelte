@@ -70,27 +70,29 @@ async function fetchRatings() {
       payload: proposalHash,
     });
     console.log(records)
-    let newRatings = records.reduce((acc, item) => {
-      // Convert Uint8Arrays to strings for comparison and use as keys
-      let agentString = item.agent.join(",");
-      let criterionString = item.criterion.join(",");
-
-      // If the criterion doesn't exist in the result yet, add an empty array
-      if (!acc[criterionString]) {
-        acc[criterionString] = [];
-      }
-
-      console.log('/')
-      console.log(criterionString)
-
-      // If the agent doesn't exist in the criterion array yet, add it
-      if (!acc[criterionString].some((el) => el.agentAsString === agentString)) {
-        acc[criterionString].push({ agentAsString: agentString, tag: item.tag });
-      }
-
-      return acc;
-    }, {});
-    allRatings = newRatings
+    if (records) {
+      let newRatings = records.reduce((acc, item) => {
+        // Convert Uint8Arrays to strings for comparison and use as keys
+        let agentString = item.agent.join(",");
+        let criterionString = item.criterion.join(",");
+  
+        // If the criterion doesn't exist in the result yet, add an empty array
+        if (!acc[criterionString]) {
+          acc[criterionString] = [];
+        }
+  
+        // console.log('/')
+        // console.log(criterionString)
+  
+        // If the agent doesn't exist in the criterion array yet, add it
+        if (!acc[criterionString].some((el) => el.agentAsString === agentString)) {
+          acc[criterionString].push({ agentAsString: agentString, tag: item.tag });
+        }
+  
+        return acc;
+      }, {});
+      allRatings = newRatings
+    }
     // console.log(allRatings)
   } catch (e) {
     console.log(e)
@@ -112,6 +114,7 @@ async function fetchRatings() {
 {:else}
 <div style="display: flex; flex: 1; flex-direction: column">
   {#each hashes as hash}
+    <!-- <RateCriterion criterionHash={hash} proposalHash={proposalHash} /> -->
     <!-- <div style="margin-bottom: 8px;"> -->
       {#if allRatings && allRatings[hash.join(',')]}
         <RateCriterion criterionHash={hash} proposalHash={proposalHash} ratings={allRatings[hash.join(',')]} />

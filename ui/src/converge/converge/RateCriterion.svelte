@@ -27,26 +27,42 @@ let supporters: Array<string> | undefined;
 let sponsored: boolean | undefined;
 let support: number | undefined;
 let responded: boolean | undefined;
-let openEvaluation = true;
+let deliberated: boolean | undefined;
+let openEvaluation = false;
 let addEvaluationPercentage = 5;
+let myEvaluation: any | undefined;
 
 let errorSnackbar: Snackbar;
   
-$:  error, loading, record, criterion, supporters, sponsored, ratings, responded;
+$:  error, loading, record, criterion, supporters, sponsored, responded, myEvaluation, deliberated, ratings, addEvaluationPercentage;
 
 $: responded = ratings.some(item => item["agentAsString"] === client.myPubKey.join(","));
-
+$: if (responded) {
+  console.log("ratings", ratings)
+  myEvaluation = ratings.find(item => item["agentAsString"] === client.myPubKey.join(","))["tag"];
+  // addEvaluationPercentage = myEvaluation * 10;
+}
 onMount(async () => {
   if (criterionHash === undefined) {
     throw new Error(`The criterionHash input is required for the CriterionDetail element`);
   }
-  await fetchCriterion().then(() => fetchSupport());
+  if (responded) {
+    myEvaluation = ratings.find(item => item["agentAsString"] === client.myPubKey.join(","))["tag"];
+    addEvaluationPercentage = myEvaluation * 10;
+  }
+  await fetchCriterion().then(() => {fetchSupport();});
   client.on('signal', signal => {
     if (signal.zome_name !== 'converge') return;
     const payload = signal.payload as ConvergeSignal;
     if (!['LinkCreated', 'LinkDeleted'].includes(payload.type)) return;
     fetchSupport();
-    ratings = ratings
+    // fetchRating();
+    // ratings = [...ratings]
+    // responded = ratings.some(item => item["agentAsString"] === client.myPubKey.join(","));
+    // if (responded) {
+    //   myEvaluation = ratings.find(item => item["agentAsString"] === client.myPubKey.join(","))["tag"];
+    //   addEvaluationPercentage = myEvaluation * 10;
+    // }
   });
 });
 
@@ -68,6 +84,7 @@ async function fetchCriterion() {
       criterion = decode((record.entry as any).Present.entry) as Criterion;
     }
   } catch (e) {
+    console.log(e)
     error = e;
   }
 
@@ -94,13 +111,43 @@ async function fetchSupport() {
         }, new Map()).values()
       );
       support = supporters.reduce((sum, item) => sum + JSON.parse(item["tag"]), 0);
-      sponsored = supporters.some(item => item["agent"] === client.myPubKey.join(","));
+      if (supporters) {
+        sponsored = supporters.some(item => item["agent"] === client.myPubKey.join(","));
+      }
     }
   } catch (e) {
     console.log(e)
     error = e;
   }
 }
+
+// if (sponsored) {
+//   myEvaluation = Number(supporters.find(item => item["agent"] === client.myPubKey.join(","))["tag"]);
+//   console.log(myEvaluation)
+// }
+
+// async function fetchRating() {
+//   try {
+//     let deliberations = await client.callZome({
+//       cap_secret: null,
+//       role_name: 'converge',
+//       zome_name: 'converge',
+//       fn_name: 'get_deliberations_for_criterion',
+//       payload: criterionHash,
+//     });
+//     if (deliberations) {
+//       console.log(deliberations)
+//       deliberated = deliberations.some(item => item["agent"] === client.myPubKey.join(","));
+//       if (deliberated) {
+//         myEvaluation = deliberations.find(item => item["agent"] === client.myPubKey.join(","))["tag"];
+//         console.log(myEvaluation)
+//         addEvaluationPercentage = myEvaluation * 10;
+//       }
+//     }
+//   } catch (e) {
+//     error = e;
+//   }
+// }
 
 async function removeRating() {
   try {
@@ -123,6 +170,7 @@ async function removeRating() {
 }
 
 async function addRating() {
+  await removeRating();
   try {
     record = await client.callZome({
       cap_secret: null,
@@ -132,7 +180,7 @@ async function addRating() {
       payload: {
         base_proposal_hash: proposalHash,
         target_criterion_hash: criterionHash,
-        percentage: "1"
+        percentage: String(addEvaluationPercentage / 10),
       },
     });
     if (record) {
@@ -154,7 +202,7 @@ async function addRating() {
   <mwc-circular-progress indeterminate></mwc-circular-progress>
 </div>
 {:else if error}
-<span>Error fetching the criterion: {error.data.data}</span>
+<span>Error fetching the criterion: {error}</span>
 {:else}
 
 
@@ -162,11 +210,20 @@ async function addRating() {
   <div style="display: flex; flex-direction: column; font-size: .8em">
     <div class="vertical-progress-bar-container">
   
-    {#if support}
+    <!-- {#if support}
     {#each Array.from({ length: 35 * support / supporters.length }) as _, index}
       <div class="progress-line" style="opacity: {support / supporters.length}"></div>
     {/each}
-    {/if}
+    {/if} -->
+    </div>
+  </div>
+  <div style="display: flex; flex-direction: column; font-size: .8em">
+    <div class="vertical-progress-bar-container">
+    <!-- {#if support}
+    {#each Array.from({ length: 35 * support / supporters.length }) as _, index}
+      <div class="progress-line" style="opacity: {support / supporters.length}; background-color: rgb(254, 18, 18);"></div>
+    {/each}
+    {/if} -->
     </div>
   </div>
   <div class="two-sides">
@@ -201,11 +258,7 @@ async function addRating() {
     </div>
   
     <div style="display: flex; flex-direction: column; margin-bottom: 16px; font-size: .8em">
-        {#if sponsored}
-          <div style="display: flex; flex-direction: row; margin-bottom: 16px; font-size: .8em">
-            <mwc-button dense outlined on:click={() => removeRating()}>Remove evaluation</mwc-button>
-          </div>
-        {:else if openEvaluation}
+        {#if openEvaluation}
           <div style="text-align: center; flex-direction: row; font-size: 1em">
             <span style="white-space: pre-line;">How well is this criterion met by the proposal?</span>
           </div>
@@ -215,11 +268,24 @@ async function addRating() {
             MET</span>
             <mwc-slider
               on:change={e => {
-                addEvaluationPercentage = Math.max(e.detail.value, 1)
-                addRating()
+                // console.log('hi')
+                addEvaluationPercentage = e.detail.value
+                console.log(addEvaluationPercentage)
+                myEvaluation = addEvaluationPercentage / 10;
+                // console.log(myEvaluation)
+                if (addEvaluationPercentage == 5) {
+                  removeRating()
+                } else {
+                  addRating()
+                }
+              }}
+              on:mouseleave={e => {
+                openEvaluation = false
               }}
               value={addEvaluationPercentage}
               class="star-slider"
+              withTickMarks
+              discrete
               step="1"
               max="10"
               >
@@ -234,13 +300,46 @@ async function addRating() {
             <!-- <button on:click={() => addRating()}>Save</button> -->
             <!-- <mwc-button class="custom-button" dense raised on:click={() => addSupport()}>Save</mwc-button> -->
           <!-- </div> -->
-        {:else}
+        {:else if responded}
+          <div style="text-align: center; flex-direction: row; font-size: 1em;">
+            <span style="white-space: pre-line; opacity: 0;">Importance to you:</span>
+          </div>
           <div style="display: flex; flex-direction: row; font-size: .8em">
-  
-            <!-- <button on:click={() => openEvaluation = true}>Add evaluation</button> -->
-            <mwc-button class="custom-button" dense outlined on:click={() => openEvaluation = true}>Add evaluation</mwc-button>
-  
-          <!-- <button on:click={() => addRating()}>Add evaluation</button> -->
+            <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative; opacity: 0">NOT
+              MET</span>
+            <mwc-slider
+            on:mouseover={e => {
+              openEvaluation = true
+            }}
+            value={myEvaluation * 10}
+            class="star-slider"
+            step="1"
+            max="10"
+            >
+          </mwc-slider>
+          <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative; opacity: 0;">FULLY
+            MET</span>
+          </div>
+        {:else}
+          <div style="text-align: center; flex-direction: row; font-size: 1em;">
+            <span style="white-space: pre-line; opacity: 0;">Importance to you:</span>
+          </div>
+          <div style="display: flex; flex-direction: row; font-size: .8em">
+            <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative; opacity: 0">NOT
+              MET</span>
+            <mwc-slider
+            on:mouseover={e => {
+              openEvaluation = true
+            }}
+            disabled=true
+            value={5}
+            class="star-slider"
+            step="1"
+            max="10"
+            >
+          </mwc-slider>
+          <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative; opacity: 0;">FULLY
+            MET</span>
           </div>
         {/if}
     </div>

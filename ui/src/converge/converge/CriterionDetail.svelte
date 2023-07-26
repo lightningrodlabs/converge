@@ -231,7 +231,6 @@ async function deleteCriterion() {
           IMPORTANT</span>
           <mwc-slider
             on:change={e => {
-              // addSupportPercentage = Math.max(e.detail.value, 1)
               addSupportPercentage = e.detail.value
               mySupport = addSupportPercentage / 10;
               if (addSupportPercentage == 0) {
@@ -244,6 +243,8 @@ async function deleteCriterion() {
               openSupport = false
             }}
             value={addSupportPercentage}
+            withTickMarks
+            discrete
             class="star-slider"
             step="1"
             max="10"

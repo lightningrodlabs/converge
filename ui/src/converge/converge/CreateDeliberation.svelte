@@ -64,8 +64,8 @@ async function createDeliberation() {
     <mwc-textfield style="width: 100%" outlined label="Title" value={ title } on:input={e => { title = e.target.value;} } required></mwc-textfield>          
   </div>
             
-  <div style="margin-bottom: 16px; text-align: left">
-    <mwc-textarea style="width: 100%" outlined label="Description" value={ description } on:input={e => { description = e.target.value; } } required></mwc-textarea>          
+  <div style="margin-bottom: 16px; text-align: left;">
+    <mwc-textarea style="width: 100%; height: 30vh" outlined label="Description" value={ description } on:input={e => { description = e.target.value; } } required></mwc-textarea>          
   </div>
             
   <!-- <div style="margin-bottom: 16px; text-align: left">

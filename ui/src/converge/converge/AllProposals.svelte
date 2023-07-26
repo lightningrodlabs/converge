@@ -40,7 +40,7 @@ async function fetchProposals() {
       fn_name: 'get_proposals_for_deliberation',
       payload: deliberationHash,
     });
-    proposalCount = 1;
+    // proposalCount = 1;
     hashes = records.map(r => r.signed_action.hashed.hash);
   } catch (e) {
     error = e;
