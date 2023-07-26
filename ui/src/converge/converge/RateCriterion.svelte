@@ -15,6 +15,9 @@ const dispatch = createEventDispatcher();
 export let criterionHash: ActionHash;
 export let proposalHash: ActionHash;
 export let ratings: any[] | undefined;
+export let allSupport;
+export let allCombinedRatings;
+export let allWeight;
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
@@ -26,11 +29,13 @@ let criterion: Criterion | undefined;
 let supporters: Array<string> | undefined;
 let sponsored: boolean | undefined;
 let support: number | undefined;
+let averageSupport: number | undefined;
 let responded: boolean | undefined;
 let deliberated: boolean | undefined;
 let openEvaluation = false;
-let addEvaluationPercentage = 5;
+let addEvaluationPercentage = 0;
 let myEvaluation: any | undefined;
+let combinedRating = 0;
 
 let errorSnackbar: Snackbar;
   
@@ -40,6 +45,13 @@ $: responded = ratings.some(item => item["agentAsString"] === client.myPubKey.jo
 $: if (responded) {
   console.log("ratings", ratings)
   myEvaluation = ratings.find(item => item["agentAsString"] === client.myPubKey.join(","))["tag"];
+  // find average rating as combinedRating
+  combinedRating = ratings.reduce((sum, item) => sum + JSON.parse(item["tag"]), 0) / ratings.length;
+  console.log(combinedRating)
+  console.log(ratings)
+  let hashTag = criterionHash.join(',');
+  allCombinedRatings[hashTag] = combinedRating
+  allWeight[hashTag] = combinedRating * averageSupport
   // addEvaluationPercentage = myEvaluation * 10;
 }
 onMount(async () => {
@@ -111,9 +123,11 @@ async function fetchSupport() {
         }, new Map()).values()
       );
       support = supporters.reduce((sum, item) => sum + JSON.parse(item["tag"]), 0);
+      averageSupport = support / supporters.length
       if (supporters) {
         sponsored = supporters.some(item => item["agent"] === client.myPubKey.join(","));
       }
+      allSupport[criterionHash.join(',')] = averageSupport;
     }
   } catch (e) {
     console.log(e)
@@ -242,13 +256,22 @@ async function addRating() {
   
       <!-- <span style="white-space: pre-line">{ criterion.objections }</span> -->
       {#if support}
-        <!-- <div style="display: flex; flex-direction: row; margin-bottom: 16px; font-size: .8em">
+        <div style="display: flex; flex-direction: row; margin-bottom: 16px; font-size: .8em">
           {supporters.length} supporters
-        </div> -->
+        </div>
         <div style="display: flex; flex-direction: row; font-size: .8em">
           <!-- {JSON.stringify(support / supporters.length)} average support -->
-          {support} support
+          {averageSupport} average support
         </div>
+        <div style="display: flex; flex-direction: row; font-size: .8em">
+          <!-- {JSON.stringify(support / supporters.length)} average support -->
+          {combinedRating} average rating
+        </div>
+        <div style="display: flex; flex-direction: row; font-size: .8em">
+          <!-- {JSON.stringify(support / supporters.length)} average support -->
+          {support * combinedRating} weight
+        </div>
+        
       {:else}
         <div style="display: flex; flex-direction: row; font-size: .8em">
           0 supporters
@@ -273,11 +296,12 @@ async function addRating() {
                 console.log(addEvaluationPercentage)
                 myEvaluation = addEvaluationPercentage / 10;
                 // console.log(myEvaluation)
-                if (addEvaluationPercentage == 5) {
-                  removeRating()
-                } else {
-                  addRating()
-                }
+                addRating();
+                // if (addEvaluationPercentage > 0) {
+                //   addRating()
+                // } else {
+                //   removeRating()
+                // }
               }}
               on:mouseleave={e => {
                 openEvaluation = false
@@ -332,7 +356,7 @@ async function addRating() {
               openEvaluation = true
             }}
             disabled=true
-            value={5}
+            value={0}
             class="star-slider"
             step="1"
             max="10"

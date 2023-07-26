@@ -8,20 +8,30 @@ import type { ConvergeSignal } from './types';
 
 export let deliberationHash: ActionHash;
 export let proposalHash: ActionHash;
+export let convergence = 0;
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
 let hashes: Array<ActionHash> | undefined;
 let loading = true;
 let error: any = undefined;
+let allSupport = {};
+let allCombinedRatings = {};
+let allWeight = {};
 let allRatings = undefined;
+let maxWeight = 0;
 
-$: hashes, loading, error, allRatings;
+$: hashes, loading, error, allRatings, convergence;
 $: if (allRatings) {
-    console.log('allRatings updated:', allRatings);
-    hashes.forEach(hash => {
-      console.log(`allRatings[${hash.join(',')}]:`, allRatings[hash.join(',')]);
-    });
+    // console.log('allRatings updated:', allRatings);
+    // hashes.forEach(hash => {
+    //   console.log(`allRatings[${hash.join(',')}]:`, allRatings[hash.join(',')]);
+    // });
+
+    // convergence is combined rating multiplied by support
+    // allSupport.reduce((acc, num) => acc + num, 0);
+    maxWeight = calculateAverage(allSupport)
+    convergence = calculateAverage(allWeight)
   }
 
 onMount(async () => {
@@ -43,6 +53,20 @@ onMount(async () => {
     fetchRatings();
   });
 });
+
+  // Calculate the average of the numeric values in the data object
+  function calculateAverage(data) {
+    const values = Object.values(data);
+
+    // Filter out non-numeric values
+    const numericValues = values.filter((value) => typeof value === 'number');
+
+    if (numericValues.length === 0) return 0;
+
+    const sum: any = numericValues.reduce((acc: any, num) => acc + num, 0);
+    console.log(sum / numericValues.length)
+    return sum / numericValues.length;
+  }
 
 async function fetchCriteria() {
   try {
@@ -112,14 +136,26 @@ async function fetchRatings() {
 {:else if hashes.length === 0}
 <span>No criteria found.</span>
 {:else}
+<!-- {JSON.stringify(allRatings)} -->
+<!-- {JSON.stringify(allSupport)} -->
+<!-- average weighted rating {JSON.stringify(convergence)}<br>
+average support {JSON.stringify(maxWeight)}<br>
+score {JSON.stringify(convergence / maxWeight)} -->
+
+<div class="vertical-progress-bar-container" style="height: 100px">
+  {#each Array.from({ length: 35 * convergence / maxWeight }) as _, index}
+    <div class="progress-line" style="opacity: {convergence / maxWeight}"></div>
+  {/each}
+</div>
+
 <div style="display: flex; flex: 1; flex-direction: column">
   {#each hashes as hash}
     <!-- <RateCriterion criterionHash={hash} proposalHash={proposalHash} /> -->
     <!-- <div style="margin-bottom: 8px;"> -->
       {#if allRatings && allRatings[hash.join(',')]}
-        <RateCriterion criterionHash={hash} proposalHash={proposalHash} ratings={allRatings[hash.join(',')]} />
+        <RateCriterion bind:allWeight bind:allSupport bind:allCombinedRatings criterionHash={hash} proposalHash={proposalHash} ratings={allRatings[hash.join(',')]} />
       {:else}
-        <RateCriterion criterionHash={hash} proposalHash={proposalHash} ratings={[]} />
+        <RateCriterion bind:allWeight bind:allSupport bind:allCombinedRatings criterionHash={hash} proposalHash={proposalHash} ratings={[]} />
       {/if}
     <!-- </div> -->
   {/each}

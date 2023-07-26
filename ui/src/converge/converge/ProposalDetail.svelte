@@ -24,10 +24,12 @@ let error: any = undefined;
 let record: Record | undefined;
 let proposal: Proposal | undefined;
 
+let allRatings;
+
 
 let errorSnackbar: Snackbar;
   
-$:  error, loading, record, proposal;
+$:  error, loading, record, proposal, allRatings;
 
 onMount(async () => {
   if (proposalHash === undefined) {
@@ -129,7 +131,8 @@ async function fetchDeliberation() {
     <span style="white-space: pre-line">
       <!-- {deliberationHash} -->
       {#if deliberationHash}
-        <RateCriteria deliberationHash={deliberationHash} proposalHash={proposalHash} />
+        <!-- {JSON.stringify(allRatings)} -->
+        <RateCriteria deliberationHash={deliberationHash} proposalHash={proposalHash} bind:allRatings />
       {/if}
     </span>
   </div>
