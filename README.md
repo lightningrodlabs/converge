@@ -1,5 +1,8 @@
 # Converge
 
+## About
+Converge is a tool to help groups make decisions with the highest level of convergence, or agreement. It is based loosely on the Convergent Facilitation process described in [The Highest Common Denominator](https://www.goodreads.com/book/show/56383551-the-highest-common-denominator). Groups are able to find agreement on decisions by working out differences on the basis of underlying criteria, instead of entire solutions.
+
 ## Environment Setup
 
 > PREREQUISITE: set up the [holochain development environment](https://developer.holochain.org/docs/install/).
@@ -7,7 +10,7 @@
 Enter the nix shell by running this in the root folder of the repository: 
 
 ```bash
-nix-shell
+nix develop
 npm install
 ```
 
