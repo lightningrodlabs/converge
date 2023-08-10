@@ -60,8 +60,8 @@ async function createProposal() {
 
 </script>
 {#if proposalFormPopup}
-  <div class="backdrop">
-    <div class="popup-container">
+<div class="backdrop">
+  <div class="popup-container">
 
       <mwc-snackbar bind:this={errorSnackbar} leading>
       </mwc-snackbar>

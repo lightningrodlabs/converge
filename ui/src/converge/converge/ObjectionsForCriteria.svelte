@@ -5,8 +5,11 @@ import type { Record, EntryHash, ActionHash, AgentPubKey, AppAgentClient, NewEnt
 import { clientContext } from '../../contexts';
 import CriterionDetail from './Criterion.svelte';
 import type { ConvergeSignal } from './types';
+//  import mwc-checkbox
+import '@material/mwc-switch';
 
-export let deliberationHash: ActionHash;
+// export let objector: AgentPubKey;
+export let criterionHash: EntryHash;
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
@@ -18,8 +21,8 @@ let error: any = undefined;
 $: hashes, loading, error;
 
 onMount(async () => {
-  if (deliberationHash === undefined) {
-    throw new Error(`The deliberationHash input is required for the CriteriaForDeliberation element`);
+  if (criterionHash === undefined) {
+    throw new Error(`The objector input is required for the CriteriaForObjector element`);
   }
 
   try {
@@ -27,8 +30,8 @@ onMount(async () => {
       cap_secret: null,
       role_name: 'converge',
       zome_name: 'converge',
-      fn_name: 'get_criteria_for_deliberation',
-      payload: deliberationHash,
+      fn_name: 'get_objectors_for_criterion',
+      payload: criterionHash,
     });
     hashes = records.map(r => r.signed_action.hashed.hash);
   } catch (e) {
@@ -40,7 +43,7 @@ onMount(async () => {
     if (signal.zome_name !== 'converge') return;
     const payload = signal.payload as ConvergeSignal;
     if (payload.type !== 'LinkCreated') return;
-    if (payload.link_type !== 'DeliberationToCriteria') return;
+    if (payload.link_type !== 'CriterionToObjectors') return;
 
     hashes = [...hashes, payload.action.hashed.content.target_address];
   });
@@ -55,13 +58,27 @@ onMount(async () => {
 {:else if error}
 <span>Error fetching criteria: {error.data.data}.</span>
 {:else if hashes.length === 0}
-<span>No criteria found for this deliberation.</span>
+<span>No Objections found for this criteria.</span>
 {:else}
 <div style="display: flex; flex-direction: column">
   {#each hashes as hash}
     <div style="margin-bottom: 8px;">
-      <CriterionDetail criterionHash={hash}></CriterionDetail>
+      {hash}
+      <!-- <CriterionDetail criterionHash={hash}></CriterionDetail> -->
     </div>
   {/each}
 </div>
 {/if}
+
+<div style="margin-bottom: 16px">
+  <mwc-textarea style="width: 35vw; height: 20vh" outlined label="Comment" on:input={e => { title = e.target.value; } } required></mwc-textarea>          
+</div>
+<div style="margin-bottom: 16px">
+  <!-- check box is this an objection -->
+  <!-- <mwc-formfield label="Is your comment an objection to the criterion?">
+    <mwc-checkbox></mwc-checkbox>
+  </mwc-formfield> -->
+  <label>
+    <mwc-switch name="choice"></mwc-switch> Is your comment an objection to the criterion?
+  </label>
+</div>

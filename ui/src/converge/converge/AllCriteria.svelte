@@ -3,7 +3,7 @@ import { onMount, getContext } from 'svelte';
 import '@material/mwc-circular-progress';
 import type { EntryHash, Record, AgentPubKey, ActionHash, AppAgentClient, NewEntryAction } from '@holochain/client';
 import { clientContext } from '../../contexts';
-import CriterionDetail from './CriterionDetail.svelte';
+import Criterion from './Criterion.svelte';
 import type { ConvergeSignal } from './types';
 
 export let deliberationHash: ActionHash;
@@ -61,7 +61,7 @@ async function fetchCriteria() {
 <div style="display: flex; flex-direction: column">
   {#each hashes as hash}
     <div style="margin-bottom: 8px;">
-      <CriterionDetail criterionHash={hash}  on:criterion-deleted={() => fetchCriteria()}></CriterionDetail>
+      <Criterion criterionHash={hash}  on:criterion-deleted={() => fetchCriteria()}></Criterion>
     </div>
   {/each}
 </div>

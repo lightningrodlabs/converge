@@ -10,6 +10,7 @@ import '@material/mwc-slider';
 import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
+import CriterionPopup from './CriterionPopup.svelte';
     import { navigate } from '../../store';
 
 const dispatch = createEventDispatcher();
@@ -29,11 +30,12 @@ let support: number | undefined;
 let openSupport = false;
 let addSupportPercentage = 0;
 let mySupport;
+let criterionPopupBoolean = false;
 const scoringLevel = 4;
 
 let errorSnackbar: Snackbar;
   
-$:  error, loading, record, criterion, supporters, sponsored;
+$:  error, loading, record, criterion, supporters, sponsored, criterionPopupBoolean;
 
 onMount(async () => {
   if (criterionHash === undefined) {
@@ -144,7 +146,7 @@ async function addSupport() {
     if (record) {
       console.log("record: ")
       console.log(record)
-      openSupport = false;
+      // openSupport = false;
     }
   } catch (e) {
     error = e;
@@ -316,7 +318,17 @@ async function deleteCriterion() {
         </div>
       {/if}
   </div>
+
+  <!-- OBJECT BUTTON -->
+  <div style="display: flex; flex-direction: column; font-size: .8em">
+    <button style="height: 100%;" on:click={() => {criterionPopupBoolean = true; console.log(criterionPopupBoolean)}}>
+      <mwc-icon-button icon="d"></mwc-icon-button>
+    </button>
+  </div>
+
 </div>
 </div>
 {/if}
+<CriterionPopup {criterionHash} bind:criterionPopupBoolean />
+
 {/if}

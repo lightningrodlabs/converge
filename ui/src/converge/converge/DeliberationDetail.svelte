@@ -64,6 +64,7 @@ onMount(async () => {
     if (signal.zome_name !== 'converge') return;
     const payload = signal.payload as ConvergeSignal;
     if (!['LinkCreated', 'LinkDeleted'].includes(payload.type)) return;
+    if (!['DeliberatorToDeliberations'].includes(Object.keys(signal.payload['link_type'])[0])) return;
     fetchDeliberation();
   });
 });
