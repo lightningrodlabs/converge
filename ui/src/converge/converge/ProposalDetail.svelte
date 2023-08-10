@@ -9,6 +9,7 @@ import '@material/mwc-circular-progress';
 import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
+import { view, viewHash, navigate } from '../../store.js';
 import RateCriteria from './RateCriteria.svelte';
 
 const dispatch = createEventDispatcher();
@@ -25,6 +26,9 @@ let record: Record | undefined;
 let proposal: Proposal | undefined;
 
 let allRatings;
+
+let convergence;
+let maxWeight;
 
 
 let errorSnackbar: Snackbar;
@@ -108,35 +112,48 @@ async function fetchDeliberation() {
 <span>Error fetching the proposal: {error.data.data}</span>
 {:else}
 
-<div style="display: flex; flex-direction: column">
-  <!-- <div style="display: flex; flex-direction: row">
-    <span style="flex: 1"></span>
-    <mwc-icon-button style="margin-left: 8px" icon="delete" on:click={() => deleteProposal()}></mwc-icon-button>
-  </div> -->
+<button on:click={()=>{navigate('deliberation', deliberationHash)}}>back</button>
 
+<div style="display: flex; 
+flex: 1;">
+  {#if convergence > 0 && maxWeight > 0}
+  <div style="display: flex; flex-direction: column; font-size: .8em">
+  <div class="vertical-progress-bar-container" style="height: 100px; border: 1px dotted black;">
+    {#each Array.from({ length: 35 * convergence / maxWeight }) as _, index}
+      <div class="progress-line" style="opacity: {convergence / maxWeight}; background-color: rgb(254, 18, 18)"></div>
+    {/each}
+  </div>
+  </div>
+  {/if}
+  <div class="two-sides">
+
+  <div style="display: flex; flex: 1; flex-direction: column">
   <div style="display: flex; flex-direction: row; margin-bottom: 16px">
-    <span style="margin-right: 4px"><strong>Title:</strong></span>
-    <span style="white-space: pre-line">{ proposal.title }</span>
+    <span style="margin-right: 4px"><strong>{ proposal.title }</strong></span>
+    <!-- <span style="white-space: pre-line">{ proposal.title }</span> -->
   </div>
 
   <div class="deliberation-section" style="display: flex; flex-direction: row; margin-bottom: 16px">
-    <span style="margin-right: 4px"><strong>Description:</strong></span>
+    <!-- <span style="margin-right: 4px"><strong>Description:</strong></span> -->
     <span style="white-space: pre-line">{ proposal.description }</span>
   </div>
+</div>
+</div>
+</div>
 
-  <div class="deliberation-section" style="display: flex; flex-direction: row; margin-bottom: 16px">
-    <span style="margin-right: 4px"><strong>Evaluate criteria</strong></span>
-  </div>
+  <!-- <div class="deliberation-section" style="display: flex; flex-direction: row; margin-bottom: 16px"> -->
+    <!-- <span style="margin-right: 4px"><strong>Evaluate criteria</strong></span> -->
+  <!-- </div> -->
   <div style="flex-direction: row; margin-bottom: 16px">
+    <h2 style="margin-bottom: 0; margin-top: 30px;">Evaluate</h2>
     <span style="white-space: pre-line">
       <!-- {deliberationHash} -->
       {#if deliberationHash}
         <!-- {JSON.stringify(allRatings)} -->
-        <RateCriteria deliberationHash={deliberationHash} proposalHash={proposalHash} bind:allRatings />
+        <RateCriteria bind:convergence bind:maxWeight deliberationHash={deliberationHash} proposalHash={proposalHash} />
       {/if}
     </span>
   </div>
 
-</div>
 {/if}
 

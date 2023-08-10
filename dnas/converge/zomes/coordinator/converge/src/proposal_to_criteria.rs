@@ -10,9 +10,9 @@ pub struct AddCriterionForProposalInput {
 pub fn add_criterion_for_proposal(
     input: AddCriterionForProposalInput,
 ) -> ExternResult<()> {
-    let tag_str = input.percentage; // This could be a &str or String
-    let tag_bytes = tag_str.as_bytes().to_vec(); // Convert to byte array
-    let tag = LinkTag(tag_bytes); // Create the LinkTag
+    let tag_str = input.percentage;
+    let tag_bytes = tag_str.as_bytes().to_vec();
+    let tag = LinkTag(tag_bytes);
     create_link(
         input.base_proposal_hash.clone(),
         input.target_criterion_hash.clone(),
@@ -21,18 +21,14 @@ pub fn add_criterion_for_proposal(
     )?;
     Ok(())
 }
-
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Rating {
     pub agent: AgentPubKey,
     pub criterion: ActionHash,
     pub tag: String,
 }
-
 #[hdk_extern]
-pub fn get_ratings_for_proposal(
-    proposal_hash: ActionHash,
-) -> ExternResult<Vec<Rating>> {
+pub fn get_ratings_for_proposal(proposal_hash: ActionHash) -> ExternResult<Vec<Rating>> {
     let links = get_links(proposal_hash, LinkTypes::ProposalToCriteria, None)?;
     let output: Vec<Rating> = links
         .into_iter()
@@ -50,7 +46,6 @@ pub fn get_ratings_for_proposal(
         .collect();
     Ok(output)
 }
-
 #[hdk_extern]
 pub fn get_criteria_for_proposal(
     proposal_hash: ActionHash,

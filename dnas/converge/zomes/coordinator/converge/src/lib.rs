@@ -1,3 +1,5 @@
+pub mod deliberator_to_deliberations;
+
 pub mod all_proposals;
 pub mod all_criteria;
 pub mod objector_to_criteria;

@@ -15,8 +15,9 @@ let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 let hashes: Array<ActionHash> | undefined;
 let loading = true;
 let error: any = undefined;
+let allProposalScores = {};
 
-$: hashes, loading, error;
+$: hashes, loading, error, allProposalScores;
 
 onMount(async () => {
 
@@ -62,9 +63,10 @@ async function fetchProposals() {
 <div style="display: flex; flex-direction: column">
   {#each hashes as hash}
     <div on:click={() => navigate('proposal', hash)} style="margin-bottom: 8px;">
-      <ProposalListItem proposalHash={hash} on:proposal-deleted={() => fetchProposals()} />
+      {#if deliberationHash}
+        <ProposalListItem bind:allProposalScores proposalHash={hash} {deliberationHash} on:proposal-deleted={() => fetchProposals()} />
+      {/if}
     </div>
   {/each}
 </div>
 {/if}
-

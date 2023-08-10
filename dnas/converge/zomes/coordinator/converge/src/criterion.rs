@@ -1,18 +1,15 @@
 use hdk::prelude::*;
 use converge_integrity::*;
-
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CreateCriterionInput {
     criterion: Criterion,
     deliberation: ActionHash,
 }
-
 #[hdk_extern]
-pub fn create_criterion(create_criterion_input: CreateCriterionInput) -> ExternResult<Record> {
-    let CreateCriterionInput {
-        criterion,
-        deliberation,
-    } = create_criterion_input;
+pub fn create_criterion(
+    create_criterion_input: CreateCriterionInput,
+) -> ExternResult<Record> {
+    let CreateCriterionInput { criterion, deliberation } = create_criterion_input;
     let criterion_hash = create_entry(&EntryTypes::Criterion(criterion.clone()))?;
     let record = get(criterion_hash.clone(), GetOptions::default())?
         .ok_or(

@@ -47,8 +47,7 @@ async function fetchDeliberations() {
 
 </script>
 
-<h1>Dashboard</h1>
-<h2>Your Deliberations</h2>
+<h2>All Deliberations</h2>
 
 {#if loading}
 <div style="display: flex; flex: 1; align-items: center; justify-content: center">

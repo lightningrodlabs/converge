@@ -9,6 +9,8 @@ import type { ConvergeSignal } from './types';
 export let deliberationHash: ActionHash;
 export let proposalHash: ActionHash;
 export let convergence = 0;
+export let maxWeight = 0;
+export let display: boolean = true;
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
@@ -19,23 +21,25 @@ let allSupport = {};
 let allCombinedRatings = {};
 let allWeight = {};
 let allRatings = undefined;
-let maxWeight = 0;
 
-$: hashes, loading, error, allRatings, convergence;
+$: hashes, loading, error, allRatings, allWeight, allSupport, convergence;
 $: if (allRatings) {
-    // console.log('allRatings updated:', allRatings);
+    console.log('allRatings updated:', allRatings);
     // hashes.forEach(hash => {
     //   console.log(`allRatings[${hash.join(',')}]:`, allRatings[hash.join(',')]);
     // });
 
     // convergence is combined rating multiplied by support
     // allSupport.reduce((acc, num) => acc + num, 0);
-    maxWeight = calculateAverage(allSupport)
-    convergence = calculateAverage(allWeight)
+    if (Object.keys(allSupport).length > 0) {
+      maxWeight = calculateAverage(allSupport)
+    }
+    if (Object.keys(allWeight).length > 0) {
+      convergence = calculateAverage(allWeight)
+    }
   }
 
 onMount(async () => {
-
   await fetchCriteria();
   await fetchRatings();
   client.on('signal', signal => {
@@ -57,14 +61,16 @@ onMount(async () => {
   // Calculate the average of the numeric values in the data object
   function calculateAverage(data) {
     const values = Object.values(data);
+    // console.log(data)
 
     // Filter out non-numeric values
-    const numericValues = values.filter((value) => typeof value === 'number');
+    const numericValues = values.filter((value) => typeof value === 'number' && !isNaN(value));
+    console.log(numericValues)
 
     if (numericValues.length === 0) return 0;
 
     const sum: any = numericValues.reduce((acc: any, num) => acc + num, 0);
-    console.log(sum / numericValues.length)
+    console.log(sum, numericValues)
     return sum / numericValues.length;
   }
 
@@ -105,9 +111,7 @@ async function fetchRatings() {
           acc[criterionString] = [];
         }
   
-        // console.log('/')
-        // console.log(criterionString)
-  
+        // console.log('/')  
         // If the agent doesn't exist in the criterion array yet, add it
         if (!acc[criterionString].some((el) => el.agentAsString === agentString)) {
           acc[criterionString].push({ agentAsString: agentString, tag: item.tag });
@@ -127,6 +131,8 @@ async function fetchRatings() {
 
 </script>
 
+{#if display}
+
 {#if loading}
 <div style="display: flex; flex: 1; align-items: center; justify-content: center">
   <mwc-circular-progress indeterminate></mwc-circular-progress>
@@ -142,23 +148,28 @@ async function fetchRatings() {
 average support {JSON.stringify(maxWeight)}<br>
 score {JSON.stringify(convergence / maxWeight)} -->
 
-<div class="vertical-progress-bar-container" style="height: 100px">
-  {#each Array.from({ length: 35 * convergence / maxWeight }) as _, index}
-    <div class="progress-line" style="opacity: {convergence / maxWeight}"></div>
-  {/each}
-</div>
-
 <div style="display: flex; flex: 1; flex-direction: column">
   {#each hashes as hash}
     <!-- <RateCriterion criterionHash={hash} proposalHash={proposalHash} /> -->
     <!-- <div style="margin-bottom: 8px;"> -->
       {#if allRatings && allRatings[hash.join(',')]}
-        <RateCriterion bind:allWeight bind:allSupport bind:allCombinedRatings criterionHash={hash} proposalHash={proposalHash} ratings={allRatings[hash.join(',')]} />
+        <RateCriterion bind:allWeight bind:allSupport bind:allCombinedRatings criterionHash={hash} proposalHash={proposalHash} display={true} ratings={allRatings[hash.join(',')]} />
       {:else}
-        <RateCriterion bind:allWeight bind:allSupport bind:allCombinedRatings criterionHash={hash} proposalHash={proposalHash} ratings={[]} />
+        <RateCriterion bind:allWeight bind:allSupport bind:allCombinedRatings criterionHash={hash} proposalHash={proposalHash} display={true} ratings={[]} />
       {/if}
     <!-- </div> -->
   {/each}
 </div>
 {/if}
 
+{:else if deliberationHash}
+  {#if hashes && hashes.length > 0}
+    {#each hashes as hash}
+      {#if allRatings && allRatings[hash.join(',')]}
+        <RateCriterion bind:allWeight bind:allSupport bind:allCombinedRatings criterionHash={hash} proposalHash={proposalHash} {display} ratings={allRatings[hash.join(',')]} />
+      {:else}
+        <RateCriterion bind:allWeight bind:allSupport bind:allCombinedRatings criterionHash={hash} proposalHash={proposalHash} {display} ratings={[]} />
+      {/if}
+    {/each}
+  {/if}
+{/if}

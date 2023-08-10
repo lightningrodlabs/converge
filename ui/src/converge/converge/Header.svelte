@@ -65,6 +65,7 @@
   async function goToBulletin() {
     navigate("all-coordinations", {});
   }
+
   </script>
   
   <header>
@@ -79,7 +80,7 @@
   
         <ul class="nav navbar-nav float-right">
   
-        <!-- <li class="bulletin" on:click={goToBulletin}>
+        <li class="bulletin" on:click={goToBulletin}>
           {#if currentView == "all-coordinations"}
           <div class="bulletin-icon" style="color:#1952bb">
             <FaBullhorn />
@@ -89,7 +90,7 @@
             <FaBullhorn />
           </div>
           {/if}
-        </li> -->
+        </li>
   
         <li class="dashboard" on:click={goToDashboard}>
           {#if currentView == "dashboard"}

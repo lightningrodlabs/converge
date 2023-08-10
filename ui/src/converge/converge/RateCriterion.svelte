@@ -18,6 +18,7 @@ export let ratings: any[] | undefined;
 export let allSupport;
 export let allCombinedRatings;
 export let allWeight;
+export let display: boolean = true;
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
@@ -29,7 +30,7 @@ let criterion: Criterion | undefined;
 let supporters: Array<string> | undefined;
 let sponsored: boolean | undefined;
 let support: number | undefined;
-let averageSupport: number | undefined;
+let averageSupport: number | undefined = 1;
 let responded: boolean | undefined;
 let deliberated: boolean | undefined;
 let openEvaluation = false;
@@ -38,29 +39,45 @@ let myEvaluation: any | undefined;
 let combinedRating = 0;
 
 let errorSnackbar: Snackbar;
+const scoringLevel = 4
   
-$:  error, loading, record, criterion, supporters, sponsored, responded, myEvaluation, deliberated, ratings, addEvaluationPercentage;
+$:  error, loading, record, criterion, supporters, sponsored, responded, myEvaluation, deliberated, ratings, addEvaluationPercentage, averageSupport;
 
 $: responded = ratings.some(item => item["agentAsString"] === client.myPubKey.join(","));
 $: if (responded) {
-  console.log("ratings", ratings)
+  // console.log("ratings", ratings)
   myEvaluation = ratings.find(item => item["agentAsString"] === client.myPubKey.join(","))["tag"];
   // find average rating as combinedRating
   combinedRating = ratings.reduce((sum, item) => sum + JSON.parse(item["tag"]), 0) / ratings.length;
-  console.log(combinedRating)
-  console.log(ratings)
   let hashTag = criterionHash.join(',');
   allCombinedRatings[hashTag] = combinedRating
   allWeight[hashTag] = combinedRating * averageSupport
-  // addEvaluationPercentage = myEvaluation * 10;
+} else if (ratings && ratings.length > 0) {
+  // console.log('hishihihihi')
+  combinedRating = ratings.reduce((sum, item) => sum + JSON.parse(item["tag"]), 0) / ratings.length;
+  let hashTag = criterionHash.join(',');
+  allCombinedRatings[hashTag] = combinedRating
+  allWeight[hashTag] = combinedRating * averageSupport
 }
+
+// async function calculateRatings() {
+//   // find average rating as combinedRating
+//   combinedRating = ratings.reduce((sum, item) => sum + JSON.parse(item["tag"]), 0) / ratings.length;
+//   console.log(combinedRating)
+//   console.log(ratings)
+//   let hashTag = criterionHash.join(',');
+//   allCombinedRatings[hashTag] = combinedRating
+//   allWeight[hashTag] = combinedRating * averageSupport
+//   // addEvaluationPercentage = myEvaluation * 10;
+// }
+
 onMount(async () => {
   if (criterionHash === undefined) {
     throw new Error(`The criterionHash input is required for the CriterionDetail element`);
   }
   if (responded) {
     myEvaluation = ratings.find(item => item["agentAsString"] === client.myPubKey.join(","))["tag"];
-    addEvaluationPercentage = myEvaluation * 10;
+    addEvaluationPercentage = myEvaluation * scoringLevel;
   }
   await fetchCriterion().then(() => {fetchSupport();});
   client.on('signal', signal => {
@@ -83,6 +100,8 @@ async function fetchCriterion() {
   error = undefined;
   record = undefined;
   criterion = undefined;
+  // let record;
+  // let criterion;
   
   try {
     record = await client.callZome({
@@ -194,7 +213,7 @@ async function addRating() {
       payload: {
         base_proposal_hash: proposalHash,
         target_criterion_hash: criterionHash,
-        percentage: String(addEvaluationPercentage / 10),
+        percentage: String(addEvaluationPercentage / scoringLevel),
       },
     });
     if (record) {
@@ -206,6 +225,8 @@ async function addRating() {
 }
 
 </script>
+
+{#if display}
 
 <mwc-snackbar bind:this={errorSnackbar} leading>
 </mwc-snackbar>
@@ -221,25 +242,25 @@ async function addRating() {
 
 
 <div class="criterion">
-  <div style="display: flex; flex-direction: column; font-size: .8em">
+  <!-- <div style="display: flex; flex-direction: column; font-size: .8em">
     <div class="vertical-progress-bar-container">
   
-    <!-- {#if support}
+    {#if support}
     {#each Array.from({ length: 35 * support / supporters.length }) as _, index}
       <div class="progress-line" style="opacity: {support / supporters.length}"></div>
     {/each}
-    {/if} -->
+    {/if}
     </div>
   </div>
   <div style="display: flex; flex-direction: column; font-size: .8em">
     <div class="vertical-progress-bar-container">
-    <!-- {#if support}
+    {#if support}
     {#each Array.from({ length: 35 * support / supporters.length }) as _, index}
       <div class="progress-line" style="opacity: {support / supporters.length}; background-color: rgb(254, 18, 18);"></div>
     {/each}
-    {/if} -->
+    {/if}
     </div>
-  </div>
+  </div> -->
   <div class="two-sides">
     <div style="display: flex; flex-direction: column">
       <!-- <div style="display: flex; flex-direction: row">
@@ -274,6 +295,12 @@ async function addRating() {
         
       {:else}
         <div style="display: flex; flex-direction: row; font-size: .8em">
+          <!-- <div style="display: flex; flex-direction: row; font-size: .8em">
+            {combinedRating} average rating
+          </div>
+          <div style="display: flex; flex-direction: row; font-size: .8em">
+            {support * combinedRating} weight
+          </div> -->
           0 supporters
         </div>
       {/if}
@@ -290,18 +317,11 @@ async function addRating() {
             <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative;">NOT
             MET</span>
             <mwc-slider
-              on:change={e => {
-                // console.log('hi')
-                addEvaluationPercentage = e.detail.value
-                console.log(addEvaluationPercentage)
-                myEvaluation = addEvaluationPercentage / 10;
-                // console.log(myEvaluation)
+              style="--mdc-theme-primary: red;"
+              on:pointerup={e => {
+                addEvaluationPercentage = e.target.value
+                myEvaluation = addEvaluationPercentage / scoringLevel;
                 addRating();
-                // if (addEvaluationPercentage > 0) {
-                //   addRating()
-                // } else {
-                //   removeRating()
-                // }
               }}
               on:mouseleave={e => {
                 openEvaluation = false
@@ -311,7 +331,7 @@ async function addRating() {
               withTickMarks
               discrete
               step="1"
-              max="10"
+              max="4"
               >
             </mwc-slider>
             <span style="white-space: pre-line; text-align: center; top: 12px; position: relative;">FULLY
@@ -332,13 +352,14 @@ async function addRating() {
             <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative; opacity: 0">NOT
               MET</span>
             <mwc-slider
+            style="--mdc-theme-primary: red;"
             on:mouseover={e => {
               openEvaluation = true
             }}
-            value={myEvaluation * 10}
+            value={myEvaluation * scoringLevel}
             class="star-slider"
             step="1"
-            max="10"
+            max="4"
             >
           </mwc-slider>
           <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative; opacity: 0;">FULLY
@@ -352,6 +373,7 @@ async function addRating() {
             <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative; opacity: 0">NOT
               MET</span>
             <mwc-slider
+            style="--mdc-theme-primary: red;"
             on:mouseover={e => {
               openEvaluation = true
             }}
@@ -359,7 +381,7 @@ async function addRating() {
             value={0}
             class="star-slider"
             step="1"
-            max="10"
+            max="4"
             >
           </mwc-slider>
           <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative; opacity: 0;">FULLY
@@ -409,4 +431,4 @@ async function addRating() {
 </div>
 {/if}
 {/if}
-
+{/if}

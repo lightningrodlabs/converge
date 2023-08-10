@@ -13,6 +13,7 @@
     import DeliberationDetail from './converge/converge/DeliberationDetail.svelte';
     import ProposalDetail from './converge/converge/ProposalDetail.svelte';
     import Header from './converge/converge/Header.svelte';
+    import DeliberationsForDeliberator from './converge/converge/DeliberationsForDeliberator.svelte';
   
   let client: AppAgentClient | undefined;
   let loading = true;
@@ -54,6 +55,8 @@
       <ProposalDetail proposalHash={currentHash} />
   {:else if currentView == "create-deliberation"}
     <CreateDeliberation />
+  {:else if currentView == "dashboard"}
+    <DeliberationsForDeliberator deliberator={client.myPubKey} />
   {:else}
     <div id="content" style="display: flex; flex-direction: column; flex: 1;">
       <AllDeliberations />

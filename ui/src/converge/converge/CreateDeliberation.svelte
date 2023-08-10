@@ -45,6 +45,19 @@ async function createDeliberation() {
       payload: deliberationEntry,
     });
     dispatch('deliberation-created', { deliberationHash: record.signed_action.hashed.hash });
+
+    // join deliberation
+    await client.callZome({
+      cap_secret: null,
+      role_name: 'converge',
+      zome_name: 'converge',
+      fn_name: 'add_deliberation_for_deliberator',
+      payload: {
+        base_deliberator: client.myPubKey,
+        target_deliberation_hash: record.signed_action.hashed.hash
+      },
+    });
+    
     navigate("deliberation", record.signed_action.hashed.hash)
   } catch (e) {
     errorSnackbar.labelText = `Error creating the deliberation: ${e.data.data}`;

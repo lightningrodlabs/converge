@@ -10,6 +10,7 @@ import '@material/mwc-slider';
 import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
+    import { navigate } from '../../store';
 
 const dispatch = createEventDispatcher();
 
@@ -28,6 +29,7 @@ let support: number | undefined;
 let openSupport = false;
 let addSupportPercentage = 0;
 let mySupport;
+const scoringLevel = 4;
 
 let errorSnackbar: Snackbar;
   
@@ -95,7 +97,7 @@ async function fetchSupport() {
       sponsored = supporters.some(item => item["agent"] === client.myPubKey.join(","));
       if (sponsored) {
         mySupport = supporters.find(item => item["agent"] === client.myPubKey.join(","))["tag"];
-        addSupportPercentage = mySupport * 10;
+        addSupportPercentage = mySupport * scoringLevel;
       }
     }
   } catch (e) {
@@ -135,7 +137,7 @@ async function addSupport() {
       payload: {
         base_supporter: client.myPubKey,
         target_criterion_hash: criterionHash,
-        percentage: String(addSupportPercentage / 10),
+        percentage: String(addSupportPercentage / scoringLevel),
       },
     });
     // openSupport = false;
@@ -184,7 +186,7 @@ async function deleteCriterion() {
 
   {#if support}
   {#each Array.from({ length: 35 * support / supporters.length }) as _, index}
-    <div class="progress-line" style="opacity: {support / supporters.length}"></div>
+    <div class="progress-line" style="opacity: {support / supporters.length}; background-color: blue;"></div>
   {/each}
   {/if}
   </div>
@@ -227,12 +229,13 @@ async function deleteCriterion() {
         </div>
         <div style="display: flex; flex-direction: row;  font-size: .8em">
         <!-- <input type="number" bind:value={support} /> -->
-          <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative;">MILDLY
+          <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative;">NOT
           IMPORTANT</span>
           <mwc-slider
+            style="--mdc-theme-primary: blue;"
             on:change={e => {
               addSupportPercentage = e.detail.value
-              mySupport = addSupportPercentage / 10;
+              mySupport = addSupportPercentage / scoringLevel;
               if (addSupportPercentage == 0) {
                 removeSupport()
               } else {
@@ -247,7 +250,7 @@ async function deleteCriterion() {
             discrete
             class="star-slider"
             step="1"
-            max="10"
+            max="4"
             >
           </mwc-slider>
           <span style="white-space: pre-line; text-align: center; top: 12px; position: relative;">VERY
@@ -268,16 +271,17 @@ async function deleteCriterion() {
           <span style="white-space: pre-line; opacity: 0;">Importance to you:</span>
         </div>
         <div style="display: flex; flex-direction: row; font-size: .8em">
-          <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative; opacity: 0">MILDLY
+          <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative; opacity: 0">NOT
             IMPORTANT</span>
           <mwc-slider
+          style="--mdc-theme-primary: blue;"
           on:mouseover={e => {
             openSupport = true
           }}
-          value={mySupport * 10}
+          value={mySupport * scoringLevel}
           class="star-slider"
           step="1"
-          max="10"
+          max="4"
           >
         </mwc-slider>
         <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative; opacity: 0;">VERY
@@ -288,9 +292,10 @@ async function deleteCriterion() {
           <span style="white-space: pre-line;">How important is this criterion to you?</span>
         </div>
         <div style="display: flex; flex-direction: row; font-size: .8em">
-          <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative; opacity: 0">MILDLY
+          <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative; opacity: 0">NOT
             IMPORTANT</span>
           <mwc-slider
+          style="--mdc-theme-primary: blue;"
           on:mouseover={e => {
             console.log('hi')
             openSupport = true
@@ -299,7 +304,7 @@ async function deleteCriterion() {
           value={addSupportPercentage}
           class="star-slider"
           step="1"
-          max="10"
+          max="4"
           >
         </mwc-slider>
         <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative; opacity: 0;">VERY

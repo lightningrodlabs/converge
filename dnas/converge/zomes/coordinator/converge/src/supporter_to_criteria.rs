@@ -10,10 +10,9 @@ pub struct AddCriterionForSupporterInput {
 pub fn add_criterion_for_supporter(
     input: AddCriterionForSupporterInput,
 ) -> ExternResult<()> {
-    let tag_str = input.percentage; // This could be a &str or String
-    let tag_bytes = tag_str.as_bytes().to_vec(); // Convert to byte array
-    let tag = LinkTag(tag_bytes); // Create the LinkTag
-
+    let tag_str = input.percentage;
+    let tag_bytes = tag_str.as_bytes().to_vec();
+    let tag = LinkTag(tag_bytes);
     create_link(
         input.target_criterion_hash,
         input.base_supporter,

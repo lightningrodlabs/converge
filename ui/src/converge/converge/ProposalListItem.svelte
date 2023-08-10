@@ -15,7 +15,9 @@ import '@material/mwc-linear-progress';
 const dispatch = createEventDispatcher();
 
 export let proposalHash: ActionHash;
-let deliberationHash: ActionHash | undefined;
+export let deliberationHash: ActionHash | undefined;
+export let allProposalScores;
+// let deliberationHash: ActionHash | undefined;
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
@@ -25,17 +27,25 @@ let error: any = undefined;
 let record: Record | undefined;
 let proposal: Proposal | undefined;
 
+let convergence;
+let maxWeight;
+let bestScoreKey;
 
 let errorSnackbar: Snackbar;
   
 $:  error, loading, record, proposal;
+
+$: if (convergence && maxWeight) {
+  allProposalScores[proposalHash.join(',')] = convergence / maxWeight;
+  bestScoreKey = Object.keys(allProposalScores).reduce((a, b) => allProposalScores[a] > allProposalScores[b] ? a : b);
+}
 
 onMount(async () => {
   if (proposalHash === undefined) {
     throw new Error(`The proposalHash input is required for the ProposalDetail element`);
   }
   await fetchProposal();
-  await fetchDeliberation();
+  // await fetchDeliberation();
 });
 
 async function fetchProposal() {
@@ -79,22 +89,22 @@ async function deleteProposal() {
   }
 }
 
-async function fetchDeliberation() {
-  try {
-    let records = await client.callZome({
-      cap_secret: null,
-      role_name: 'converge',
-      zome_name: 'converge',
-      fn_name: 'get_deliberations_for_proposal',
-      payload: proposalHash,
-    });
-    if (records && records.length) {
-      deliberationHash = records[0].signed_action.hashed.hash
-    }
-  } catch (e: any) {
-    error = e
-  }
-}
+// async function fetchDeliberation() {
+//   try {
+//     let records = await client.callZome({
+//       cap_secret: null,
+//       role_name: 'converge',
+//       zome_name: 'converge',
+//       fn_name: 'get_deliberations_for_proposal',
+//       payload: proposalHash,
+//     });
+//     if (records && records.length) {
+//       deliberationHash = records[0].signed_action.hashed.hash
+//     }
+//   } catch (e: any) {
+//     error = e
+//   }
+// }
 </script>
 
 <mwc-snackbar bind:this={errorSnackbar} leading>
@@ -108,19 +118,23 @@ async function fetchDeliberation() {
 <span>Error fetching the proposal: {error.data.data}</span>
 {:else}
 
-<div class="criterion">
+<div class="criterion list-item-mini">
   <div style="display: flex; flex-direction: column; font-size: .8em">
     <div class="vertical-progress-bar-container">
   
-    {#if true}
-    {#each Array.from({ length: 35 * 10 / 16 }) as _, index}
-      <div class="progress-line" style="opacity: {10 / 16}"></div>
-    {/each}
+    {#if convergence && maxWeight}
+    <!-- {#each Array.from({ length: 35 * 10 / 16 }) as _, index}
+      <div class="progress-line" style="opacity: {10 / 16}; background-color: rgb(254, 18, 18)"></div>
+    {/each} -->
+    <div class="vertical-progress-bar-container" style="height: 100px">
+      {#each Array.from({ length: 35 * convergence / maxWeight }) as _, index}
+        <div class="progress-line" style="opacity: {convergence / maxWeight}; background-color: red"></div>
+      {/each}
+    </div>
     {/if}
     </div>
   </div>
 <div class="two-sides">
-
   <div style="display: flex; flex: 1; flex-direction: column">
     <div style="display: flex; flex-direction: row; margin-bottom: 16px">
       <span style="white-space: pre-line">{ proposal.title }</span>
@@ -135,15 +149,25 @@ async function fetchDeliberation() {
     </div>
 
   </div>
-  <!-- <div style="display: flex; flex-direction: column">
-    <div style="display: flex; flex-direction: row; margin-bottom: 16px; font-size: .8em">
+  <div style="display: flex; flex-direction: column">
+    
+    {#if bestScoreKey == proposalHash.join(',')}
+      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-right: 16px">
+        <mwc-icon-button icon="#1" style="color: red;"></mwc-icon-button>
+      </div>
+    {/if}
+
+    <!-- <div style="display: flex; flex-direction: row; margin-bottom: 16px; font-size: .8em">
       <button on:click={() => console.log("clicked")}>Evaluate</button>
-    </div>
-  </div> -->
+    </div> -->
+  </div>
   <!-- <div> -->
     <!-- <mwc-linear-progress progress="0.5"></mwc-linear-progress> -->
   <!-- </div> -->
 </div>
 </div>
+
+<RateCriteria bind:convergence bind:maxWeight deliberationHash={deliberationHash} proposalHash={proposalHash} display={false} />
+
 {/if}
 

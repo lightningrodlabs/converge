@@ -4,7 +4,7 @@ import '@material/mwc-circular-progress';
 import { decode } from '@msgpack/msgpack';
 import type { Record, ActionHash, AppAgentClient, EntryHash, AgentPubKey, DnaHash } from '@holochain/client';
 import { clientContext } from '../../contexts';
-import type { Deliberation } from './types';
+import type { Deliberation, ConvergeSignal } from './types';
 import FaSort from 'svelte-icons/fa/FaSort.svelte';
 import FaSearch from 'svelte-icons/fa/FaSearch.svelte';
 import '@material/mwc-circular-progress';
@@ -31,6 +31,7 @@ let error: any = undefined;
 
 let record: Record | undefined;
 let deliberation: Deliberation | undefined;
+let deliberators: String[] | undefined;
 
 let editing = false;
 let criterionFormPopup = false;
@@ -58,6 +59,13 @@ onMount(async () => {
     throw new Error(`The deliberationHash input is required for the DeliberationDetail element`);
   }
   await fetchDeliberation();
+
+  client.on('signal', signal => {
+    if (signal.zome_name !== 'converge') return;
+    const payload = signal.payload as ConvergeSignal;
+    if (!['LinkCreated', 'LinkDeleted'].includes(payload.type)) return;
+    fetchDeliberation();
+  });
 });
 
 async function fetchDeliberation() {
@@ -94,6 +102,19 @@ async function fetchDeliberation() {
     error = e;
   }
 
+  try {
+    const records = await client.callZome({
+      cap_secret: null,
+      role_name: 'converge',
+      zome_name: 'converge',
+      fn_name: 'get_deliberators_for_deliberation',
+      payload: deliberationHash,
+    });
+    deliberators = records.map((record: AgentPubKey) => record.join(','));
+  } catch (e) {
+    error = e;
+  }
+
   loading = false;
 }
 
@@ -112,6 +133,46 @@ async function deleteDeliberation() {
     errorSnackbar.show();
   }
 }
+
+async function joinDeliberation() {
+  try {
+    await client.callZome({
+      cap_secret: null,
+      role_name: 'converge',
+      zome_name: 'converge',
+      fn_name: 'add_deliberation_for_deliberator',
+      payload: {
+        base_deliberator: client.myPubKey,
+        target_deliberation_hash: deliberationHash
+      },
+    });
+    dispatch('deliberation-joined', { deliberationHash: deliberationHash });
+  } catch (e: any) {
+    errorSnackbar.labelText = `Error joining the deliberation: ${e.data.data}`;
+    errorSnackbar.show();
+  }
+}
+
+async function leaveDeliberation() {
+  try {
+    await client.callZome({
+      cap_secret: null,
+      role_name: 'converge',
+      zome_name: 'converge',
+      fn_name: 'remove_deliberation_for_deliberator',
+      payload: {
+        base_deliberator: client.myPubKey,
+        target_deliberation_hash: deliberationHash
+      },
+    });
+    dispatch('deliberation-left', { deliberationHash: deliberationHash });
+    // navigate('')
+  } catch (e: any) {
+    errorSnackbar.labelText = `Error leaving the deliberation: ${e.data.data}`;
+    errorSnackbar.show();
+  }
+}
+
 </script>
 
 <mwc-snackbar bind:this={errorSnackbar} leading>
@@ -158,11 +219,30 @@ async function deleteDeliberation() {
     <div style="margin-right: 4px"><strong>Description</strong></div>
     <p style="white-space: pre-line">{ deliberation.description }</p>
   </div> -->
-
+  
   <!-- <div class="deliberation-section" style="display: flex; flex-direction: row; margin-bottom: 16px">
     <span style="margin-right: 4px"><strong>Settings:</strong></span>
     <span style="white-space: pre-line">{ deliberation.settings }</span>
   </div> -->
+  
+  <!-- <div class="deliberation-section"> -->
+    <div style="display: flex; flex-direction: row; width: fit-content;">
+
+      {deliberators.length} 
+      {#if deliberators.length == 1} deliberator {:else} deliberators {/if}
+    </div>
+
+    <div style="display: flex; flex-direction: row; width: fit-content;">
+      {#if deliberators.includes(client.myPubKey.join(','))}
+      <button
+      style="width: 100px;" on:click={leaveDeliberation}>Leave</button>
+      {:else}
+        <button on:click={joinDeliberation}>Join</button>
+      {/if}
+
+    </div>
+    
+  <!-- </div> -->
 
   <div class="deliberation-section">
     <mwc-tab-bar>

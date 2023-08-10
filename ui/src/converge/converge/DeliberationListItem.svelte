@@ -169,9 +169,9 @@ async function deleteDeliberation() {
     {/if}
     {#if proposals}
       {#if proposals.length == 1}
-        <span>{proposals.length} | proposal</span>
+        <span>| {proposals.length} proposal</span>
       {:else}
-        <span>{proposals.length} | proposals</span>
+        <span>| {proposals.length} proposals</span>
       {/if}
     {/if}
     </div>

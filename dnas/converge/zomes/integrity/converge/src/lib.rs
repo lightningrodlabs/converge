@@ -1,3 +1,5 @@
+pub mod deliberator_to_deliberations;
+pub use deliberator_to_deliberations::*;
 pub mod objector_to_criteria;
 pub use objector_to_criteria::*;
 pub mod proposal_to_criteria;
@@ -40,6 +42,8 @@ pub enum LinkTypes {
     CriterionToObjectors,
     AllCriteria,
     AllProposals,
+    DeliberatorToDeliberations,
+    DeliberationToDeliberators,
 }
 #[hdk_extern]
 pub fn genesis_self_check(
@@ -294,6 +298,22 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         tag,
                     )
                 }
+                LinkTypes::DeliberatorToDeliberations => {
+                    validate_create_link_deliberator_to_deliberations(
+                        action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::DeliberationToDeliberators => {
+                    validate_create_link_deliberation_to_deliberators(
+                        action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
             }
         }
         FlatOp::RegisterDeleteLink {
@@ -415,6 +435,24 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 }
                 LinkTypes::AllProposals => {
                     validate_delete_link_all_proposals(
+                        action,
+                        original_action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::DeliberatorToDeliberations => {
+                    validate_delete_link_deliberator_to_deliberations(
+                        action,
+                        original_action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::DeliberationToDeliberators => {
+                    validate_delete_link_deliberation_to_deliberators(
                         action,
                         original_action,
                         base_address,
@@ -751,6 +789,22 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 tag,
                             )
                         }
+                        LinkTypes::DeliberatorToDeliberations => {
+                            validate_create_link_deliberator_to_deliberations(
+                                action,
+                                base_address,
+                                target_address,
+                                tag,
+                            )
+                        }
+                        LinkTypes::DeliberationToDeliberators => {
+                            validate_create_link_deliberation_to_deliberators(
+                                action,
+                                base_address,
+                                target_address,
+                                tag,
+                            )
+                        }
                     }
                 }
                 OpRecord::DeleteLink { original_action_hash, base_address, action } => {
@@ -886,6 +940,24 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         LinkTypes::AllProposals => {
                             validate_delete_link_all_proposals(
+                                action,
+                                create_link.clone(),
+                                base_address,
+                                create_link.target_address,
+                                create_link.tag,
+                            )
+                        }
+                        LinkTypes::DeliberatorToDeliberations => {
+                            validate_delete_link_deliberator_to_deliberations(
+                                action,
+                                create_link.clone(),
+                                base_address,
+                                create_link.target_address,
+                                create_link.tag,
+                            )
+                        }
+                        LinkTypes::DeliberationToDeliberators => {
+                            validate_delete_link_deliberation_to_deliberators(
                                 action,
                                 create_link.clone(),
                                 base_address,

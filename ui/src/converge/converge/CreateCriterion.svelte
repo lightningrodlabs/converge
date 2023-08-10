@@ -22,8 +22,9 @@ export let deliberationHash: ActionHash;
 let title: string = '';
 
 let errorSnackbar: Snackbar;
+let supportPercentage = 0;
 
-$: title, criterionFormPopup;
+$: title, criterionFormPopup, supportPercentage;
 $: isCriterionValid = true && title !== '';
 
 onMount(() => {
@@ -61,30 +62,35 @@ async function createCriterion() {
       payload: criterionEntry,
     });
     criterionHash = record.signed_action.hashed.hash;
+    title = '';
     dispatch('criterion-created', { criterionHash: record.signed_action.hashed.hash });
   } catch (e) {
     errorSnackbar.labelText = `Error creating the criterion: ${e.data.data}`;
     errorSnackbar.show();
   }
 
-  // try {
-  //   let record = await client.callZome({
-  //     cap_secret: null,
-  //     role_name: 'converge',
-  //     zome_name: 'converge',
-  //     fn_name: 'add_criterion_for_supporter',
-  //     payload: {
-  //       base_supporter: client.myPubKey,
-  //       target_criterion_hash: criterionHash,
-  //       percentage: "1"
-  //     },
-  //   });
-  //   if (record) {
-  //     console.log(record)
-  //   }
-  // } catch (e) {
-  //   console.log(e);
-  // }
+
+  if (supportPercentage > 0) {
+    try {
+      let record = await client.callZome({
+        cap_secret: null,
+        role_name: 'converge',
+        zome_name: 'converge',
+        fn_name: 'add_criterion_for_supporter',
+        payload: {
+          base_supporter: client.myPubKey,
+          target_criterion_hash: criterionHash,
+          percentage: String(supportPercentage / 4),
+        },
+      });
+      if (record) {
+        console.log(record)
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
   dismissPopup()
 }
 
@@ -100,9 +106,34 @@ async function createCriterion() {
         
 
         <div style="margin-bottom: 16px">
-          <mwc-textarea style="width: 30vw; height: 20vh" outlined label="Title" value={ title } on:input={e => { title = e.target.value; } } required></mwc-textarea>          
+          <mwc-textarea style="width: 35vw; height: 20vh" outlined label="Title" value={ title } on:input={e => { title = e.target.value; } } required></mwc-textarea>          
         </div>
                   
+        <div style="display: flex; flex-direction: column; width: 35vw; margin-bottom: 16px">
+          <div style="text-align: center; flex-direction: row; font-size: 1em">
+            <span style="white-space: pre-line;">How important is this criterion to you?</span>
+          </div>
+          <div style="display: flex; flex-direction: row;  font-size: .8em">
+          <!-- <input type="number" bind:value={support} /> -->
+            <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative;">NOT
+            IMPORTANT</span>
+            <mwc-slider
+              on:change={e => {
+                supportPercentage = e.detail.value;
+                console.log(supportPercentage)
+              }}
+              value={0}
+              withTickMarks
+              discrete
+              class="star-slider"
+              step="1"
+              max="4"
+              >
+            </mwc-slider>
+            <span style="white-space: pre-line; text-align: center; top: 12px; position: relative;">VERY
+              IMPORTANT</span>
+          </div>
+        </div>
 
         <div style="display: flex; flex-direction: row">
           <mwc-button
