@@ -12,11 +12,14 @@
   import '@material/mwc-icon-button';
   import { navigate } from '../../store';
     import ObjectionsForCriteria from './ObjectionsForCriteria.svelte';
+    import CreateAlternative from './CreateAlternative.svelte';
+    import CreateCriterion from './CreateCriterion.svelte';
   
   const dispatch = createEventDispatcher();
   
   export let criterionHash: ActionHash;
   export let criterionPopupBoolean: boolean;
+  export let deliberationHash: ActionHash;
   
   let client: AppAgentClient = (getContext(clientContext) as any).getClient();
   
@@ -193,9 +196,9 @@
   }
   </script>
   
-  {#if criterionPopupBoolean}
-  <div class="backdrop">
-    <div class="popup-container">
+  {#if false}
+  <!-- <div class="backdrop">
+    <div class="popup-container"> -->
 
       <button on:click={() => {criterionPopupBoolean = false;}}>
         <mwc-icon-button icon="x"></mwc-icon-button>
@@ -253,38 +256,47 @@
       
         </div>
 
-    </div>
-</div>
+        </div>
+      </div>
+      {/if}
+
 {/if}
+
+{#if criterionPopupBoolean}
 
 <!-- ACTIVITY STARTS -->
 <div class="deliberation-section">
+  <mwc-button on:click={()=>{}}>Add Alternative</mwc-button>
   <mwc-tab-bar style="--mdc-theme-primary: blue; margin-bottom: 10px;">
-    <mwc-tab on:click={() => {activeTab = "all"}} label="All responses"></mwc-tab>
+    <!-- <mwc-tab on:click={() => {activeTab = "all"}} label="All responses"></mwc-tab> -->
     <mwc-tab on:click={() => {activeTab = "objections"}}  label="Objections"></mwc-tab>
     <mwc-tab on:click={() => {activeTab = "alternatives"}}  label="Alternatives"></mwc-tab>
   </mwc-tab-bar>
+  
+  
+  <!-- COMMENTS STARTS -->
+  {#if activeTab == "objections"}
+  <ObjectionsForCriteria {criterionHash}></ObjectionsForCriteria>
+  {:else if activeTab == "alternatives"}
+  <CreateAlternative {criterionHash} {deliberationHash}></CreateAlternative>
+  {/if}
+  <div style="margin-bottom: 16px">
+    <mwc-textarea style="width: 35vw; height: 20vh" outlined label="Comment" on:input={e => { objection = e.target.value; console.log(objection)}} required></mwc-textarea>          
+  </div>
+  <div style="margin-bottom: 16px">
+    <!-- check box is this an objection -->
+    <!-- <mwc-formfield label="Is your comment an objection to the criterion?">
+      <mwc-checkbox></mwc-checkbox>
+    </mwc-formfield> -->
+    <label>
+      <mwc-switch name="choice"></mwc-switch> Is your comment an objection to the criterion?
+    </label>
+    
+    <mwc-button on:click = {() => {addObjection()}}>Submit</mwc-button>
+  </div>
+  
+  <!-- </div>
+  </div> -->
 </div>
-
-
-<!-- COMMENTS STARTS -->
-<ObjectionsForCriteria {criterionHash}></ObjectionsForCriteria>
-
-<div style="margin-bottom: 16px">
-  <mwc-textarea style="width: 35vw; height: 20vh" outlined label="Comment" on:input={e => { objection = e.target.value; console.log(objection)}} required></mwc-textarea>          
-</div>
-<div style="margin-bottom: 16px">
-  <!-- check box is this an objection -->
-  <!-- <mwc-formfield label="Is your comment an objection to the criterion?">
-    <mwc-checkbox></mwc-checkbox>
-  </mwc-formfield> -->
-  <label>
-    <mwc-switch name="choice"></mwc-switch> Is your comment an objection to the criterion?
-  </label>
-
-  <mwc-button on:click = {() => {addObjection()}}>Submit</mwc-button>
-</div>
-
-</div>
-</div>
-{/if}
+  {/if}
+  

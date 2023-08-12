@@ -118,7 +118,7 @@ async function deleteProposal() {
 <span>Error fetching the proposal: {error.data.data}</span>
 {:else}
 
-<div class="criterion list-item-mini">
+<div class="outlined-item list-item-mini">
   <div style="display: flex; flex-direction: column; font-size: .8em">
     <div class="vertical-progress-bar-container">
   

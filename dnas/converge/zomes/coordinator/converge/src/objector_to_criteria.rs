@@ -13,12 +13,6 @@ pub fn add_criterion_for_objector(
     let tag_str = input.comment;
     let tag_bytes = tag_str.as_bytes().to_vec();
     let tag = LinkTag(tag_bytes);
-    // create_link(
-    //     input.base_objector.clone(),
-    //     input.target_criterion_hash.clone(),
-    //     LinkTypes::ObjectorToCriteria,
-    //     tag,
-    // )?;
     create_link(
         input.target_criterion_hash,
         input.base_objector,
@@ -44,7 +38,6 @@ pub fn get_criteria_for_objector(objector: AgentPubKey) -> ExternResult<Vec<Reco
         .collect();
     Ok(records)
 }
-
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AgentPubKeyWithTag {
     pub agent: AgentPubKey,

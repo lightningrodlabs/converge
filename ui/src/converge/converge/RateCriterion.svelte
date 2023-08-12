@@ -241,7 +241,7 @@ async function addRating() {
 {:else}
 
 
-<div class="criterion">
+<div class="outlined-item" style="border-radius: 0;">
   <!-- <div style="display: flex; flex-direction: column; font-size: .8em">
     <div class="vertical-progress-bar-container">
   

@@ -15,6 +15,7 @@ import CriterionPopup from './CriterionPopup.svelte';
 
 const dispatch = createEventDispatcher();
 
+export let deliberationHash: ActionHash;
 export let criterionHash: ActionHash;
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
@@ -170,8 +171,6 @@ async function deleteCriterion() {
 }
 </script>
 
-{#if true}
-
 <mwc-snackbar bind:this={errorSnackbar} leading>
 </mwc-snackbar>
 {#if loading}
@@ -321,14 +320,19 @@ async function deleteCriterion() {
 
   <!-- OBJECT BUTTON -->
   <div style="display: flex; flex-direction: column; font-size: .8em">
-    <button style="height: 100%;" on:click={() => {criterionPopupBoolean = true; console.log(criterionPopupBoolean)}}>
-      <mwc-icon-button icon="d"></mwc-icon-button>
+    <button style="height: 100%;" on:click={() => {criterionPopupBoolean = !criterionPopupBoolean; console.log(criterionPopupBoolean)}}>
+      {#if criterionPopupBoolean}
+      <mwc-icon-button icon="^"></mwc-icon-button>
+      {:else}
+      <mwc-icon-button icon="v"></mwc-icon-button>
+      {/if}
     </button>
   </div>
 
 </div>
 </div>
-{/if}
-<CriterionPopup {criterionHash} bind:criterionPopupBoolean />
-
+<!-- <div style="display: flex; flex-direction: row;"> -->
+  <!-- hi -->
+  <CriterionPopup {criterionHash} {deliberationHash} bind:criterionPopupBoolean />
+<!-- </div> -->
 {/if}

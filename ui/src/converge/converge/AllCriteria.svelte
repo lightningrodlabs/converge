@@ -60,8 +60,8 @@ async function fetchCriteria() {
 {:else}
 <div style="display: flex; flex-direction: column">
   {#each hashes as hash}
-    <div style="margin-bottom: 8px;">
-      <Criterion criterionHash={hash}  on:criterion-deleted={() => fetchCriteria()}></Criterion>
+    <div class="criterion-outer" style="margin-bottom: 8px;">
+      <Criterion criterionHash={hash} {deliberationHash}  on:criterion-deleted={() => fetchCriteria()}></Criterion>
     </div>
   {/each}
 </div>

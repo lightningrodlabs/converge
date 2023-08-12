@@ -112,7 +112,7 @@ body {
   height: 44px;
 }
 
-.criterion {
+.outlined-item {
   border: 1px solid gray;
   border-radius: 5px;
   display: flex; 
@@ -121,7 +121,21 @@ body {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+.criterion {
+  display: flex; 
+  flex: 1;
+  min-height: 100px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   /* max-width: 600px; */
+}
+
+.criterion-outer {
+  border: 1px solid gray;
+  border-radius: 5px;
 }
 
 .list-item-mini {
