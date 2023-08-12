@@ -32,11 +32,12 @@
   let addSupportPercentage = 0;
   let mySupport;
   let activeTab;
+  let objection;
   const scoringLevel = 4;
   
   let errorSnackbar: Snackbar;
     
-  $:  error, loading, record, criterion, supporters, sponsored, criterionPopupBoolean;
+  $:  error, loading, record, criterion, supporters, sponsored, criterionPopupBoolean, objection;
   
   onMount(async () => {
     if (criterionHash === undefined) {
@@ -169,6 +170,27 @@
       errorSnackbar.show();
     }
   }
+
+  async function addObjection() {
+    console.log(objection)
+    try {
+      const res = await client.callZome({
+        cap_secret: null,
+        role_name: 'converge',
+        zome_name: 'converge',
+        fn_name: 'add_criterion_for_objector',
+        payload: {
+          base_objector: client.myPubKey,
+          target_criterion_hash: criterionHash,
+          comment: objection
+        },
+      });
+      console.log(res)
+    } catch (e) {
+      error = e;
+    }
+    loading = false;
+  }
   </script>
   
   {#if criterionPopupBoolean}
@@ -190,7 +212,7 @@
       {:else}
       
       <div class="criterion">
-      <div style="display: flex; flex-direction: column; font-size: .8em">
+      <!-- <div style="display: flex; flex-direction: column; font-size: .8em">
         <div class="vertical-progress-bar-container">
       
         {#if support}
@@ -199,7 +221,7 @@
         {/each}
         {/if}
         </div>
-      </div>
+      </div> -->
       <div class="two-sides">
         <div style="display: flex; flex-direction: column">
           <!-- <div style="display: flex; flex-direction: row">
@@ -230,101 +252,6 @@
           {/if}
       
         </div>
-      
-        <div style="display: flex; flex-direction: column; margin-bottom: 16px; font-size: .8em">
-            {#if openSupport}
-              <div style="text-align: center; flex-direction: row; font-size: 1em">
-                <span style="white-space: pre-line;">How important is this criterion to you?</span>
-              </div>
-              <div style="display: flex; flex-direction: row;  font-size: .8em">
-              <!-- <input type="number" bind:value={support} /> -->
-                <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative;">NOT
-                IMPORTANT</span>
-                <mwc-slider
-                  style="--mdc-theme-primary: blue;"
-                  on:change={e => {
-                    addSupportPercentage = e.detail.value
-                    mySupport = addSupportPercentage / scoringLevel;
-                    if (addSupportPercentage == 0) {
-                      removeSupport()
-                    } else {
-                      addSupport()
-                    }
-                  }}
-                  on:mouseleave={e => {
-                    openSupport = false
-                  }}
-                  value={addSupportPercentage}
-                  withTickMarks
-                  discrete
-                  class="star-slider"
-                  step="1"
-                  max="4"
-                  >
-                </mwc-slider>
-                <span style="white-space: pre-line; text-align: center; top: 12px; position: relative;">VERY
-                  IMPORTANT</span>
-              </div>
-              <!-- <div style="text-align: center; flex-direction: row; mfont-size: .8em"> -->
-                <!-- <button on:click={() => openSupport = false}>Cancel</button> -->
-                <!-- <mwc-button dense outlined on:click={() => openSupport = false}>Cancel</mwc-button> -->
-                
-                <!-- <button on:click={() => addSupport()}>Save</button> -->
-                <!-- <mwc-button class="custom-button" dense raised on:click={() => addSupport()}>Save</mwc-button> -->
-              <!-- </div> -->
-            {:else if sponsored}
-              <!-- <div style="display: flex; flex-direction: row; margin-bottom: 16px; font-size: .8em">
-                <mwc-button dense outlined on:click={() => removeSupport()}>Remove Support</mwc-button>
-              </div> -->
-              <div style="text-align: center; flex-direction: row; font-size: 1em;">
-                <span style="white-space: pre-line; opacity: 0;">Importance to you:</span>
-              </div>
-              <div style="display: flex; flex-direction: row; font-size: .8em">
-                <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative; opacity: 0">NOT
-                  IMPORTANT</span>
-                <mwc-slider
-                style="--mdc-theme-primary: blue;"
-                on:mouseover={e => {
-                  openSupport = true
-                }}
-                value={mySupport * scoringLevel}
-                class="star-slider"
-                step="1"
-                max="4"
-                >
-              </mwc-slider>
-              <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative; opacity: 0;">VERY
-                IMPORTANT</span>
-              </div>
-            {:else}
-              <div style="text-align: center; flex-direction: row; font-size: 1em; opacity: 0;">
-                <span style="white-space: pre-line;">How important is this criterion to you?</span>
-              </div>
-              <div style="display: flex; flex-direction: row; font-size: .8em">
-                <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative; opacity: 0">NOT
-                  IMPORTANT</span>
-                <mwc-slider
-                style="--mdc-theme-primary: blue;"
-                on:mouseover={e => {
-                  console.log('hi')
-                  openSupport = true
-                }}
-                disabled=true
-                value={addSupportPercentage}
-                class="star-slider"
-                step="1"
-                max="4"
-                >
-              </mwc-slider>
-              <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative; opacity: 0;">VERY
-                IMPORTANT</span>
-                <!-- <button on:click={() => openSupport = true}>Add Support</button> -->
-                <!-- <mwc-button class="custom-button" dense outlined on:click={() => openSupport = true}>Add support</mwc-button> -->
-      
-              <!-- <button on:click={() => addSupport()}>Add Support</button> -->
-              </div>
-            {/if}
-        </div>
 
     </div>
 </div>
@@ -342,6 +269,21 @@
 
 <!-- COMMENTS STARTS -->
 <ObjectionsForCriteria {criterionHash}></ObjectionsForCriteria>
+
+<div style="margin-bottom: 16px">
+  <mwc-textarea style="width: 35vw; height: 20vh" outlined label="Comment" on:input={e => { objection = e.target.value; console.log(objection)}} required></mwc-textarea>          
+</div>
+<div style="margin-bottom: 16px">
+  <!-- check box is this an objection -->
+  <!-- <mwc-formfield label="Is your comment an objection to the criterion?">
+    <mwc-checkbox></mwc-checkbox>
+  </mwc-formfield> -->
+  <label>
+    <mwc-switch name="choice"></mwc-switch> Is your comment an objection to the criterion?
+  </label>
+
+  <mwc-button on:click = {() => {addObjection()}}>Submit</mwc-button>
+</div>
 
 </div>
 </div>

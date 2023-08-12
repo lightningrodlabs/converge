@@ -17,6 +17,7 @@ let hashes: Array<ActionHash> | undefined;
 
 let loading = true;
 let error: any = undefined;
+let objections;
 
 $: hashes, loading, error;
 
@@ -33,7 +34,7 @@ onMount(async () => {
       fn_name: 'get_objectors_for_criterion',
       payload: criterionHash,
     });
-    hashes = records.map(r => r.signed_action.hashed.hash);
+    objections = records;
   } catch (e) {
     error = e;
   }
@@ -43,9 +44,11 @@ onMount(async () => {
     if (signal.zome_name !== 'converge') return;
     const payload = signal.payload as ConvergeSignal;
     if (payload.type !== 'LinkCreated') return;
-    if (payload.link_type !== 'CriterionToObjectors') return;
+    console.log(payload.link_type)
+    if (payload.link_type != 'CriterionToObjectors') return;
+    console.log(payload)
 
-    hashes = [...hashes, payload.action.hashed.content.target_address];
+    // hashes = [...hashes, payload.action.hashed.content.target_address];
   });
 });
 
@@ -57,28 +60,15 @@ onMount(async () => {
 </div>
 {:else if error}
 <span>Error fetching criteria: {error.data.data}.</span>
-{:else if hashes.length === 0}
+{:else if objections.length === 0}
 <span>No Objections found for this criteria.</span>
 {:else}
 <div style="display: flex; flex-direction: column">
-  {#each hashes as hash}
+  {#each objections as objection}
     <div style="margin-bottom: 8px;">
-      {hash}
+      {JSON.stringify(objection.tag)}
       <!-- <CriterionDetail criterionHash={hash}></CriterionDetail> -->
     </div>
   {/each}
 </div>
 {/if}
-
-<div style="margin-bottom: 16px">
-  <mwc-textarea style="width: 35vw; height: 20vh" outlined label="Comment" on:input={e => { title = e.target.value; } } required></mwc-textarea>          
-</div>
-<div style="margin-bottom: 16px">
-  <!-- check box is this an objection -->
-  <!-- <mwc-formfield label="Is your comment an objection to the criterion?">
-    <mwc-checkbox></mwc-checkbox>
-  </mwc-formfield> -->
-  <label>
-    <mwc-switch name="choice"></mwc-switch> Is your comment an objection to the criterion?
-  </label>
-</div>
