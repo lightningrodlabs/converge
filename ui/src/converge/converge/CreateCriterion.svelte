@@ -4,11 +4,14 @@ import type { AppAgentClient, Record, EntryHash, AgentPubKey, ActionHash, DnaHas
 import { clientContext } from '../../contexts';
 import type { Criterion, CreateCriterionInput } from './types';
 import '@material/mwc-button';
+import { decode } from '@msgpack/msgpack';
 import '@material/mwc-snackbar';
 import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-textfield';
 
 export let criterionFormPopup; // Prop to control popup visibility
+export let alternativeTo: ActionHash;
+let alternativeToFull: Criterion;
 function dismissPopup() {
   criterionFormPopup = false; // Set active to false to hide the popup
 }
@@ -41,7 +44,26 @@ onMount(() => {
     // return () => {
     //   document.removeEventListener('click', handleOutsideClick);
     // };
+    fetchAlternative();
   });
+
+async function fetchAlternative() {
+  let record
+  try {
+    record = await client.callZome({
+      cap_secret: null,
+      role_name: 'converge',
+      zome_name: 'converge',
+      fn_name: 'get_criterion',
+      payload: alternativeTo,
+    });
+    if (record) {
+      alternativeToFull = decode((record.entry as any).Present.entry) as Criterion;
+    }
+  } catch (e) {
+    console.log(e);
+  }
+}
 
 async function createCriterion() {  
   const criterionEntry: CreateCriterionInput = { 
@@ -103,6 +125,7 @@ async function createCriterion() {
       </mwc-snackbar>
       <div style="display: flex; flex-direction: column">
         <h2>Add a new criterion</h2>
+        <h3>Alternative to {alternativeToFull.title}</h3>
         
 
         <div style="margin-bottom: 16px">

@@ -3,8 +3,10 @@
   import '@material/mwc-circular-progress';
   import type { Record, EntryHash, ActionHash, AgentPubKey, AppAgentClient, NewEntryAction } from '@holochain/client';
   import { clientContext } from '../../contexts';
+  import { decode } from '@msgpack/msgpack';
+  import CreateCriterion from './CreateCriterion.svelte';
   // import CriterionDetail from './CriterionDetail.svelte';
-  import type { ConvergeSignal } from './types';
+  import type { ConvergeSignal, Criterion } from './types';
   
   export let deliberationHash: ActionHash;
   export let criterionHash: ActionHash;
@@ -13,12 +15,14 @@
   let client: AppAgentClient = (getContext(clientContext) as any).getClient();
   
   let hashes: Array<ActionHash> | undefined;
-  let allCriteria: Array<ActionHash> | undefined;
+  let allCriteria: Array<any> | undefined;
+  let alternatives: Array<Criterion> | undefined;
   
+  let criterionFormPopup = false;
   let loading = true;
   let error: any = undefined;
   
-  $: hashes, loading, error;
+  $: hashes, loading, error, alternatives, criterionFormPopup;
   
   onMount(async () => {
     if (criterionHash === undefined) {
@@ -33,7 +37,11 @@
         fn_name: 'get_criteria_for_criterion',
         payload: criterionHash,
       });
-      hashes = records.map(r => r.signed_action.hashed.hash);
+      // hashes = records.map(r => r.signed_action.hashed.hash);
+      alternatives = records.map(record => {
+        let a = decode((record.entry as any).Present.entry) as Criterion;
+        return a
+      })
     } catch (e) {
       error = e;
     }
@@ -47,7 +55,7 @@
       if (payload.type !== 'LinkCreated') return;
       if (payload.link_type !== 'CriterionToCriteria') return;
   
-      hashes = [...hashes, payload.action.hashed.content.target_address];
+      // alternatives = [...hashes, payload.action.hashed.content.target_address];
     });
   });
 
@@ -61,7 +69,11 @@
         payload: deliberationHash,
       });
       // criteriaCount = records.length;
-      allCriteria = records.map(r => r.signed_action.hashed.hash);
+      // allCriteriaHashes = records.map(r => r.signed_action.hashed.hash);
+      allCriteria = records.map(record => {
+        let a = decode((record.entry as any).Present.entry) as Criterion;
+        return {title: a.title, hash: record.signed_action.hashed.hash}
+      })
     } catch (e) {
       error = e;
     }
@@ -98,27 +110,29 @@
   <span>No criteria found for this criterion.</span>
   {:else}
   <div style="display: flex; flex-direction: column">
-    {#each allCriteria as hash}
-    {#if hash.join(',') != criterionHash.join(',')}
+    {#each alternatives as a}
       <div style="margin-bottom: 8px;">
-        {hash}
-        <button on:click={()=>{
-          addAlternative(hash)
-        }}>Suggest</button>
-        <!-- <CriterionDetail criterionHash={hash}></CriterionDetail> -->
-      </div>
-    {/if}
-    {/each}
-  </div>
-  <div style="display: flex; flex-direction: column">
-    {#each hashes as hash}
-      <div style="margin-bottom: 8px;">
-        {hash}
+        {a.title}
         <!-- <button on:click={()=>{
           addAlternative(hash)
         }}>Suggest</button> -->
         <!-- <CriterionDetail criterionHash={hash}></CriterionDetail> -->
       </div>
+    {/each}
+  </div>
+  <CreateCriterion deliberationHash={deliberationHash} alternativeTo = {criterionHash} bind:criterionFormPopup />
+  <div style="display: flex; flex-direction: column">
+    <button on:click={(e)=>{criterionFormPopup = true}}>Create a new alternative</button>
+    {#each allCriteria as c}
+    {#if c.hash.join(',') != criterionHash.join(',')}
+      <div style="margin-bottom: 8px;">
+        {c.title}
+        <button on:click={()=>{
+          addAlternative(c.hash)
+        }}>Suggest</button>
+        <!-- <CriterionDetail criterionHash={hash}></CriterionDetail> -->
+      </div>
+    {/if}
     {/each}
   </div>
   {/if}

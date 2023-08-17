@@ -27,91 +27,91 @@
   let error: any = undefined;
   
   let record: Record | undefined;
-  let criterion: Criterion | undefined;
-  let supporters: Array<string> | undefined;
-  let sponsored: boolean | undefined;
-  let support: number | undefined;
+  export let criterion: Criterion | undefined;
+  export let supporters: Array<string> | undefined;
+  export let sponsored: boolean | undefined;
+  export let support: number | undefined;
   let openSupport = false;
-  let addSupportPercentage = 0;
-  let mySupport;
-  let activeTab;
+  export let addSupportPercentage = 0;
+  export let mySupport;
+  let activeTab = "objections";
   let objection;
   const scoringLevel = 4;
   
   let errorSnackbar: Snackbar;
     
-  $:  error, loading, record, criterion, supporters, sponsored, criterionPopupBoolean, objection;
+  $:  error, loading, record, criterion, supporters, sponsored, criterionPopupBoolean, objection, support, activeTab;
   
   onMount(async () => {
     if (criterionHash === undefined) {
       throw new Error(`The criterionHash input is required for the CriterionDetail element`);
     }
-    await fetchCriterion().then(() => fetchSupport());
-    client.on('signal', signal => {
-      if (signal.zome_name !== 'converge') return;
-      const payload = signal.payload as ConvergeSignal;
-      if (!['LinkCreated', 'LinkDeleted'].includes(payload.type)) return;
-      fetchSupport();
-    });
+    // await fetchCriterion().then(() => fetchSupport());
+    // client.on('signal', signal => {
+    //   if (signal.zome_name !== 'converge') return;
+    //   const payload = signal.payload as ConvergeSignal;
+    //   if (!['LinkCreated', 'LinkDeleted'].includes(payload.type)) return;
+    //   fetchSupport();
+    // });
   });
   
-  async function fetchCriterion() {
-    loading = true;
-    error = undefined;
-    record = undefined;
-    criterion = undefined;
+  // async function fetchCriterion() {
+  //   loading = true;
+  //   error = undefined;
+  //   record = undefined;
+  //   criterion = undefined;
     
-    try {
-      record = await client.callZome({
-        cap_secret: null,
-        role_name: 'converge',
-        zome_name: 'converge',
-        fn_name: 'get_criterion',
-        payload: criterionHash,
-      });
-      if (record) {
-        criterion = decode((record.entry as any).Present.entry) as Criterion;
-      }
-    } catch (e) {
-      error = e;
-    }
+  //   try {
+  //     record = await client.callZome({
+  //       cap_secret: null,
+  //       role_name: 'converge',
+  //       zome_name: 'converge',
+  //       fn_name: 'get_criterion',
+  //       payload: criterionHash,
+  //     });
+  //     if (record) {
+  //       criterion = decode((record.entry as any).Present.entry) as Criterion;
+  //     }
+  //   } catch (e) {
+  //     error = e;
+  //   }
   
-    loading = false;
-  }
+  //   loading = false;
+  // }
   
-  async function fetchSupport() {
-    try {
-      let records = await client.callZome({
-        cap_secret: null,
-        role_name: 'converge',
-        zome_name: 'converge',
-        fn_name: 'get_supporters_for_criterion',
-        payload: criterionHash,
-      });
-      if (records) {
-        supporters = Array.from(
-          records.reduce((map, item) => {
-            const key = item.agent.join(",");
-            if (!map.has(key)) {
-              map.set(key, { ...item, agent: key });
-            }
-            return map;
-          }, new Map()).values()
-        );
-        support = supporters.reduce((sum, item) => sum + JSON.parse(item["tag"]), 0);
-        // average support
-        // support = support / supporters.length;
-        sponsored = supporters.some(item => item["agent"] === client.myPubKey.join(","));
-        if (sponsored) {
-          mySupport = supporters.find(item => item["agent"] === client.myPubKey.join(","))["tag"];
-          addSupportPercentage = mySupport * scoringLevel;
-        }
-      }
-    } catch (e) {
-      console.log(e)
-      error = e;
-    }
-  }
+  // async function fetchSupport() {
+  //   try {
+  //     let records = await client.callZome({
+  //       cap_secret: null,
+  //       role_name: 'converge',
+  //       zome_name: 'converge',
+  //       fn_name: 'get_supporters_for_criterion',
+  //       payload: criterionHash,
+  //     });
+  //     if (records) {
+  //       supporters = Array.from(
+  //         records.reduce((map, item) => {
+  //           const key = item.agent.join(",");
+  //           if (!map.has(key)) {
+  //             map.set(key, { ...item, agent: key });
+  //           }
+  //           return map;
+  //         }, new Map()).values()
+  //       );
+  //       support = supporters.reduce((sum, item) => sum + JSON.parse(item["tag"]), 0);
+  //       // average support
+  //       // support = support / supporters.length;
+  //       sponsored = supporters.some(item => item["agent"] === client.myPubKey.join(","));
+  //       if (sponsored) {
+  //         mySupport = supporters.find(item => item["agent"] === client.myPubKey.join(","))["tag"];
+  //         addSupportPercentage = mySupport * scoringLevel;
+  //       }
+  //     }
+  //   } catch (e) {
+  //     console.log(e)
+  //     error = e;
+  //   }
+  // }
   
   async function removeSupport() {
     try {
@@ -266,7 +266,7 @@
 
 <!-- ACTIVITY STARTS -->
 <div class="deliberation-section">
-  <mwc-button on:click={()=>{}}>Add Alternative</mwc-button>
+  <!-- <mwc-button on:click={()=>{}}>Add Alternative</mwc-button> -->
   <mwc-tab-bar style="--mdc-theme-primary: blue; margin-bottom: 10px;">
     <!-- <mwc-tab on:click={() => {activeTab = "all"}} label="All responses"></mwc-tab> -->
     <mwc-tab on:click={() => {activeTab = "objections"}}  label="Objections"></mwc-tab>
@@ -277,26 +277,26 @@
   <!-- COMMENTS STARTS -->
   {#if activeTab == "objections"}
   <ObjectionsForCriteria {criterionHash}></ObjectionsForCriteria>
-  {:else if activeTab == "alternatives"}
-  <CreateAlternative {criterionHash} {deliberationHash}></CreateAlternative>
-  {/if}
   <div style="margin-bottom: 16px">
-    <mwc-textarea style="width: 35vw; height: 20vh" outlined label="Comment" on:input={e => { objection = e.target.value; console.log(objection)}} required></mwc-textarea>          
+    <mwc-textarea style="width: 35vw; height: 100px" outlined label="Comment" on:input={e => { objection = e.target.value; console.log(objection)}} required></mwc-textarea>          
   </div>
   <div style="margin-bottom: 16px">
     <!-- check box is this an objection -->
     <!-- <mwc-formfield label="Is your comment an objection to the criterion?">
       <mwc-checkbox></mwc-checkbox>
     </mwc-formfield> -->
-    <label>
+    <!-- <label>
       <mwc-switch name="choice"></mwc-switch> Is your comment an objection to the criterion?
     </label>
-    
+     -->
     <mwc-button on:click = {() => {addObjection()}}>Submit</mwc-button>
   </div>
+  {:else if activeTab == "alternatives"}
+  <CreateAlternative {criterionHash} {deliberationHash}></CreateAlternative>
+  {/if}
   
   <!-- </div>
   </div> -->
 </div>
-  {/if}
+{/if}
   

@@ -333,6 +333,6 @@ async function deleteCriterion() {
 </div>
 <!-- <div style="display: flex; flex-direction: row;"> -->
   <!-- hi -->
-  <CriterionPopup {criterionHash} {deliberationHash} bind:criterionPopupBoolean />
+  <CriterionPopup {criterionHash} {deliberationHash} bind:criterionPopupBoolean {criterion} {supporters} {sponsored} {support} {addSupportPercentage} {mySupport}/>
 <!-- </div> -->
 {/if}
