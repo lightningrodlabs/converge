@@ -13,6 +13,7 @@ export let criterionFormPopup; // Prop to control popup visibility
 export let alternativeTo: ActionHash;
 let alternativeToFull: Criterion;
 function dismissPopup() {
+  supportPercentage = 0;
   criterionFormPopup = false; // Set active to false to hide the popup
 }
 
@@ -65,7 +66,8 @@ async function fetchAlternative() {
   }
 }
 
-async function createCriterion() {  
+async function createCriterion() {
+  // console.log(supportPercentage)
   const criterionEntry: CreateCriterionInput = { 
     criterion: {
       title: title!,
@@ -94,6 +96,11 @@ async function createCriterion() {
 
   if (supportPercentage > 0) {
     try {
+      let tag = {
+        percentage: supportPercentage / 4,
+        transferedFrom: null
+      }
+
       let record = await client.callZome({
         cap_secret: null,
         role_name: 'converge',
@@ -102,12 +109,12 @@ async function createCriterion() {
         payload: {
           base_supporter: client.myPubKey,
           target_criterion_hash: criterionHash,
-          percentage: String(supportPercentage / 4),
+          tag: String(JSON.stringify(tag)),
         },
       });
-      if (record) {
-        console.log(record)
-      }
+      // if (record) {
+        // console.log(record)
+      // }
     } catch (e) {
       console.log(e);
     }
@@ -125,7 +132,9 @@ async function createCriterion() {
       </mwc-snackbar>
       <div style="display: flex; flex-direction: column">
         <h2>Add a new criterion</h2>
+        {#if alternativeToFull}
         <h3>Alternative to {alternativeToFull.title}</h3>
+        {/if}
         
 
         <div style="margin-bottom: 16px">
@@ -143,7 +152,7 @@ async function createCriterion() {
             <mwc-slider
               on:change={e => {
                 supportPercentage = e.detail.value;
-                console.log(supportPercentage)
+                // console.log(supportPercentage)
               }}
               value={0}
               withTickMarks

@@ -1,5 +1,6 @@
+pub mod criterion_to_criterion_comments;
+pub mod criterion_comment;
 pub mod criterion_to_criteria;
-
 pub mod deliberator_to_deliberations;
 pub mod all_proposals;
 pub mod all_criteria;

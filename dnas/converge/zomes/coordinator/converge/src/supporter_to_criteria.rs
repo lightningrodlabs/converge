@@ -4,13 +4,13 @@ use converge_integrity::*;
 pub struct AddCriterionForSupporterInput {
     pub base_supporter: AgentPubKey,
     pub target_criterion_hash: ActionHash,
-    pub percentage: String,
+    pub tag: String,
 }
 #[hdk_extern]
 pub fn add_criterion_for_supporter(
     input: AddCriterionForSupporterInput,
 ) -> ExternResult<()> {
-    let tag_str = input.percentage;
+    let tag_str = input.tag;
     let tag_bytes = tag_str.as_bytes().to_vec();
     let tag = LinkTag(tag_bytes);
     create_link(

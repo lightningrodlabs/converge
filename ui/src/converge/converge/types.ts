@@ -36,6 +36,7 @@ export type ConvergeSignal = {
 };
 
 export type EntryTypes =
+ | ({ type: 'CriterionComment'; } & CriterionComment)
  | ({ type: 'Proposal'; } & Proposal)
  | ({ type: 'Criterion'; } & Criterion)
  | ({  type: 'Deliberation'; } & Deliberation);
@@ -50,8 +51,22 @@ export interface Deliberation {
   settings: string;
 }
 
+export interface Objection {
+  tag: string,
+}
 
-
+// export interface Action {
+//    author: AgentPubKey,
+//   timestamp: Date,
+//   action_seq: any,
+//   prev_action: ActionHash,
+//   base_address: ActionHash,
+//   target_address: ActionHash,
+//   zome_index: any,
+//   link_type: any,
+//   tag: String,
+//   weight: any,
+// }
 
 export interface Criterion { 
   title: string;
@@ -75,3 +90,20 @@ export interface CreateProposalInput {
   proposal: Proposal;
   deliberation: ActionHash;
 }
+
+
+
+export interface CriterionComment { 
+  comment: string;
+
+  comment_reference: ActionHash;
+
+  objection_reference: ActionHash;
+
+  alternative_reference: ActionHash;
+
+  author: AgentPubKey;
+
+  created: number;
+}
+

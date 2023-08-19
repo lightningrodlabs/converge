@@ -1,3 +1,7 @@
+pub mod criterion_to_criterion_comments;
+pub use criterion_to_criterion_comments::*;
+pub mod criterion_comment;
+pub use criterion_comment::*;
 pub mod criterion_to_criteria;
 pub use criterion_to_criteria::*;
 pub mod deliberator_to_deliberations;
@@ -27,6 +31,7 @@ pub enum EntryTypes {
     Deliberation(Deliberation),
     Criterion(Criterion),
     Proposal(Proposal),
+    CriterionComment(CriterionComment),
 }
 #[derive(Serialize, Deserialize)]
 #[hdk_link_types]
@@ -47,6 +52,9 @@ pub enum LinkTypes {
     DeliberatorToDeliberations,
     DeliberationToDeliberators,
     CriterionToCriteria,
+    CriterionCommentUpdates,
+    AllCriterionComments,
+    CriterionToCriterionComments,
 }
 #[hdk_extern]
 pub fn genesis_self_check(
@@ -85,6 +93,12 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 proposal,
                             )
                         }
+                        EntryTypes::CriterionComment(criterion_comment) => {
+                            validate_create_criterion_comment(
+                                EntryCreationAction::Create(action),
+                                criterion_comment,
+                            )
+                        }
                     }
                 }
                 OpEntry::UpdateEntry { app_entry, action, .. } => {
@@ -107,6 +121,12 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 proposal,
                             )
                         }
+                        EntryTypes::CriterionComment(criterion_comment) => {
+                            validate_create_criterion_comment(
+                                EntryCreationAction::Update(action),
+                                criterion_comment,
+                            )
+                        }
                     }
                 }
                 _ => Ok(ValidateCallbackResult::Valid),
@@ -121,6 +141,17 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     action,
                 } => {
                     match (app_entry, original_app_entry) {
+                        (
+                            EntryTypes::CriterionComment(criterion_comment),
+                            EntryTypes::CriterionComment(original_criterion_comment),
+                        ) => {
+                            validate_update_criterion_comment(
+                                action,
+                                criterion_comment,
+                                original_action,
+                                original_criterion_comment,
+                            )
+                        }
                         (
                             EntryTypes::Proposal(proposal),
                             EntryTypes::Proposal(original_proposal),
@@ -183,6 +214,13 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         EntryTypes::Proposal(proposal) => {
                             validate_delete_proposal(action, original_action, proposal)
+                        }
+                        EntryTypes::CriterionComment(criterion_comment) => {
+                            validate_delete_criterion_comment(
+                                action,
+                                original_action,
+                                criterion_comment,
+                            )
                         }
                     }
                 }
@@ -319,6 +357,30 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 }
                 LinkTypes::CriterionToCriteria => {
                     validate_create_link_criterion_to_criteria(
+                        action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::CriterionCommentUpdates => {
+                    validate_create_link_criterion_comment_updates(
+                        action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::AllCriterionComments => {
+                    validate_create_link_all_criterion_comments(
+                        action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::CriterionToCriterionComments => {
+                    validate_create_link_criterion_to_criterion_comments(
                         action,
                         base_address,
                         target_address,
@@ -480,6 +542,33 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         tag,
                     )
                 }
+                LinkTypes::CriterionCommentUpdates => {
+                    validate_delete_link_criterion_comment_updates(
+                        action,
+                        original_action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::AllCriterionComments => {
+                    validate_delete_link_all_criterion_comments(
+                        action,
+                        original_action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::CriterionToCriterionComments => {
+                    validate_delete_link_criterion_to_criterion_comments(
+                        action,
+                        original_action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
             }
         }
         FlatOp::StoreRecord(store_record) => {
@@ -502,6 +591,12 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                             validate_create_proposal(
                                 EntryCreationAction::Create(action),
                                 proposal,
+                            )
+                        }
+                        EntryTypes::CriterionComment(criterion_comment) => {
+                            validate_create_criterion_comment(
+                                EntryCreationAction::Create(action),
+                                criterion_comment,
                             )
                         }
                     }
@@ -620,6 +715,37 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 Ok(result)
                             }
                         }
+                        EntryTypes::CriterionComment(criterion_comment) => {
+                            let result = validate_create_criterion_comment(
+                                EntryCreationAction::Update(action.clone()),
+                                criterion_comment.clone(),
+                            )?;
+                            if let ValidateCallbackResult::Valid = result {
+                                let original_criterion_comment: Option<CriterionComment> = original_record
+                                    .entry()
+                                    .to_app_option()
+                                    .map_err(|e| wasm_error!(e))?;
+                                let original_criterion_comment = match original_criterion_comment {
+                                    Some(criterion_comment) => criterion_comment,
+                                    None => {
+                                        return Ok(
+                                            ValidateCallbackResult::Invalid(
+                                                "The updated entry type must be the same as the original entry type"
+                                                    .to_string(),
+                                            ),
+                                        );
+                                    }
+                                };
+                                validate_update_criterion_comment(
+                                    action,
+                                    criterion_comment,
+                                    original_action,
+                                    original_criterion_comment,
+                                )
+                            } else {
+                                Ok(result)
+                            }
+                        }
                     }
                 }
                 OpRecord::DeleteEntry { original_action_hash, action, .. } => {
@@ -693,6 +819,13 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 original_action,
                                 original_proposal,
+                            )
+                        }
+                        EntryTypes::CriterionComment(original_criterion_comment) => {
+                            validate_delete_criterion_comment(
+                                action,
+                                original_action,
+                                original_criterion_comment,
                             )
                         }
                     }
@@ -827,6 +960,30 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         LinkTypes::CriterionToCriteria => {
                             validate_create_link_criterion_to_criteria(
+                                action,
+                                base_address,
+                                target_address,
+                                tag,
+                            )
+                        }
+                        LinkTypes::CriterionCommentUpdates => {
+                            validate_create_link_criterion_comment_updates(
+                                action,
+                                base_address,
+                                target_address,
+                                tag,
+                            )
+                        }
+                        LinkTypes::AllCriterionComments => {
+                            validate_create_link_all_criterion_comments(
+                                action,
+                                base_address,
+                                target_address,
+                                tag,
+                            )
+                        }
+                        LinkTypes::CriterionToCriterionComments => {
+                            validate_create_link_criterion_to_criterion_comments(
                                 action,
                                 base_address,
                                 target_address,
@@ -995,6 +1152,33 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         LinkTypes::CriterionToCriteria => {
                             validate_delete_link_criterion_to_criteria(
+                                action,
+                                create_link.clone(),
+                                base_address,
+                                create_link.target_address,
+                                create_link.tag,
+                            )
+                        }
+                        LinkTypes::CriterionCommentUpdates => {
+                            validate_delete_link_criterion_comment_updates(
+                                action,
+                                create_link.clone(),
+                                base_address,
+                                create_link.target_address,
+                                create_link.tag,
+                            )
+                        }
+                        LinkTypes::AllCriterionComments => {
+                            validate_delete_link_all_criterion_comments(
+                                action,
+                                create_link.clone(),
+                                base_address,
+                                create_link.target_address,
+                                create_link.tag,
+                            )
+                        }
+                        LinkTypes::CriterionToCriterionComments => {
+                            validate_delete_link_criterion_to_criterion_comments(
                                 action,
                                 create_link.clone(),
                                 base_address,

@@ -61,3 +61,27 @@ export async function createProposal(cell: CallableCell, proposal = undefined): 
     });
 }
 
+
+
+export async function sampleCriterionComment(cell: CallableCell, partialCriterionComment = {}) {
+    return {
+        ...{
+	  comment: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+	  comment_reference: (await fakeActionHash()),
+	  objection_reference: (await fakeActionHash()),
+	  alternative_reference: (await fakeActionHash()),
+	  author: (await fakeAgentPubKey()),
+	  created: 1674053334548000,
+        },
+        ...partialCriterionComment
+    };
+}
+
+export async function createCriterionComment(cell: CallableCell, criterionComment = undefined): Promise<Record> {
+    return cell.callZome({
+      zome_name: "converge",
+      fn_name: "create_criterion_comment",
+      payload: criterionComment || await sampleCriterionComment(cell),
+    });
+}
+

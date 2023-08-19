@@ -94,15 +94,25 @@ async function fetchSupport() {
           return map;
         }, new Map()).values()
       );
-      support = supporters.reduce((sum, item) => sum + JSON.parse(item["tag"]), 0);
+      // console.log(JSON.parse(supporters[0].tag))
+      support = supporters.reduce((sum, item) => {
+        let percentage = Number(JSON.parse(item["tag"]).percentage);
+        return isNaN(percentage) ? sum : sum + percentage;
+      }, 0);
       // average support
       // support = support / supporters.length;
       sponsored = supporters.some(item => item["agent"] === client.myPubKey.join(","));
+      console.log(sponsored, criterionHash, support)
       if (sponsored) {
-        mySupport = supporters.find(item => item["agent"] === client.myPubKey.join(","))["tag"];
+        console.log(supporters)
+        mySupport = JSON.parse(supporters.find(item => item["agent"] === client.myPubKey.join(","))["tag"]).percentage;
         addSupportPercentage = mySupport * scoringLevel;
+      } else {
+        mySupport = 0;
+        addSupportPercentage = 0;
       }
     }
+    // console.log(records)
   } catch (e) {
     console.log(e)
     error = e;
@@ -132,6 +142,15 @@ async function removeSupport() {
 async function addSupport() {
   await removeSupport()
   try {
+    console.log(addSupportPercentage)
+    console.log(scoringLevel)
+    let tag = {
+      percentage: String(addSupportPercentage / scoringLevel),
+      transferedFrom: null
+    }
+
+    console.log(tag)
+
     record = await client.callZome({
       cap_secret: null,
       role_name: 'converge',
@@ -140,7 +159,7 @@ async function addSupport() {
       payload: {
         base_supporter: client.myPubKey,
         target_criterion_hash: criterionHash,
-        percentage: String(addSupportPercentage / scoringLevel),
+        tag: String(JSON.stringify(tag)),
       },
     });
     // openSupport = false;
@@ -180,7 +199,6 @@ async function deleteCriterion() {
 {:else if error}
 <span>Error fetching the criterion: {error.data.data}</span>
 {:else}
-
 <div class="criterion">
 <div style="display: flex; flex-direction: column; font-size: .8em">
   <div class="vertical-progress-bar-container">
@@ -237,6 +255,7 @@ async function deleteCriterion() {
             on:change={e => {
               addSupportPercentage = e.detail.value
               mySupport = addSupportPercentage / scoringLevel;
+              console.log(addSupportPercentage, mySupport)
               if (addSupportPercentage == 0) {
                 removeSupport()
               } else {
@@ -298,7 +317,7 @@ async function deleteCriterion() {
           <mwc-slider
           style="--mdc-theme-primary: blue;"
           on:mouseover={e => {
-            console.log('hi')
+            // console.log('hi')
             openSupport = true
           }}
           disabled=true

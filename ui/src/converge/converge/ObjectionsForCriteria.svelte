@@ -17,7 +17,7 @@ let hashes: Array<ActionHash> | undefined;
 
 let loading = true;
 let error: any = undefined;
-let objections;
+export let objections;
 
 $: hashes, loading, error;
 
@@ -26,6 +26,20 @@ onMount(async () => {
     throw new Error(`The objector input is required for the CriteriaForObjector element`);
   }
 
+  await fetchObjections()
+  loading = false;
+
+  client.on('signal', signal => {
+    if (signal.zome_name !== 'converge') return;
+    const payload = signal.payload as ConvergeSignal;
+    if (payload.type !== 'LinkCreated') return;
+    let linkType = Object.keys(payload.link_type)[0]
+    if (linkType != 'CriterionToObjectors') return;
+    fetchObjections()
+  });
+});
+
+async function fetchObjections() {
   try {
     const records = await client.callZome({
       cap_secret: null,
@@ -38,37 +52,25 @@ onMount(async () => {
   } catch (e) {
     error = e;
   }
-  loading = false;
-
-  client.on('signal', signal => {
-    if (signal.zome_name !== 'converge') return;
-    const payload = signal.payload as ConvergeSignal;
-    if (payload.type !== 'LinkCreated') return;
-    console.log(payload.link_type)
-    if (payload.link_type != 'CriterionToObjectors') return;
-    console.log(payload)
-
-    // hashes = [...hashes, payload.action.hashed.content.target_address];
-  });
-});
+}
 
 </script>
 
+<div style="display: flex; flex-direction: column; height: 160px; overflow: scroll;">
 {#if loading }
-<div style="display: flex; flex: 1; align-items: center; justify-content: center">
+<!-- <div style="display: flex; flex: 1; align-items: center; justify-content: center"> -->
   <mwc-circular-progress indeterminate></mwc-circular-progress>
-</div>
+<!-- </div> -->
 {:else if error}
 <span>Error fetching criteria: {error.data.data}.</span>
 {:else if objections.length === 0}
 <span>No Objections found for this criteria.</span>
 {:else}
-<div style="display: flex; flex-direction: column">
   {#each objections as objection}
     <div style="margin-bottom: 8px;">
       {JSON.stringify(objection.tag)}
       <!-- <CriterionDetail criterionHash={hash}></CriterionDetail> -->
     </div>
   {/each}
+  {/if}
 </div>
-{/if}

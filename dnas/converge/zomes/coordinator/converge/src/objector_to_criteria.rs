@@ -1,4 +1,6 @@
-use hdk::prelude::*;
+use std::ptr::null;
+
+use hdk::prelude::{*, tracing::field::debug};
 use converge_integrity::*;
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AddCriterionForObjectorInput {
@@ -9,18 +11,59 @@ pub struct AddCriterionForObjectorInput {
 #[hdk_extern]
 pub fn add_criterion_for_objector(
     input: AddCriterionForObjectorInput,
-) -> ExternResult<()> {
+) -> ExternResult<ActionHash> {
     let tag_str = input.comment;
     let tag_bytes = tag_str.as_bytes().to_vec();
     let tag = LinkTag(tag_bytes);
-    create_link(
+    let link = create_link(
         input.target_criterion_hash,
         input.base_objector,
         LinkTypes::CriterionToObjectors,
         tag,
     )?;
-    Ok(())
+    Ok(link)
 }
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Objection {
+    pub base_objector: Option<AgentPubKey>,
+    pub target_criterion_hash: Option<ActionHash>,
+    pub comment: Option<String>,
+}
+
+#[hdk_extern]
+pub fn get_objection_link(link_hash: ActionHash) -> ExternResult<Objection> {
+    debug!("link_hash: {:?}", link_hash);
+    let link: Option<Record> = get(link_hash, GetOptions::default())?;
+    debug!("record: {:?}", link.clone());
+    let mut tag: String = "".to_string();
+    let mut objector: AgentPubKey;
+    let mut criterion_hash: ActionHash;
+    debug!("criterion hash");
+
+    if let Some(l) = link.clone() {
+        let o: CreateLink = l.signed_action.hashed.content.try_into().unwrap();
+        tag = String::from_utf8(o.tag.0).unwrap();
+        objector = AgentPubKey::from(EntryHash::from(o.base_address));
+        criterion_hash = ActionHash::from(o.target_address);
+        let objection = Objection {
+            base_objector: Some(objector.clone()),
+            target_criterion_hash: Some(criterion_hash.clone()),
+            comment: Some(tag),
+        };
+        debug!("------------------------------------------: {:?}", objection.clone());
+        Ok(objection)
+    } else {
+        let objection = Objection {
+            base_objector: None,
+            target_criterion_hash: None,
+            comment: None,
+        };
+        debug!("none: {:?}", objection.clone());
+        Ok(objection)
+    }
+}
+
 #[hdk_extern]
 pub fn get_criteria_for_objector(objector: AgentPubKey) -> ExternResult<Vec<Record>> {
     let links = get_links(objector, LinkTypes::ObjectorToCriteria, None)?;
@@ -42,6 +85,7 @@ pub fn get_criteria_for_objector(objector: AgentPubKey) -> ExternResult<Vec<Reco
 pub struct AgentPubKeyWithTag {
     pub agent: AgentPubKey,
     pub tag: String,
+    pub objection_hash: ActionHash,
 }
 #[hdk_extern]
 pub fn get_objectors_for_criterion(
@@ -57,6 +101,7 @@ pub fn get_objectors_for_criterion(
             let agent_with_tag = AgentPubKeyWithTag {
                 agent: agent.clone(),
                 tag: tag_str,
+                objection_hash: link.create_link_hash
             };
             agent_with_tag
         })
