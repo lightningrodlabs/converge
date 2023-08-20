@@ -1,5 +1,5 @@
 <script lang="ts">
-import { onMount, getContext } from 'svelte';
+import { onMount, afterUpdate, getContext } from 'svelte';
 import '@material/mwc-circular-progress';
 import type { Record, EntryHash, ActionHash, AgentPubKey, AppAgentClient, NewEntryAction } from '@holochain/client';
 import { clientContext } from '../../contexts';
@@ -18,8 +18,19 @@ let hashes: Array<ActionHash> | undefined;
 let loading = true;
 let error: any = undefined;
 let commentReference;
+let chatWindow;
 
-$: hashes, loading, error;
+$: hashes, loading, error, chatWindow;
+
+async function scrollToBottom() {  
+  // if (chatWindow) {
+    await new Promise(res => setTimeout(res, 100));
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+    await new Promise(res => setTimeout(res, 500));
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+    console.log(chatWindow.scrollTop, chatWindow.scrollHeight, chatWindow)
+  // }
+}
 
 onMount(async () => {
   if (criterionHash === undefined) {
@@ -35,6 +46,7 @@ onMount(async () => {
       payload: criterionHash,
     });
     hashes = records.map(r => r.signed_action.hashed.hash);
+    scrollToBottom();
   } catch (e) {
     error = e;
   }
@@ -48,8 +60,13 @@ onMount(async () => {
     console.log(linkType)
     if (linkType !== 'CriterionToCriterionComments') return;
     hashes = [...hashes, payload.action.hashed.content.target_address];
+    scrollToBottom();
   });
 });
+
+// afterUpdate(() => {
+//   scrollToBottom()
+// });
 
 </script>
 
@@ -62,11 +79,11 @@ onMount(async () => {
 {:else if hashes.length === 0}
 <span>No criterion comments found for this criterion.</span>
 {:else}
-<div style="display: flex; flex-direction: column">
+<div bind:this={chatWindow} style="display: flex; flex-direction: column; max-height: 50vh; overflow-y: scroll; overflow-x: hidden;">
   {#each hashes as hash}
-    <div style="margin-bottom: 8px;">
+    <!-- <div style="margin-bottom: 8px;"> -->
       <CriterionCommentDetail criterionCommentHash={hash} {objections} {alternatives} bind:commentReference></CriterionCommentDetail>
-    </div>
+    <!-- </div> -->
   {/each}
 </div>
 {/if}

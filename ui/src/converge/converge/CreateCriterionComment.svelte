@@ -43,10 +43,21 @@ onMount(() => {
   // }
 });
 
+function checkKey(e) {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    createCriterionComment();
+  }
+}
+
 async function createCriterionComment() {  
+  let cr: ActionHash | undefined = undefined;
+  if (commentReference && commentReference.hash) {
+    cr = commentReference.hash!;
+  }
   const criterionComment: CriterionComment = { 
     comment: comment!,
-    comment_reference: commentReference.hash!,
+    comment_reference: cr!,
     objection_reference: objectionReference!,
     alternative_reference: alternativeReference!,
     author: author!,
@@ -66,6 +77,8 @@ async function createCriterionComment() {
       fn_name: 'create_criterion_comment',
       payload: criterionCommentEntry,
     });
+
+    comment = ''
     dispatch('criterion-comment-created', { criterionCommentHash: record.signed_action.hashed.hash });
   } catch (e) {
     errorSnackbar.labelText = `Error creating the criterion comment: ${e.data.data}`;
@@ -74,32 +87,76 @@ async function createCriterionComment() {
 }
 
 </script>
+
+<style>
+  .chat-input-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #ccc;
+    padding: 8px;
+  }
+
+  .chat-input {
+    flex: 1;
+    padding: 8px;
+    margin-right: 8px;
+    border: none;
+    outline: none;
+  }
+
+  .send-button {
+    cursor: pointer;
+    padding: 10px;
+    background-color: #007BFF;
+    color: #ffffff;
+    height: 40px;
+    width: 40px;
+    border: none;
+    border-radius: 4px;
+  }
+</style>
+
 <mwc-snackbar bind:this={errorSnackbar} leading>
 </mwc-snackbar>
 <div style="display: flex; flex-direction: column">
-  <span style="font-size: 18px">Create CriterionComment</span>
+  <!-- <span style="font-size: 18px">Create CriterionComment</span> -->
   
+  {#if commentReference}
+    {JSON.stringify(commentReference.comment)}<br>
+  {/if}
+  <div class="chat-input-container">
+    <textarea
+      class="chat-input"
+      bind:value={comment}
+      on:keydown={checkKey}
+      placeholder="Type your message..."
+    ></textarea>
+    <button class="send-button" on:click={createCriterionComment}>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" class="h-4 w-4 m-1 md:m-0" stroke-width="2"><path d="M.5 1.163A1 1 0 0 1 1.97.28l12.868 6.837a1 1 0 0 1 0 1.766L1.969 15.72A1 1 0 0 1 .5 14.836V10.33a1 1 0 0 1 .816-.983L8.5 8 1.316 6.653A1 1 0 0 1 .5 5.67V1.163Z" fill="currentColor"></path></svg>
+    </button>
+  </div>
 
-  <div style="margin-bottom: 16px">
-    {#if commentReference}
-      {JSON.stringify(commentReference.comment)}<br>
-    {/if}
+  <!-- <div style="margin-bottom: 16px">
     <mwc-textfield outlined label="Comment" value={ comment } on:input={e => {
       // console.log(e.target.value)
       comment = e.target.value;
       console.log(comment)
        } } required></mwc-textfield>          
-  </div>
+  </div> -->
             
   <!-- <div style="margin-bottom: 16px">
     <vaadin-date-time-picker label="Created" value={new Date(created / 1000).toISOString()} on:change={e => { created = new Date(e.target.value).valueOf() * 1000;} } required></vaadin-date-time-picker>          
   </div> -->
             
-
+<!-- 
   <mwc-button 
+    style="width: 10px;
+    height: 10px;
+    margin: 10px"
     raised
-    label="Create CriterionComment"
+    label=">"
     disabled={!isCriterionCommentValid}
     on:click={() => createCriterionComment()}
-  ></mwc-button>
+  ></mwc-button> -->
 </div>

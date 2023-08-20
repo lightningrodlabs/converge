@@ -163,7 +163,7 @@ async function deleteCriterionComment() {
 ></EditCriterionComment>
 {:else}
 
-<div style="display: flex; flex-direction: column">
+<div style="display: flex; flex-direction: column;">
   <!-- <div style="display: flex; flex-direction: row">
     <span style="flex: 1"></span>
     <mwc-icon-button style="margin-left: 8px" icon="edit" on:click={() => { editing = true; } }></mwc-icon-button>
@@ -200,7 +200,7 @@ async function deleteCriterionComment() {
     <span style="white-space: pre-line">{ new Date(criterionComment.created / 1000).toLocaleString() }</span>
   </div>
 
-  <button on:click={() => {commentReference = {hash: criterionCommentHash, comment: criterionComment.comment}}}>Reply</button>
+  <button style="width: fit-content;" on:click={() => {commentReference = {hash: criterionCommentHash, comment: criterionComment.comment}}}>Reply</button>
 
 </div>
 {/if}
