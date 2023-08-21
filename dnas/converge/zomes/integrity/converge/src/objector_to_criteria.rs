@@ -5,7 +5,7 @@ pub fn validate_create_link_objector_to_criteria(
     target_address: AnyLinkableHash,
     _tag: LinkTag,
 ) -> ExternResult<ValidateCallbackResult> {
-    let action_hash = ActionHash::from(target_address);
+    let action_hash = ActionHash::try_from(target_address).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap();
     let record = must_get_valid_record(action_hash)?;
     let _criterion: crate::Criterion = record
         .entry()
@@ -33,7 +33,7 @@ pub fn validate_create_link_criterion_to_objectors(
     _target_address: AnyLinkableHash,
     _tag: LinkTag,
 ) -> ExternResult<ValidateCallbackResult> {
-    let action_hash = ActionHash::from(base_address);
+    let action_hash = ActionHash::try_from(base_address).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap();
     let record = must_get_valid_record(action_hash)?;
     let _criterion: crate::Criterion = record
         .entry()

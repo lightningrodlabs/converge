@@ -32,6 +32,7 @@ let openSupport = false;
 let addSupportPercentage = 0;
 let mySupport;
 let criterionPopupBoolean = false;
+let myDiv;
 const scoringLevel = 4;
 
 let errorSnackbar: Snackbar;
@@ -102,7 +103,7 @@ async function fetchSupport() {
       // average support
       // support = support / supporters.length;
       sponsored = supporters.some(item => item["agent"] === client.myPubKey.join(","));
-      console.log(sponsored, criterionHash, support)
+      // console.log(sponsored, criterionHash, support)
       if (sponsored) {
         console.log(supporters)
         mySupport = JSON.parse(supporters.find(item => item["agent"] === client.myPubKey.join(","))["tag"]).percentage;
@@ -188,8 +189,13 @@ async function deleteCriterion() {
     errorSnackbar.show();
   }
 }
-</script>
 
+async function scrollToDiv() {
+  await new Promise(res => setTimeout(res, 100));
+  myDiv.scrollIntoView({ behavior: 'smooth' });
+}
+</script>
+<!-- <button on:click={myDiv.scrollIntoView({ behavior: 'smooth' })}>Scroll to Div</button> -->
 <mwc-snackbar bind:this={errorSnackbar} leading>
 </mwc-snackbar>
 {#if loading}
@@ -210,7 +216,7 @@ async function deleteCriterion() {
   {/if}
   </div>
 </div>
-<div class="two-sides">
+<div class="two-sides" bind:this={myDiv}>
   <div style="display: flex; flex-direction: column">
     <!-- <div style="display: flex; flex-direction: row">
       <span style="flex: 1"></span>
@@ -339,7 +345,7 @@ async function deleteCriterion() {
 
   <!-- OBJECT BUTTON -->
   <div style="display: flex; flex-direction: column; font-size: .8em">
-    <button style="height: 100%;" on:click={() => {criterionPopupBoolean = !criterionPopupBoolean; console.log(criterionPopupBoolean)}}>
+    <button style="height: 100%;" on:click={() => {criterionPopupBoolean = !criterionPopupBoolean; console.log(criterionPopupBoolean); scrollToDiv()}}>
       {#if criterionPopupBoolean}
       <mwc-icon-button icon="^"></mwc-icon-button>
       {:else}
@@ -352,6 +358,6 @@ async function deleteCriterion() {
 </div>
 <!-- <div style="display: flex; flex-direction: row;"> -->
   <!-- hi -->
-  <CriterionPopup {criterionHash} {deliberationHash} bind:criterionPopupBoolean {criterion} {supporters} {sponsored} {support} {addSupportPercentage} {mySupport}/>
+  <CriterionPopup on:switched-tab={scrollToDiv} {criterionHash} {deliberationHash} bind:criterionPopupBoolean {criterion} {supporters} {sponsored} {support} {addSupportPercentage} {mySupport}/>
 <!-- </div> -->
 {/if}

@@ -28,7 +28,7 @@ pub fn get_criteria_for_criterion(
         .into_iter()
         .filter(|link| seen_targets.insert(link.target.clone()))
         .map(|link| GetInput::new(
-            ActionHash::from(link.target).into(),
+            ActionHash::try_from(link.target).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap().into(),
             GetOptions::default(),
         ))
         .collect();
@@ -59,8 +59,8 @@ pub fn get_alternative_link(link_hash: ActionHash) -> ExternResult<Alternative> 
     if let Some(l) = link.clone() {
         let o: CreateLink = l.signed_action.hashed.content.try_into().unwrap();
         tag = String::from_utf8(o.tag.0).unwrap();
-        base_criterion_hash = ActionHash::from(o.base_address);
-        criterion_hash = ActionHash::from(o.target_address);
+        base_criterion_hash = ActionHash::try_from(o.base_address).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap();
+        criterion_hash = ActionHash::try_from(o.target_address).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap();
         let objection = Alternative {
             base_criterion_hash: Some(base_criterion_hash.clone()),
             target_criterion_hash: Some(criterion_hash.clone()),

@@ -43,9 +43,16 @@ pub fn get_objection_link(link_hash: ActionHash) -> ExternResult<Objection> {
 
     if let Some(l) = link.clone() {
         let o: CreateLink = l.signed_action.hashed.content.try_into().unwrap();
+        debug!("o: {:?}", o.clone());
         tag = String::from_utf8(o.tag.0).unwrap();
-        objector = AgentPubKey::from(EntryHash::from(o.base_address));
-        criterion_hash = ActionHash::from(o.target_address);
+        debug!("tag: {:?}", tag.clone());
+        // let x = EntryHash::try_from(o.base_address).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected entryhash".into()))).unwrap();
+        // debug!("x: {:?}", x.clone());
+        objector = AgentPubKey::try_from(o.author).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected agentpubkey".into()))).unwrap();
+        debug!("objector: {:?}", objector.clone());
+        debug!("target address: {:?}", o.target_address.clone());
+        criterion_hash = ActionHash::try_from(o.base_address).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap();
+        debug!("criterion hash: {:?}", criterion_hash.clone());
         let objection = Objection {
             base_objector: Some(objector.clone()),
             target_criterion_hash: Some(criterion_hash.clone()),
@@ -70,7 +77,7 @@ pub fn get_criteria_for_objector(objector: AgentPubKey) -> ExternResult<Vec<Reco
     let get_input: Vec<GetInput> = links
         .into_iter()
         .map(|link| GetInput::new(
-            ActionHash::from(link.target).into(),
+            ActionHash::try_from(link.target).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap().into(),
             GetOptions::default(),
         ))
         .collect();
@@ -97,7 +104,7 @@ pub fn get_objectors_for_criterion(
         .map(|link| {
             let tag = link.tag;
             let tag_str = String::from_utf8(tag.0).unwrap();
-            let agent = AgentPubKey::from(EntryHash::from(link.target));
+            let agent = AgentPubKey::from(EntryHash::try_from(link.target).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected entryhash".into()))).unwrap());
             let agent_with_tag = AgentPubKeyWithTag {
                 agent: agent.clone(),
                 tag: tag_str,
@@ -123,7 +130,7 @@ pub fn remove_criterion_for_objector(
         None,
     )?;
     for link in links {
-        if ActionHash::from(link.target.clone()).eq(&input.target_criterion_hash) {
+        if ActionHash::try_from(link.target.clone()).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap().eq(&input.target_criterion_hash) {
             delete_link(link.create_link_hash)?;
         }
     }
@@ -133,7 +140,7 @@ pub fn remove_criterion_for_objector(
         None,
     )?;
     for link in links {
-        if AgentPubKey::from(EntryHash::from(link.target.clone()))
+        if AgentPubKey::from(EntryHash::try_from(link.target.clone()).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap())
             .eq(&input.base_objector)
         {
             delete_link(link.create_link_hash)?;

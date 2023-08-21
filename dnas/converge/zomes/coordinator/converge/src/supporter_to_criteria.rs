@@ -27,7 +27,7 @@ pub fn get_criteria_for_supporter(supporter: AgentPubKey) -> ExternResult<Vec<Re
     let get_input: Vec<GetInput> = links
         .into_iter()
         .map(|link| GetInput::new(
-            ActionHash::from(link.target).into(),
+            ActionHash::try_from(link.target).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap().into(),
             GetOptions::default(),
         ))
         .collect();
@@ -53,7 +53,7 @@ pub fn get_supporters_for_criterion(
         .map(|link| {
             let tag = link.tag;
             let tag_str = String::from_utf8(tag.0).unwrap();
-            let agent = AgentPubKey::from(EntryHash::from(link.target));
+            let agent = AgentPubKey::from(EntryHash::try_from(link.target).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected entryhash".into()))).unwrap());
             let agent_with_tag = AgentPubKeyWithTag {
                 agent: agent.clone(),
                 tag: tag_str,
@@ -78,7 +78,7 @@ pub fn remove_criterion_for_supporter(
         None,
     )?;
     for link in links {
-        if ActionHash::from(link.target.clone()).eq(&input.target_criterion_hash) {
+        if ActionHash::try_from(link.target.clone()).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap().eq(&input.target_criterion_hash) {
             delete_link(link.create_link_hash)?;
         }
     }
@@ -88,7 +88,7 @@ pub fn remove_criterion_for_supporter(
         None,
     )?;
     for link in links {
-        if AgentPubKey::from(EntryHash::from(link.target.clone()))
+        if AgentPubKey::from(EntryHash::try_from(link.target.clone()).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected entryhash".into()))).unwrap())
             .eq(&input.base_supporter)
         {
             delete_link(link.create_link_hash)?;

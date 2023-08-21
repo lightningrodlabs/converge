@@ -49,7 +49,7 @@ pub fn get_criterion_comment(
         .into_iter()
         .max_by(|link_a, link_b| link_a.timestamp.cmp(&link_b.timestamp));
     let latest_criterion_comment_hash = match latest_link {
-        Some(link) => ActionHash::from(link.target.clone()),
+        Some(link) => ActionHash::try_from(link.target.clone()).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap(),
         None => original_criterion_comment_hash.clone(),
     };
     get(latest_criterion_comment_hash, GetOptions::default())

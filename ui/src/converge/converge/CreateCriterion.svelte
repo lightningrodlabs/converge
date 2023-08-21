@@ -2,7 +2,7 @@
 import { createEventDispatcher, getContext, onMount } from 'svelte';
 import type { AppAgentClient, Record, EntryHash, AgentPubKey, ActionHash, DnaHash } from '@holochain/client';
 import { clientContext } from '../../contexts';
-import type { Criterion, CreateCriterionInput } from './types';
+import type { Criterion, CreateCriterionInput, CriterionComment } from './types';
 import '@material/mwc-button';
 import { decode } from '@msgpack/msgpack';
 import '@material/mwc-snackbar';
@@ -85,10 +85,46 @@ async function createCriterion() {
       fn_name: 'create_criterion',
       payload: criterionEntry,
     });
+
     criterionHash = record.signed_action.hashed.hash;
+    // const criterionActionHash: ActionHash = record
+
+    if (alternativeTo) {
+      const res = await client.callZome({
+        cap_secret: null,
+        role_name: 'converge',
+        zome_name: 'converge',
+        fn_name: 'add_criterion_for_criterion',
+        payload: {
+          base_criterion_hash: alternativeTo,
+          target_criterion_hash: criterionHash,
+        },
+      });
+      const criterionComment: CriterionComment = { 
+        comment: '',
+        comment_reference: null,
+        objection_reference: null,
+        alternative_reference: criterionHash,
+        author: client.myPubKey,
+        created: Date.now(),
+      };
+      const criterionCommentEntry = {
+        criterion_comment: criterionComment,
+        criterion_hash: alternativeTo
+      }
+      const record: Record = await client.callZome({
+        cap_secret: null,
+        role_name: 'converge',
+        zome_name: 'converge',
+        fn_name: 'create_criterion_comment',
+        payload: criterionCommentEntry,
+      });
+    }
+
     title = '';
     dispatch('criterion-created', { criterionHash: record.signed_action.hashed.hash });
   } catch (e) {
+    console.log(e)
     errorSnackbar.labelText = `Error creating the criterion: ${e.data.data}`;
     errorSnackbar.show();
   }

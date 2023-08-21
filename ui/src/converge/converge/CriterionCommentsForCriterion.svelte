@@ -87,5 +87,5 @@ onMount(async () => {
   {/each}
 </div>
 {/if}
-<CreateCriterionComment {criterionHash} {commentReference}></CreateCriterionComment>
+<CreateCriterionComment on:criterion-comment-created={commentReference=undefined} {criterionHash} {commentReference}></CreateCriterionComment>
 

@@ -31,7 +31,7 @@ pub fn get_proposals_for_deliberation(
     let get_input: Vec<GetInput> = links
         .into_iter()
         .map(|link| GetInput::new(
-            ActionHash::from(link.target).into(),
+            ActionHash::try_from(link.target).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap().into(),
             GetOptions::default(),
         ))
         .collect();
@@ -50,7 +50,7 @@ pub fn get_deliberations_for_proposal(
     let get_input: Vec<GetInput> = links
         .into_iter()
         .map(|link| GetInput::new(
-            ActionHash::from(link.target).into(),
+            ActionHash::try_from(link.target).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap().into(),
             GetOptions::default(),
         ))
         .collect();
@@ -76,7 +76,7 @@ pub fn remove_proposal_for_deliberation(
         None,
     )?;
     for link in links {
-        if ActionHash::from(link.target.clone()).eq(&input.target_proposal_hash) {
+        if ActionHash::try_from(link.target.clone()).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap().eq(&input.target_proposal_hash) {
             delete_link(link.create_link_hash)?;
         }
     }
@@ -86,7 +86,7 @@ pub fn remove_proposal_for_deliberation(
         None,
     )?;
     for link in links {
-        if ActionHash::from(link.target.clone()).eq(&input.base_deliberation_hash) {
+        if ActionHash::try_from(link.target.clone()).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap().eq(&input.base_deliberation_hash) {
             delete_link(link.create_link_hash)?;
         }
     }

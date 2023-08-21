@@ -22,6 +22,7 @@
   let criterionFormPopup = false;
   let loading = true;
   let error: any = undefined;
+  let selectedCriterion;
   
   $: hashes, loading, error, alternatives, criterionFormPopup;
   
@@ -126,8 +127,8 @@
           target_criterion_hash: alternativeHash,
         },
       });
-      createCriterionComment('', null, null, res, Date.now())
-
+      createCriterionComment('', null, null, alternativeHash, Date.now())
+      selectedCriterion = undefined;
       // console.log(res)
     } catch (e) {
       error = e;
@@ -167,7 +168,6 @@
     } catch (e) {
       console.log(e)
     }
-
   }
   
   </script>
@@ -185,29 +185,45 @@
     {#each alternatives as a}
       <div style="margin-bottom: 8px;">
         {a.title}
+        {#if mySupport}
         <button on:click={()=>{
           acceptAlternative(a.hash)
         }}>Transfer</button>
+        {/if}
         <!-- <CriterionDetail criterionHash={hash}></CriterionDetail> -->
       </div>
     {/each}
   </div>
   <CreateCriterion deliberationHash={deliberationHash} alternativeTo = {criterionHash} bind:criterionFormPopup />
   <div style="display: flex; flex-direction: column">
-    <button on:click={(e)=>{criterionFormPopup = true}}>Create a new alternative</button>
+    <button on:click={(e)=>{criterionFormPopup = true}} style="width: fit-content">Create a new alternative to suggest</button>
     <!-- {JSON.stringify(alternatives)} -->
     <!-- {JSON.stringify(alternatives.map((a)=>{return a.hash.join(',')}))} -->
-    {#each allCriteria as c}
+    <!-- {#each allCriteria as c}
     {#if c.hash.join(',') != criterionHash.join(',') && !alternatives.map((a)=>{return a.hash.join(',')}).includes(c.hash.join(','))}
       <div style="margin-bottom: 8px;">
         {c.title}
         <button on:click={()=>{
           addAlternative(c.hash)
         }}>Suggest</button>
-        <!-- <CriterionDetail criterionHash={hash}></CriterionDetail> -->
       </div>
     {/if}
-    {/each}
+    {/each} -->
+
+    <select bind:value={selectedCriterion} style="width: fit-content">
+      <option value="" disabled selected>Select an alternative</option>
+      
+      {#each allCriteria as c (c.hash.join(','))}
+        {#if c.hash.join(',') != criterionHash.join(',') && !alternatives.map(a => a.hash.join(',')).includes(c.hash.join(','))}
+          <option value={c.hash}>
+            {c.title}
+          </option>
+        {/if}
+      {/each}
+    </select>
+    
+    <button on:click={() => addAlternative(selectedCriterion)} style="width: fit-content">Suggest</button>
+    
   </div>
   {/if}
   

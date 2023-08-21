@@ -260,9 +260,9 @@
 <div class="deliberation-section">
   <!-- <mwc-button on:click={()=>{}}>Add Alternative</mwc-button> -->
   <mwc-tab-bar style="--mdc-theme-primary: blue; margin-bottom: 10px;">
-    <mwc-tab on:click={() => {activeTab = "all"}} label="All responses"></mwc-tab>
-    <mwc-tab on:click={() => {activeTab = "objections"}}  label="Objections"></mwc-tab>
-    <mwc-tab on:click={() => {activeTab = "alternatives"}}  label="Alternatives"></mwc-tab>
+    <mwc-tab on:click={() => {activeTab = "all"; dispatch('switched-tab')}} label="All responses"></mwc-tab>
+    <mwc-tab on:click={() => {activeTab = "objections"; dispatch('switched-tab')}}  label="Objections"></mwc-tab>
+    <mwc-tab on:click={() => {activeTab = "alternatives"; dispatch('switched-tab')}}  label="Alternatives"></mwc-tab>
   </mwc-tab-bar>
   
   

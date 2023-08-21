@@ -6,7 +6,7 @@ pub fn validate_create_link_criterion_to_criterion_comments(
     _tag: LinkTag,
 ) -> ExternResult<ValidateCallbackResult> {
     // Check the entry type for the given action hash
-    let action_hash = ActionHash::from(base_address);
+    let action_hash = ActionHash::try_from(base_address).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap();
     let record = must_get_valid_record(action_hash)?;
     let _criterion: crate::Criterion = record
         .entry()
@@ -18,7 +18,7 @@ pub fn validate_create_link_criterion_to_criterion_comments(
             ),
         )?;
     // Check the entry type for the given action hash
-    let action_hash = ActionHash::from(target_address);
+    let action_hash = ActionHash::try_from(target_address).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap();;
     let record = must_get_valid_record(action_hash)?;
     let _criterion_comment: crate::CriterionComment = record
         .entry()

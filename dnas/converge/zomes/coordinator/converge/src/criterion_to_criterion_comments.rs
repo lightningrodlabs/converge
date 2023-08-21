@@ -20,7 +20,8 @@ pub fn get_criterion_comments_for_criterion(criterion_hash: ActionHash) -> Exter
     
     let get_input: Vec<GetInput> = links
         .into_iter()
-        .map(|link| GetInput::new(ActionHash::from(link.target).into(), GetOptions::default()))
+        .map(|link| GetInput::new(ActionHash::try_from(link.target).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap().into(), GetOptions::default()))
+        // .map(|link| GetInput::new(ActionHash::try_from(link.target).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap(), GetOptions::default()))
         .collect();
 
     // Get the records to filter out the deleted ones
@@ -43,7 +44,7 @@ pub fn remove_criterion_comment_for_criterion(input: RemoveCriterionCommentForCr
     let links = get_links(input.base_criterion_hash.clone(), LinkTypes::CriterionToCriterionComments, None)?;
     
     for link in links {
-        if ActionHash::from(link.target.clone()).eq(&input.target_criterion_comment_hash) {
+        if ActionHash::try_from(link.target.clone()).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap().eq(&input.target_criterion_comment_hash) {
             delete_link(link.create_link_hash)?;
         }
     }

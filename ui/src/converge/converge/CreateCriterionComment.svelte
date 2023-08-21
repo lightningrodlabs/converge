@@ -51,6 +51,8 @@ function checkKey(e) {
 }
 
 async function createCriterionComment() {  
+  // commentReference = null;
+  console.log(commentReference)
   let cr: ActionHash | undefined = undefined;
   if (commentReference && commentReference.hash) {
     cr = commentReference.hash!;
@@ -79,6 +81,7 @@ async function createCriterionComment() {
     });
 
     comment = ''
+    commentReference = null;
     dispatch('criterion-comment-created', { criterionCommentHash: record.signed_action.hashed.hash });
   } catch (e) {
     errorSnackbar.labelText = `Error creating the criterion comment: ${e.data.data}`;
@@ -90,7 +93,7 @@ async function createCriterionComment() {
 
 <style>
   .chat-input-container {
-    display: flex;
+    display: flex !important;
     justify-content: space-between;
     align-items: center;
     border: 1px solid #ccc;
@@ -132,7 +135,7 @@ async function createCriterionComment() {
       on:keydown={checkKey}
       placeholder="Type your message..."
     ></textarea>
-    <button class="send-button" on:click={createCriterionComment}>
+    <button class="send-button" on:click={() => {createCriterionComment();}}>
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" class="h-4 w-4 m-1 md:m-0" stroke-width="2"><path d="M.5 1.163A1 1 0 0 1 1.97.28l12.868 6.837a1 1 0 0 1 0 1.766L1.969 15.72A1 1 0 0 1 .5 14.836V10.33a1 1 0 0 1 .816-.983L8.5 8 1.316 6.653A1 1 0 0 1 .5 5.67V1.163Z" fill="currentColor"></path></svg>
     </button>
   </div>

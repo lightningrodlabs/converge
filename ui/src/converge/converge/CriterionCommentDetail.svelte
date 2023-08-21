@@ -4,7 +4,7 @@ import '@material/mwc-circular-progress';
 import { decode } from '@msgpack/msgpack';
 import type { Record, ActionHash, AppAgentClient, EntryHash, AgentPubKey, DnaHash } from '@holochain/client';
 import { clientContext } from '../../contexts';
-import type { CriterionComment, Objection } from './types';
+import type { CriterionComment, Objection, Criterion } from './types';
 import '@material/mwc-circular-progress';
 import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-snackbar';
@@ -35,7 +35,7 @@ let editing = false;
 
 let errorSnackbar: Snackbar;
   
-$: editing,  error, loading, record, criterionComment, objections, alternatives;
+$: editing,  error, loading, record, criterionComment, objections, alternatives, alternative;
 // object of objection hashes linked with .join(',') referencing their whole objection
 $: if (objections) {
   objectionsLookup = Object.fromEntries(objections.map((o) => [o.objection_hash, o]));
@@ -67,16 +67,17 @@ async function fetchObjection(objection_hash) {
   }
 }
 
-async function fetchAlternative(objection_hash) {
+async function fetchAlternative(alternative_hash) {
   try {
     let record = await client.callZome({
       cap_secret: null,
       role_name: 'converge',
       zome_name: 'converge',
-      fn_name: 'get_alternative_link',
-      payload: objection_hash,
+      fn_name: 'get_criterion',
+      payload: alternative_hash,
     });
-    return record
+    let output = decode((record.entry as any).Present.entry) as Criterion;
+    return output
   } catch (e: any) {
     console.log(e)
   }
@@ -101,10 +102,14 @@ async function fetchCriterionComment() {
       console.log(criterionComment.objection_reference)
 
       if (criterionComment.objection_reference) {
+        console.log('fetching objection')
         objection = await fetchObjection(criterionComment.objection_reference)
-      } else if (criterionComment.alternative_reference) {
+      }
+      else if (criterionComment.alternative_reference) {
+        console.log('fetching alternative')
         alternative = await fetchAlternative(criterionComment.alternative_reference)
-      } else if (criterionComment.comment_reference) {
+      }
+      else if (criterionComment.comment_reference) {
         let res = await await client.callZome({
           cap_secret: null,
           role_name: 'converge',
@@ -161,7 +166,7 @@ async function deleteCriterionComment() {
   } }
   on:edit-canceled={() => { editing = false; } }
 ></EditCriterionComment>
-{:else}
+{:else if false}
 
 <div style="display: flex; flex-direction: column;">
   <!-- <div style="display: flex; flex-direction: row">
@@ -177,18 +182,22 @@ async function deleteCriterionComment() {
   {#if criterionComment && criterionComment.alternative_reference && alternativesLookup}
     {JSON.stringify(alternativesLookup[criterionComment.alternative_reference.join(',')].tag)}
   {/if} -->
-
+====================<br>
   {#if objection}
     {objection.comment}
   {/if}
 
   {#if alternative}
-    {JSON.stringify(alternative)}
+    {JSON.stringify(alternative.title)}
+    hi
   {/if}
 
   {#if respondingTo}
     {JSON.stringify(respondingTo.comment)}
   {/if}
+
+  <!-- {JSON.stringify(criterionComment.alternative_reference)} -->
+  <!-- <button on:click={()=>{fetchAlternative(criterionComment.alternative_reference)}}>fetch alternative</button> -->
 
   <div style="display: flex; flex-direction: row; margin-bottom: 4px">
     <span style="margin-right: 4px"><strong>Comment:</strong></span>
@@ -203,5 +212,108 @@ async function deleteCriterionComment() {
   <button style="width: fit-content;" on:click={() => {commentReference = {hash: criterionCommentHash, comment: criterionComment.comment}}}>Reply</button>
 
 </div>
+{:else}
+<!-- Assuming you have necessary MWC components and styles imported -->
+
+<div class="chat-container">
+  
+  <!-- Example of a Comment Card -->
+  <div class="comment-card">
+    <!-- {JSON.stringify(criterionComment.alternative_reference)} -->
+    <!-- Comment content -->
+    {#if objection}
+      <div class="comment-bubble">{objection.comment}</div>
+    {/if}
+
+    {#if alternative}
+      <div class="comment-bubble">{alternative.title}</div>
+    {/if}
+
+    {#if respondingTo}
+      <div class="comment-bubble">{respondingTo.comment}</div>
+    {/if}
+
+    <!-- Comment details -->
+    <div class="comment-details">
+      <span class="comment-text">{criterionComment.comment}</span>
+      <span class="timestamp">{new Date(criterionComment.created / 1000).toLocaleString()}</span>
+      <span class="timestamp">
+      <button class="reply" on:click={() => {commentReference = {hash: criterionCommentHash, comment: criterionComment.comment}}}>Reply</button>
+
+      </span>
+    </div>
+
+    <!-- Action Buttons -->
+    <!-- <div class="action-buttons"> -->
+      <!-- <mwc-icon-button icon="edit" on:click={() => { editing = true; }}></mwc-icon-button> -->
+      <!-- <mwc-icon-button icon="delete" on:click={() => deleteCriterionComment()}></mwc-icon-button> -->
+      <!-- <button class="reply" on:click={() => {commentReference = {hash: criterionCommentHash, comment: criterionComment.comment}}}>Reply</button> -->
+    <!-- </div> -->
+  </div>
+</div>
+
+<style>
+  .reply {
+    width: fit-content;
+    border: none;
+    background: lightgray;
+    border-radius: 4px;
+    margin-left: 10px;
+    color: gray;
+    cursor: pointer;
+  }
+
+  .reply:hover {
+    background: gray;
+    color: white;
+  }
+
+  .chat-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .comment-card {
+    background-color: #f3f3f3;
+    border-radius: 10px;
+    padding: 10px;
+    position: relative;
+    margin: 10px;
+  }
+
+  .comment-bubble {
+    background-color: #e9e9e9;
+    border-radius: 15px;
+    padding: 10px;
+    margin-bottom: 8px;
+  }
+
+  .comment-details {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .comment-text {
+    white-space: pre-line;
+    flex: 1;
+  }
+
+  .timestamp {
+    font-size: 0.8em;
+    color: #7f7f7f;
+  }
+
+  .action-buttons {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    display: flex;
+    gap: 5px;
+  }
+</style>
+
 {/if}
 
