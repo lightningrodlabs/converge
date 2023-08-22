@@ -25,6 +25,20 @@
 
   $: client, loading, store, profilesStore;
 
+  // let textValue = 'sadfassdaf';
+  
+  // function logSelectionDetails() {
+  //   const textarea = document.getElementById('myTextarea');
+  //   const selectionStart = textarea.selectionStart;
+  //   const selectionEnd = textarea.selectionEnd;
+  //   const selectionLength = selectionEnd - selectionStart;
+
+  //   console.log({
+  //     offset: selectionStart,
+  //     length: selectionLength
+  //   });
+  // }
+
   onMount(async () => {
     // profilesStore = setupProfilesStore();
     // We pass '' as url because it will dynamically be replaced in launcher environments
@@ -48,6 +62,12 @@
     currentHash = value;
   });
 </script>
+
+<!-- <textarea  on:mousemove={(e)=>{console.log(e)}} disabled>lkjnsfd lasjdf lasjasdf</textarea>
+<button on:click={() => {}}>Dashboard</button> -->
+
+<!-- <textarea disabled bind:value={textValue} id="myTextarea" rows="10" cols="30"></textarea>
+<button on:click={logSelectionDetails}>Log Selection</button> -->
 
 <main class="converge-container">
 {#if profilesStore}
