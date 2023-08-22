@@ -6,6 +6,7 @@ import { clientContext } from '../../contexts';
 import CriterionDetail from './Criterion.svelte';
 import type { ConvergeSignal } from './types';
 //  import mwc-checkbox
+import ObjectionMini from './Objection.svelte'
 import '@material/mwc-switch';
 
 // export let objector: AgentPubKey;
@@ -67,10 +68,11 @@ async function fetchObjections() {
 <span>No Objections found for this criteria.</span>
 {:else}
   {#each objections as objection}
-    <div style="margin-bottom: 8px;">
-      {JSON.stringify(objection.tag)}
+    <ObjectionMini objection={objection.tag}></ObjectionMini>
+    <!-- <div style="margin-bottom: 8px;"> -->
+      <!-- {JSON.stringify(objection.tag)} -->
       <!-- <CriterionDetail criterionHash={hash}></CriterionDetail> -->
-    </div>
+    <!-- </div> -->
   {/each}
   {/if}
 </div>

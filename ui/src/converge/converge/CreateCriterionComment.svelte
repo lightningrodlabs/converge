@@ -7,6 +7,7 @@ import '@material/mwc-button';
 import '@material/mwc-snackbar';
 import type { Snackbar } from '@material/mwc-snackbar';
 import '@vaadin/date-time-picker/theme/material/vaadin-date-time-picker.js';
+import '@material/mwc-checkbox';
 
 import '@material/mwc-textfield';
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
@@ -15,6 +16,7 @@ const dispatch = createEventDispatcher();
 
 export let criterionHash: ActionHash;
 export let commentReference: any;
+export let commentIsAnObjection: boolean;
 
 // let commentReference!: ActionHash | undefined;
 let objectionReference!: ActionHash | undefined;
@@ -50,7 +52,7 @@ function checkKey(e) {
   }
 }
 
-async function createCriterionComment() {  
+async function createCriterionComment() {
   // commentReference = null;
   console.log(commentReference)
   let cr: ActionHash | undefined = undefined;
@@ -82,6 +84,7 @@ async function createCriterionComment() {
 
     comment = ''
     commentReference = null;
+    commentIsAnObjection = false;
     dispatch('criterion-comment-created', { criterionCommentHash: record.signed_action.hashed.hash });
   } catch (e) {
     errorSnackbar.labelText = `Error creating the criterion comment: ${e.data.data}`;
@@ -89,12 +92,89 @@ async function createCriterionComment() {
   }
 }
 
+async function createCriterionCommentCustom(inputComment, comment_reference, objection_reference, alternative_reference, created) {  
+    const criterionComment: CriterionComment = { 
+      comment: comment!,
+      comment_reference: comment_reference,
+      objection_reference: objection_reference,
+      alternative_reference: alternative_reference,
+      author: client.myPubKey,
+      created: created!,
+    };
+
+    const criterionCommentEntry = {
+      criterion_comment: criterionComment,
+      criterion_hash: criterionHash
+    }
+    
+    try {
+      const record: Record = await client.callZome({
+        cap_secret: null,
+        role_name: 'converge',
+        zome_name: 'converge',
+        fn_name: 'create_criterion_comment',
+        payload: criterionCommentEntry,
+      });
+
+      comment = ''
+      commentReference = null;
+      commentIsAnObjection = false;
+      dispatch('criterion-comment-created', { criterionCommentHash: record.signed_action.hashed.hash });
+    } catch (e) {
+      errorSnackbar.labelText = `Error creating the criterion comment: ${e.data.data}`;
+      errorSnackbar.show();
+    }
+  }
+
+async function removeObjection() {
+    try {
+      const res = await client.callZome({
+        cap_secret: null,
+        role_name: 'converge',
+        zome_name: 'converge',
+        fn_name: 'remove_criterion_for_objector',
+        payload: {
+          base_objector: client.myPubKey,
+          target_criterion_hash: criterionHash,
+        },
+      });
+    } catch (e) {
+      console.log("error", e)
+    }
+  }
+
+async function addObjection() {
+    await removeObjection()
+    try {
+      const res = await client.callZome({
+        cap_secret: null,
+        role_name: 'converge',
+        zome_name: 'converge',
+        fn_name: 'add_criterion_for_objector',
+        payload: {
+          base_objector: client.myPubKey,
+          target_criterion_hash: criterionHash,
+          comment: comment
+        },
+      });
+      console.log(res)
+      // let s = decode(res) as
+      // let s = decode((record.entry as any).Present.entry) as Criterion;
+      // console.log(s)
+
+      createCriterionCommentCustom('', null, res, null, Date.now())
+
+    } catch (e) {
+      console.log("error", e)
+    }
+  }
+
 </script>
 
 <style>
   .chat-input-container {
     display: flex !important;
-    justify-content: space-between;
+    justify-content: space-between !important;
     align-items: center;
     border: 1px solid #ccc;
     padding: 8px;
@@ -111,12 +191,21 @@ async function createCriterionComment() {
   .send-button {
     cursor: pointer;
     padding: 10px;
-    background-color: #007BFF;
+    /* background-color: #007BFF; */
+    background-color: blue;
     color: #ffffff;
     height: 40px;
     width: 40px;
     border: none;
     border-radius: 4px;
+  }
+
+  .responding-to {
+    padding: 10px;
+    background-color: #efeeee;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
   }
 </style>
 
@@ -126,7 +215,10 @@ async function createCriterionComment() {
   <!-- <span style="font-size: 18px">Create CriterionComment</span> -->
   
   {#if commentReference}
-    {JSON.stringify(commentReference.comment)}<br>
+  <div class="responding-to">
+    <div>⬐ Responding to: {JSON.stringify(commentReference.comment)}</div>
+    <div style="cursor: pointer; display:flex; flex-direction: column; align-items:end;" on:click={()=>{commentReference = undefined}}>✖</div>
+  </div>
   {/if}
   <div class="chat-input-container">
     <textarea
@@ -135,7 +227,13 @@ async function createCriterionComment() {
       on:keydown={checkKey}
       placeholder="Type your message..."
     ></textarea>
-    <button class="send-button" on:click={() => {createCriterionComment();}}>
+    <button class="send-button" on:click={() => {
+      if (commentIsAnObjection) {
+        addObjection()
+      } else {
+        createCriterionComment();
+      }
+    }}>
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" class="h-4 w-4 m-1 md:m-0" stroke-width="2"><path d="M.5 1.163A1 1 0 0 1 1.97.28l12.868 6.837a1 1 0 0 1 0 1.766L1.969 15.72A1 1 0 0 1 .5 14.836V10.33a1 1 0 0 1 .816-.983L8.5 8 1.316 6.653A1 1 0 0 1 .5 5.67V1.163Z" fill="currentColor"></path></svg>
     </button>
   </div>

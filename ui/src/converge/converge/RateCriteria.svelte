@@ -121,7 +121,7 @@ async function fetchRatings() {
       }, {});
       allRatings = newRatings
     }
-    // console.log(allRatings)
+    console.log(allRatings)
   } catch (e) {
     console.log(e)
     error = e;

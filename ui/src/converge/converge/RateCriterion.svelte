@@ -27,6 +27,7 @@ let error: any = undefined;
 
 let record: Record | undefined;
 let criterion: Criterion | undefined;
+let objections;
 let supporters: Array<string> | undefined;
 let sponsored: boolean | undefined;
 let support: number | undefined;
@@ -41,7 +42,7 @@ let combinedRating = 0;
 let errorSnackbar: Snackbar;
 const scoringLevel = 4
   
-$:  error, loading, record, criterion, supporters, sponsored, responded, myEvaluation, deliberated, ratings, addEvaluationPercentage, averageSupport;
+$:  error, loading, record, criterion, objections, supporters, sponsored, responded, myEvaluation, deliberated, ratings, addEvaluationPercentage, averageSupport;
 
 $: responded = ratings.some(item => item["agentAsString"] === client.myPubKey.join(","));
 $: if (responded) {
@@ -141,8 +142,15 @@ async function fetchSupport() {
           return map;
         }, new Map()).values()
       );
-      support = supporters.reduce((sum, item) => sum + JSON.parse(item["tag"]), 0);
-      averageSupport = support / supporters.length
+      support = supporters.reduce((sum, item) => sum + JSON.parse(item["tag"]).percentage, 0);
+      let objectionCount;
+      if (objections) {
+        objectionCount = objections.length;
+      } else {
+        objectionCount = 0;
+      }
+      let adjustedSupport = Math.max(0, support - objectionCount)
+      averageSupport = adjustedSupport / supporters.length
       if (supporters) {
         sponsored = supporters.some(item => item["agent"] === client.myPubKey.join(","));
       }
@@ -150,6 +158,21 @@ async function fetchSupport() {
     }
   } catch (e) {
     console.log(e)
+    error = e;
+  }
+}
+
+async function fetchObjections() {
+  try {
+    const records = await client.callZome({
+      cap_secret: null,
+      role_name: 'converge',
+      zome_name: 'converge',
+      fn_name: 'get_objectors_for_criterion',
+      payload: criterionHash,
+    });
+    objections = records;
+  } catch (e) {
     error = e;
   }
 }

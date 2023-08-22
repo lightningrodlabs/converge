@@ -25,6 +25,7 @@ let error: any = undefined;
 
 let record: Record | undefined;
 let criterion: Criterion | undefined;
+let objections;
 let supporters: Array<string> | undefined;
 let sponsored: boolean | undefined;
 let support: number | undefined;
@@ -43,12 +44,15 @@ onMount(async () => {
   if (criterionHash === undefined) {
     throw new Error(`The criterionHash input is required for the CriterionDetail element`);
   }
-  await fetchCriterion().then(() => fetchSupport());
+  await fetchCriterion();
+  await fetchSupport();
+  await fetchObjections();
   client.on('signal', signal => {
     if (signal.zome_name !== 'converge') return;
     const payload = signal.payload as ConvergeSignal;
     if (!['LinkCreated', 'LinkDeleted'].includes(payload.type)) return;
     fetchSupport();
+    fetchObjections();
   });
 });
 
@@ -74,6 +78,21 @@ async function fetchCriterion() {
   }
 
   loading = false;
+}
+
+async function fetchObjections() {
+  try {
+    const records = await client.callZome({
+      cap_secret: null,
+      role_name: 'converge',
+      zome_name: 'converge',
+      fn_name: 'get_objectors_for_criterion',
+      payload: criterionHash,
+    });
+    objections = records;
+  } catch (e) {
+    error = e;
+  }
 }
 
 async function fetchSupport() {
@@ -232,17 +251,26 @@ async function scrollToDiv() {
 
     <!-- <span style="white-space: pre-line">{ criterion.objections }</span> -->
     {#if support}
-      <div style="display: flex; flex-direction: row; margin-bottom: 16px; font-size: .8em">
+      <div style="display: flex; flex-direction: row; font-size: .8em">
         {supporters.length} supporters
       </div>
-      <div style="display: flex; flex-direction: row; font-size: .8em">
+      <!-- <div style="display: flex; flex-direction: row; font-size: .8em">
         {JSON.stringify(support / supporters.length)} average support
-        <!-- {support} support -->
-      </div>
+      </div> -->
     {:else}
       <div style="display: flex; flex-direction: row; font-size: .8em">
         0 supporters
       </div>
+    {/if}
+
+    {#if objections}
+    <div style="display: flex; flex-direction: row; margin-bottom: 16px; font-size: .8em">
+      {objections.length} objections
+    </div>
+    {:else}
+    <div style="display: flex; flex-direction: row; margin-bottom: 16px; font-size: .8em">
+      o objections
+    </div>
     {/if}
 
   </div>
@@ -345,11 +373,13 @@ async function scrollToDiv() {
 
   <!-- OBJECT BUTTON -->
   <div style="display: flex; flex-direction: column; font-size: .8em">
-    <button style="height: 100%;" on:click={() => {criterionPopupBoolean = !criterionPopupBoolean; console.log(criterionPopupBoolean); scrollToDiv()}}>
+    <button style="height: 100%;; width: 80px" on:click={() => {criterionPopupBoolean = !criterionPopupBoolean; console.log(criterionPopupBoolean); scrollToDiv()}}>
       {#if criterionPopupBoolean}
-      <mwc-icon-button icon="^"></mwc-icon-button>
+      <mwc-icon-button style="bottom: 8px;
+      position: relative;" icon="︿"></mwc-icon-button>
       {:else}
-      <mwc-icon-button icon="v"></mwc-icon-button>
+      <mwc-icon-button style="top: 8px;
+      position: relative;" icon="﹀"></mwc-icon-button>
       {/if}
     </button>
   </div>

@@ -257,16 +257,31 @@
 {#if criterionPopupBoolean}
 
 <!-- ACTIVITY STARTS -->
-<div class="deliberation-section">
+<div>
   <!-- <mwc-button on:click={()=>{}}>Add Alternative</mwc-button> -->
-  <mwc-tab-bar style="--mdc-theme-primary: blue; margin-bottom: 10px;">
+  <!-- <mwc-tab-bar style="--mdc-theme-primary: blue; margin-bottom: 10px;">
     <mwc-tab on:click={() => {activeTab = "all"; dispatch('switched-tab')}} label="All responses"></mwc-tab>
     <mwc-tab on:click={() => {activeTab = "objections"; dispatch('switched-tab')}}  label="Objections"></mwc-tab>
     <mwc-tab on:click={() => {activeTab = "alternatives"; dispatch('switched-tab')}}  label="Alternatives"></mwc-tab>
-  </mwc-tab-bar>
+  </mwc-tab-bar> -->
+
+  <!-- <div class="criterion-popup-header">
+    <select bind:value={activeTab}>
+      <option value='all'>Filter: none</option>
+      <option value='objections'>Filter: objections</option>
+      <option value='alternatives'>Filter: alternatives</option>
+    </select>
+  </div> -->
   
   
   <!-- COMMENTS STARTS -->
+  <CriterionCommentsForCriterion {criterionHash} {objections} {alternatives} {deliberationHash} {mySupport}></CriterionCommentsForCriterion>
+
+
+
+  <!-- COMMENTS STARTS -->
+  <!-- old comments -->
+  {#if false}
   {#if activeTab == "all"}
     <CriterionCommentsForCriterion {criterionHash} {objections} {alternatives}></CriterionCommentsForCriterion>
   {:else if activeTab == "objections"}
@@ -291,6 +306,7 @@
   
   <!-- </div>
   </div> -->
+  {/if}
 </div>
 {/if}
   

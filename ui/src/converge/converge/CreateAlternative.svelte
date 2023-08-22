@@ -57,10 +57,14 @@
         payload: criterionHash,
       });
       // hashes = records.map(r => r.signed_action.hashed.hash);
-      alternatives = records.map(record => {
-        let a = decode((record.entry as any).Present.entry) as Criterion;
-        return {title: a.title, hash: record.signed_action.hashed.hash}
-      })
+      if (records) {
+        alternatives = records.map(record => {
+          let a = decode((record.entry as any).Present.entry) as Criterion;
+          return {title: a.title, hash: record.signed_action.hashed.hash}
+        })
+      } else {
+        return {}
+      }
     } catch (e) {
       error = e;
     }
@@ -172,17 +176,20 @@
   
   </script>
   
+
   {#if loading }
   <div style="display: flex; flex: 1; align-items: center; justify-content: center">
     <mwc-circular-progress indeterminate></mwc-circular-progress>
   </div>
   {:else if error}
   <span>Error fetching criteria: {error.data.data}.</span>
-  {:else if allCriteria.length === 0}
+  {:else if allCriteria && allCriteria.length === 0}
   <span>No criteria found for this criterion.</span>
-  {:else if alternatives}
-  <div style="display: flex; flex-direction: column; height: 160px; overflow: scroll;">
-    {#each alternatives as a}
+  {:else if alternatives && allCriteria}
+  {#if true}
+  
+  <!-- <div style="display: flex; flex-direction: column; height: 160px; overflow: scroll;"> -->
+    <!-- {#each alternatives as a}
       <div style="margin-bottom: 8px;">
         {a.title}
         {#if mySupport}
@@ -190,13 +197,10 @@
           acceptAlternative(a.hash)
         }}>Transfer</button>
         {/if}
-        <!-- <CriterionDetail criterionHash={hash}></CriterionDetail> -->
       </div>
-    {/each}
-  </div>
+    {/each} -->
+  <!-- </div> -->
   <CreateCriterion deliberationHash={deliberationHash} alternativeTo = {criterionHash} bind:criterionFormPopup />
-  <div style="display: flex; flex-direction: column">
-    <button on:click={(e)=>{criterionFormPopup = true}} style="width: fit-content">Create a new alternative to suggest</button>
     <!-- {JSON.stringify(alternatives)} -->
     <!-- {JSON.stringify(alternatives.map((a)=>{return a.hash.join(',')}))} -->
     <!-- {#each allCriteria as c}
@@ -210,20 +214,22 @@
     {/if}
     {/each} -->
 
-    <select bind:value={selectedCriterion} style="width: fit-content">
-      <option value="" disabled selected>Select an alternative</option>
+    <select bind:value={selectedCriterion} on:change={()=>{addAlternative(selectedCriterion)}} style="width: fit-content; margin: 6px">
+      <option value="" disabled selected>Suggest existing alternative</option>
       
       {#each allCriteria as c (c.hash.join(','))}
         {#if c.hash.join(',') != criterionHash.join(',') && !alternatives.map(a => a.hash.join(',')).includes(c.hash.join(','))}
           <option value={c.hash}>
-            {c.title}
+            {c.title} (click to suggest)
           </option>
         {/if}
       {/each}
     </select>
     
-    <button on:click={() => addAlternative(selectedCriterion)} style="width: fit-content">Suggest</button>
+    <!-- <button on:click={() => addAlternative(selectedCriterion)} style="width: fit-content">Suggest</button> -->
     
-  </div>
+    <button on:click={(e)=>{criterionFormPopup = true}} style="width: fit-content; margin: 6px;">Create alternative</button>
   {/if}
-  
+  {:else}
+  No
+  {/if}

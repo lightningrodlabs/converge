@@ -169,7 +169,7 @@ async function createCriterion() {
       <div style="display: flex; flex-direction: column">
         <h2>Add a new criterion</h2>
         {#if alternativeToFull}
-        <h3>Alternative to {alternativeToFull.title}</h3>
+        <div><span class="green-alert">↯ </span><strong>Alternative to {alternativeToFull.title}</strong></div><br>
         {/if}
         
 

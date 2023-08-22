@@ -1,31 +1,38 @@
 <script lang="ts">
   import { onMount, setContext } from 'svelte';
   import type { ActionHash, AppAgentClient } from '@holochain/client';
-  import { AppAgentWebsocket } from '@holochain/client';
-  import '@material/mwc-circular-progress';
+  import { AppWebsocket, AppAgentWebsocket } from '@holochain/client';
   import { view, viewHash, navigate } from './store.js';
-
   import { clientContext } from './contexts';
-
+  import { ProfilesStore, ProfilesClient } from "@holochain-open-dev/profiles";
+  
+  import '@material/mwc-circular-progress';
+  import "@holochain-open-dev/profiles/dist/elements/profiles-context.js";
   import CreateDeliberation from "./converge/converge/CreateDeliberation.svelte"
   import AllDeliberations from "./converge/converge/AllDeliberations.svelte"
-    import CreateCriterion from './converge/converge/CreateCriterion.svelte';
-    import DeliberationDetail from './converge/converge/DeliberationDetail.svelte';
-    import ProposalDetail from './converge/converge/ProposalDetail.svelte';
-    import Header from './converge/converge/Header.svelte';
-    import DeliberationsForDeliberator from './converge/converge/DeliberationsForDeliberator.svelte';
-  
+  import CreateCriterion from './converge/converge/CreateCriterion.svelte';
+  import DeliberationDetail from './converge/converge/DeliberationDetail.svelte';
+  import ProposalDetail from './converge/converge/ProposalDetail.svelte';
+  import Header from './converge/converge/Header.svelte';
+  import DeliberationsForDeliberator from './converge/converge/DeliberationsForDeliberator.svelte';
+
   let client: AppAgentClient | undefined;
   let loading = true;
   let store = undefined;
   let currentHash: ActionHash | undefined;
   let currentView: string | undefined;
+  let profilesStore = undefined;
 
-  $: client, loading, store;
+  $: client, loading, store, profilesStore;
 
   onMount(async () => {
+    // profilesStore = setupProfilesStore();
     // We pass '' as url because it will dynamically be replaced in launcher environments
     client = await AppAgentWebsocket.connect('', 'converge');
+    profilesStore = new ProfilesStore(new ProfilesClient(client, 'converge'), {
+      avatarMode: "avatar-optional",
+    });
+    console.log(profilesStore)
     loading = false;
   });
 
@@ -43,6 +50,13 @@
 </script>
 
 <main class="converge-container">
+{#if profilesStore}
+
+<profiles-context store={profilesStore}>
+  <profile-prompt>
+    <!-- <list-profiles on:agent-selected={e => alert(e.detail.agentPubKey)}></list-profiles> -->
+    <!-- <search-agent include-myself></search-agent> -->
+
   <Header />
   <div class="white-container">
   {#if loading}
@@ -64,6 +78,10 @@
     </div>
   {/if}
   </div>
+</profile-prompt>
+<create-profile></create-profile>
+</profiles-context>
+{/if}
 </main>
 
 <style>

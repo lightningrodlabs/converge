@@ -10,13 +10,18 @@ import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
 import EditCriterionComment from './EditCriterionComment.svelte'; 
+import ObjectionMini from './Objection.svelte'
+import AlternativeMini from './Alternative.svelte'
 
 const dispatch = createEventDispatcher();
 
 export let criterionCommentHash: ActionHash;
-export let objections;
-export let alternatives;
-export let commentReference;;
+export let filter;
+export let mySupport;
+export let criterionHash;
+// export let objections;
+// export let alternatives;
+export let commentReference;
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
@@ -25,8 +30,8 @@ let error: any = undefined;
 
 let record: Record | undefined;
 let criterionComment: CriterionComment | undefined;
-let objectionsLookup: any = undefined;
-let alternativesLookup: any = undefined;
+// let objectionsLookup: any = undefined;
+// let alternativesLookup: any = undefined;
 let objection;
 let alternative;
 let respondingTo;
@@ -35,21 +40,22 @@ let editing = false;
 
 let errorSnackbar: Snackbar;
   
-$: editing,  error, loading, record, criterionComment, objections, alternatives, alternative;
+$: editing,  error, loading, record, criterionComment, alternative;
 // object of objection hashes linked with .join(',') referencing their whole objection
-$: if (objections) {
-  objectionsLookup = Object.fromEntries(objections.map((o) => [o.objection_hash, o]));
-}
+// $: if (objections) {
+//   objectionsLookup = Object.fromEntries(objections.map((o) => [o.objection_hash, o]));
+// }
 
-$: if (alternatives) {
-  alternativesLookup = Object.fromEntries(alternatives.map((o) => [o.alternative_hash, o]));
-}
+// $: if (alternatives) {
+//   alternativesLookup = Object.fromEntries(alternatives.map((o) => [o.alternative_hash, o]));
+// }
 
 onMount(async () => {
   if (criterionCommentHash === undefined) {
     throw new Error(`The criterionCommentHash input is required for the CriterionCommentDetail element`);
   }
   await fetchCriterionComment();
+  loading = false;
 });
 
 async function fetchObjection(objection_hash) {
@@ -76,7 +82,9 @@ async function fetchAlternative(alternative_hash) {
       fn_name: 'get_criterion',
       payload: alternative_hash,
     });
-    let output = decode((record.entry as any).Present.entry) as Criterion;
+    let c = decode((record.entry as any).Present.entry) as Criterion;
+    let output:any = {...c};
+    output.hash = alternative_hash;
     return output
   } catch (e: any) {
     console.log(e)
@@ -146,6 +154,8 @@ async function deleteCriterionComment() {
   }
 }
 </script>
+
+{#if filter == "all" || filter == "objections" && objection || filter == "alternatives" && alternative}
 
 <mwc-snackbar bind:this={errorSnackbar} leading>
 </mwc-snackbar>
@@ -219,18 +229,27 @@ async function deleteCriterionComment() {
   
   <!-- Example of a Comment Card -->
   <div class="comment-card">
+    <!-- import profile-user.png -->
+    <!-- <img src="profile-user.png" alt="Profile Picture" width="50" height="50"> -->
     <!-- {JSON.stringify(criterionComment.alternative_reference)} -->
     <!-- Comment content -->
     {#if objection}
-      <div class="comment-bubble">{objection.comment}</div>
-    {/if}
-
-    {#if alternative}
-      <div class="comment-bubble">{alternative.title}</div>
-    {/if}
-
-    {#if respondingTo}
-      <div class="comment-bubble">{respondingTo.comment}</div>
+      <div>
+        <ObjectionMini objectionHash={criterionComment.objection_reference}></ObjectionMini>
+      </div>
+    {:else if alternative}
+      <AlternativeMini {alternative} {mySupport} {criterionHash}></AlternativeMini>
+      <!-- <div>{alternative.title}</div> -->
+    {:else if respondingTo}
+      <div class="comment-bubble">
+        {#if respondingTo.objection_reference}
+          <ObjectionMini objectionHash={respondingTo.objection_reference}></ObjectionMini>
+        {:else}
+          {respondingTo.comment}
+        <!-- {:else if respondingTo.alternative_reference} -->
+          <!-- <AlternativeMini alternative={} {mySupport} {criterionHash}></AlternativeMini> -->
+        {/if}
+      </div>
     {/if}
 
     <!-- Comment details -->
@@ -239,7 +258,6 @@ async function deleteCriterionComment() {
       <span class="timestamp">{new Date(criterionComment.created / 1000).toLocaleString()}</span>
       <span class="timestamp">
       <button class="reply" on:click={() => {commentReference = {hash: criterionCommentHash, comment: criterionComment.comment}}}>Reply</button>
-
       </span>
     </div>
 
@@ -251,6 +269,8 @@ async function deleteCriterionComment() {
     <!-- </div> -->
   </div>
 </div>
+
+{/if}
 
 <style>
   .reply {
@@ -284,7 +304,7 @@ async function deleteCriterionComment() {
 
   .comment-bubble {
     background-color: #e9e9e9;
-    border-radius: 15px;
+    border-radius: 10px;
     padding: 10px;
     margin-bottom: 8px;
   }
@@ -293,7 +313,7 @@ async function deleteCriterionComment() {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    align-items: center;
+    align-items: end;
   }
 
   .comment-text {

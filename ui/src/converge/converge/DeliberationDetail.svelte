@@ -228,20 +228,22 @@ async function leaveDeliberation() {
   
   <!-- <div class="deliberation-section"> -->
     <div style="display: flex; flex-direction: row; width: fit-content;">
-
-      {deliberators.length} 
-      {#if deliberators.length == 1} deliberator {:else} deliberators {/if}
-    </div>
-
-    <div style="display: flex; flex-direction: row; width: fit-content;">
       {#if deliberators.includes(client.myPubKey.join(','))}
       <button
-      style="width: 100px;" on:click={leaveDeliberation}>Leave</button>
+      style="width: fit-content; display:flex; flex-direction: column;" on:click={leaveDeliberation}>Leave</button>
       {:else}
         <button on:click={joinDeliberation}>Join</button>
       {/if}
+      
+      &nbsp;
+      
+      {deliberators.length} 
+      {#if deliberators.length == 1} deliberator {:else} deliberators {/if}
+    <!-- </div> -->
+    <!-- <div style="display: flex; flex-direction: row; width: 100%;"> -->
 
     </div>
+
     
   <!-- </div> -->
 
@@ -269,7 +271,7 @@ async function leaveDeliberation() {
   <button on:click={() => {criterionFormPopup = true; console.log(criterionFormPopup)}} class="add-button">Add criterion</button>
   <!-- <mwc-button dense outlined>Add criterion</mwc-button> -->
   <!-- {#if criterionForm} -->
-  <CreateCriterion deliberationHash={deliberationHash} bind:criterionFormPopup />
+  <CreateCriterion deliberationHash={deliberationHash} alternativeTo={null} bind:criterionFormPopup />
   <!-- {/if} -->
   <br><br>
   <AllCriteria deliberationHash={deliberationHash} bind:criteriaCount />

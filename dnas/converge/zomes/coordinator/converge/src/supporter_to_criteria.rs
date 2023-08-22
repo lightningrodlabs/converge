@@ -10,6 +10,31 @@ pub struct AddCriterionForSupporterInput {
 pub fn add_criterion_for_supporter(
     input: AddCriterionForSupporterInput,
 ) -> ExternResult<()> {
+
+    // remove previous objections
+    let links = get_links(
+        input.base_supporter.clone(),
+        LinkTypes::ObjectorToCriteria,
+        None,
+    )?;
+    for link in links {
+        if ActionHash::try_from(link.target.clone()).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap().eq(&input.target_criterion_hash) {
+            delete_link(link.create_link_hash)?;
+        }
+    }
+    let links = get_links(
+        input.target_criterion_hash.clone(),
+        LinkTypes::CriterionToObjectors,
+        None,
+    )?;
+    for link in links {
+        if AgentPubKey::from(EntryHash::try_from(link.target.clone()).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap())
+            .eq(&input.base_supporter)
+        {
+            delete_link(link.create_link_hash)?;
+        }
+    }
+
     let tag_str = input.tag;
     let tag_bytes = tag_str.as_bytes().to_vec();
     let tag = LinkTag(tag_bytes);
