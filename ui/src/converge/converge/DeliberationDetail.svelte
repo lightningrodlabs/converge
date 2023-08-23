@@ -227,18 +227,18 @@ async function leaveDeliberation() {
   </div> -->
   
   <!-- <div class="deliberation-section"> -->
-    <div style="display: flex; flex-direction: row; width: fit-content;">
-      {#if deliberators.includes(client.myPubKey.join(','))}
-      <button
-      style="width: fit-content; display:flex; flex-direction: column;" on:click={leaveDeliberation}>Leave</button>
-      {:else}
-        <button on:click={joinDeliberation}>Join</button>
-      {/if}
-      
-      &nbsp;
+    <div style="display: flex; flex-direction: row; width: fit-content; margin-bottom: 6px;">
       
       {deliberators.length} 
-      {#if deliberators.length == 1} deliberator {:else} deliberators {/if}
+      {#if deliberators.length == 1} participant{:else} participants{/if}
+      
+      &nbsp;|&nbsp;&nbsp;
+
+      {#if deliberators.includes(client.myPubKey.join(','))}
+        <div style="text-decoration: underline; cursor: pointer; width: fit-content; display:flex; flex-direction: column;" on:click={leaveDeliberation}>Leave</div>
+      {:else}
+        <div on:click={joinDeliberation}>Join</div>
+      {/if}
     <!-- </div> -->
     <!-- <div style="display: flex; flex-direction: row; width: 100%;"> -->
 

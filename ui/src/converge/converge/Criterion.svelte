@@ -252,24 +252,20 @@ async function scrollToDiv() {
     <!-- <span style="white-space: pre-line">{ criterion.objections }</span> -->
     {#if support}
       <div style="display: flex; flex-direction: row; font-size: .8em">
-        {supporters.length} supporters
+        support: {support / supporters.length}
       </div>
       <!-- <div style="display: flex; flex-direction: row; font-size: .8em">
         {JSON.stringify(support / supporters.length)} average support
       </div> -->
     {:else}
       <div style="display: flex; flex-direction: row; font-size: .8em">
-        0 supporters
+        support: 0
       </div>
     {/if}
 
-    {#if objections}
-    <div style="display: flex; flex-direction: row; margin-bottom: 16px; font-size: .8em">
-      {objections.length} objections
-    </div>
-    {:else}
-    <div style="display: flex; flex-direction: row; margin-bottom: 16px; font-size: .8em">
-      o objections
+    {#if objections && objections.length > 0}
+    <div style="display: flex; flex-direction: row; margin-bottom: 16px; font-size: .8em; color: red;">
+      (!) objections: {objections.length}
     </div>
     {/if}
 
@@ -388,6 +384,6 @@ async function scrollToDiv() {
 </div>
 <!-- <div style="display: flex; flex-direction: row;"> -->
   <!-- hi -->
-  <CriterionPopup on:switched-tab={scrollToDiv} {criterionHash} {deliberationHash} bind:criterionPopupBoolean {criterion} {supporters} {sponsored} {support} {addSupportPercentage} {mySupport}/>
+  <CriterionPopup on:switched-tab={scrollToDiv} {criterionHash} {objections} {deliberationHash} bind:criterionPopupBoolean {criterion} {supporters} {sponsored} {support} {addSupportPercentage} {mySupport}/>
 <!-- </div> -->
 {/if}

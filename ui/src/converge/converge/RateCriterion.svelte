@@ -124,6 +124,7 @@ async function fetchCriterion() {
 }
 
 async function fetchSupport() {
+  await fetchObjections()
   try {
     let records = await client.callZome({
       cap_secret: null,
@@ -142,7 +143,7 @@ async function fetchSupport() {
           return map;
         }, new Map()).values()
       );
-      support = supporters.reduce((sum, item) => sum + JSON.parse(item["tag"]).percentage, 0);
+      support = supporters.reduce((sum, item) => sum + Number(JSON.parse(item["tag"]).percentage), 0);
       let objectionCount;
       if (objections) {
         objectionCount = objections.length;
@@ -150,6 +151,7 @@ async function fetchSupport() {
         objectionCount = 0;
       }
       let adjustedSupport = Math.max(0, support - objectionCount)
+      console.log(objections, support, objectionCount, adjustedSupport)
       averageSupport = adjustedSupport / supporters.length
       if (supporters) {
         sponsored = supporters.some(item => item["agent"] === client.myPubKey.join(","));
@@ -261,7 +263,7 @@ async function addRating() {
 </div>
 {:else if error}
 <span>Error fetching the criterion: {error}</span>
-{:else}
+{:else if support}
 
 
 <div class="outlined-item" style="border-radius: 0;">

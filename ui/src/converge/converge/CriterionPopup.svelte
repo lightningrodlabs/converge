@@ -38,7 +38,7 @@
   let activeTab = "all";
   let objection;
   const scoringLevel = 4;
-  let objections;
+  export let objections;
   let alternatives;
   
   let errorSnackbar: Snackbar;

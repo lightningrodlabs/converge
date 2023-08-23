@@ -70,8 +70,22 @@ onMount(async () => {
   });
 });
 
-
-
+async function removeObjection() {
+  try {
+    const res = await client.callZome({
+      cap_secret: null,
+      role_name: 'converge',
+      zome_name: 'converge',
+      fn_name: 'remove_criterion_for_objector',
+      payload: {
+        base_objector: client.myPubKey,
+        target_criterion_hash: criterionHash,
+      },
+    });
+  } catch (e) {
+    console.log("error", e)
+  }
+}
 // afterUpdate(() => {
 //   scrollToBottom()
 // });
@@ -107,7 +121,17 @@ onMount(async () => {
     <option value='objections'>Filter: objections</option>
     <option value='alternatives'>Filter: alternatives</option>
   </select>
+
+  {#if objections}
+    {@const agentStringToCheck = Object.values(client.myPubKey).join(',')}
+    {@const agentIsPresent = objections.some(agentObj => Object.values(agentObj.agent).join(',') === agentStringToCheck)}
+    {#if agentIsPresent}
+      {@const agent = objections.find(agentObj => Object.values(agentObj.agent).join(',') === agentStringToCheck)}
+      <div style="margin: 8px; color: red;">You objected to this criterion</div>
+      <div style="margin-right: 8px; cursor: pointer; color: gray; text-decoration: underline;" on:click={() => {removeObjection()}}>Remove objection</div>
   
+    {/if}
+  {/if}
   <!-- <label>Filter: </label> -->
 
   <!-- <div on:click={()=>{filter='all'}} style="margin-right: 8px; cursor: pointer; color: gray; font-weight: bold; text-decoration: underline;">All</div> -->
@@ -131,7 +155,7 @@ bottom: -7px;
 left: 6px;"> -->
 <div>
   <!-- <mwc-switch on:click={(e) => {console.log(e.target)}} name="choice"></mwc-switch>  -->
-  <mwc-formfield style="padding: 10px;" label="Submit comment as objection">
+  <mwc-formfield style="padding: 10px;" label="Submit comment as objection to the criterion">
     <input type="checkbox" bind:checked={commentIsAnObjection} />
     </mwc-formfield>
 </div>

@@ -11,6 +11,7 @@
   import { onMount, setContext, getContext } from 'svelte';
   import { decode } from '@msgpack/msgpack';
   import "@holochain-open-dev/profiles/dist/elements/agent-avatar.js";
+  import "@holochain-open-dev/profiles/dist/elements/my-profile.js";
   import "@holochain-open-dev/profiles/dist/elements/profiles-context.js";
   import type { Profile } from "@holochain-open-dev/profiles";
   import { encodeHashToBase64 } from "@holochain/client";
@@ -27,6 +28,8 @@
   //   ProfileListItemSkeleton,
   //   AgentAvatar,
   // } from '@holochain-open-dev/profiles';
+
+  export let initialized: boolean = false;
 
   let client: AppAgentClient = (getContext(clientContext) as any).getClient();
   let currentView;
@@ -82,6 +85,8 @@
           </div>
         <div>
   
+        {#if initialized}
+
         <ul class="nav navbar-nav float-right">
   
         <li class="bulletin" on:click={goToBulletin}>
@@ -120,10 +125,9 @@
             </span>
           </div>
         </li>
-      
+        
         <svg xmlns="http://www.w3.org/2000/svg" style="margin: 0 10" width="1" height="30" viewBox="0 0 1 30"><defs><style>.a{fill:none;stroke:rgba(0,0,0,0.15);}</style></defs><line class="a" y2="30" transform="translate(0.5)"/></svg>
-
-        <li class="middle-of-header-right"> 
+        <li class="middle-of-header-right">
           <div class="new-action-button"  on:click={() => {
             navigate("create-deliberation", {})
           }}>
@@ -135,14 +139,17 @@
             <span id="new-action">New deliberation</span>
           </div>
         </li>
-        <li>
-          <profiles-context>
-            <agent-avatar disable-tooltip={true} disable-copy={true} size={10} agent-pub-key="{encodeHashToBase64(client.myPubKey)}"></agent-avatar>
 
-          </profiles-context>
+        <svg xmlns="http://www.w3.org/2000/svg" style="margin: 0 10" width="1" height="30" viewBox="0 0 1 30"><defs><style>.a{fill:none;stroke:rgba(0,0,0,0.15);}</style></defs><line class="a" y2="30" transform="translate(0.5)"/></svg>
+        <li class="notifications-li">
+          <!-- <my-profile></my-profile> -->
+          <agent-avatar disable-tooltip={true} disable-copy={true} size={30} agent-pub-key="{encodeHashToBase64(client.myPubKey)}"></agent-avatar>
+          <!-- <profile-detail agent-pub-key="{encodeHashToBase64(client.myPubKey)}"></profile-detail> -->
+          <!-- <agent-mention agent-pub-key="{encodeHashToBase64(client.myPubKey)}"></agent-mention> -->
         </li>
-  
-        </ul>
+        
+      </ul>
+      {/if}
         </div><!-- /.navbar-collapse -->
         </div><!-- /.container-fluid -->
       </nav>

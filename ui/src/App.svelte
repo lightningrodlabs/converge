@@ -3,7 +3,7 @@
   import type { ActionHash, AppAgentClient } from '@holochain/client';
   import { AppWebsocket, AppAgentWebsocket } from '@holochain/client';
   import { view, viewHash, navigate } from './store.js';
-  import { clientContext } from './contexts';
+  import { clientContext, profilesStoreContext } from './contexts';
   import { ProfilesStore, ProfilesClient } from "@holochain-open-dev/profiles";
   import { encodeHashToBase64, type AgentPubKey } from "@holochain/client";
 
@@ -12,6 +12,8 @@
   import "@holochain-open-dev/profiles/dist/elements/profile-prompt.js";
   import "@holochain-open-dev/profiles/dist/elements/my-profile.js";
   import "@holochain-open-dev/profiles/dist/elements/list-profiles.js";
+  import "@holochain-open-dev/profiles/dist/elements/profile-list-item-skeleton.js";
+  import "@holochain-open-dev/profiles/dist/elements/profile-detail.js";
   import '@material/mwc-circular-progress';
   import "@holochain-open-dev/profiles/dist/elements/profiles-context.js";
   import CreateDeliberation from "./converge/converge/CreateDeliberation.svelte"
@@ -21,6 +23,7 @@
   import ProposalDetail from './converge/converge/ProposalDetail.svelte';
   import Header from './converge/converge/Header.svelte';
   import DeliberationsForDeliberator from './converge/converge/DeliberationsForDeliberator.svelte';
+    import { MyProfile } from '@holochain-open-dev/profiles/dist/elements/my-profile.js';
 
   let client: AppAgentClient | undefined;
   let loading = true;
@@ -28,8 +31,9 @@
   let currentHash: ActionHash | undefined;
   let currentView: string | undefined;
   let profilesStore = undefined;
+  let initialized: boolean = false;
 
-  $: client, loading, store, profilesStore;
+  $: client, loading, store, profilesStore, initialized;
   $: prof = profilesStore ? profilesStore.myProfile : undefined
 
   // let textValue = 'sadfassdaf';
@@ -60,6 +64,16 @@
       minNicknameLength: 3,
     });
 
+    await profilesStore.profiles.get(client.myPubKey).subscribe((profile) => {
+      if (profile.status == "complete") {
+        console.log(profile.value.nickname)
+        initialized = true;
+      } else {
+        console.log("not complete")
+      }
+    })
+    // console.log(x)
+
     // store = new EmergenceStore(new EmergenceClient(url,installed_app_id, client,'emergence'), profilesStore, fileStorageClient, client.myPubKey)
     // await store.sync(undefined);
 
@@ -69,6 +83,10 @@
 
   setContext(clientContext, {
     getClient: () => client,
+  });
+
+  setContext(profilesStoreContext, {
+    getProfileStore: () => profilesStore,
   });
 
   view.subscribe(value => {
@@ -88,13 +106,16 @@
 
 <main class="converge-container">
 {#if profilesStore}
-
+<!-- {profile}... -->
 <!-- <profiles-context store={profilesStore}> -->
-<profiles-context store="{profilesStore}">
-  <!-- <list-profiles on:agent-selected={e => alert(e.detail.agentPubKey)}></list-profiles> -->
+  <profiles-context store="{profilesStore}">
+    <!-- {#if !initialized} -->
+      <!-- <create-profile></create-profile> -->
+    <!-- {:else} -->
+      <!-- <list-profiles on:agent-selected={e => alert(e.detail.agentPubKey)}></list-profiles> -->
   <!-- <search-agent include-myself></search-agent> -->
   
-  <Header />
+  <Header {initialized} />
   <profile-prompt>
     <div class="white-container">
       {#if loading}
@@ -115,10 +136,10 @@
         <!-- <button on:click={() => navigate("create-deliberation")}>Create Deliberation</button> -->
       </div>
       {/if}
-      <agent-avatar disable-tooltip={true} disable-copy={true} size={10} agent-pub-key="{encodeHashToBase64(client.myPubKey)}"></agent-avatar>
     </div>
 </profile-prompt>
   <!-- <create-profile></create-profile> -->
+<!-- {/if} -->
 </profiles-context>
 {/if}
 </main>

@@ -3,8 +3,9 @@ import { createEventDispatcher, onMount, getContext } from 'svelte';
 import '@material/mwc-circular-progress';
 import { decode } from '@msgpack/msgpack';
 import type { Record, ActionHash, AppAgentClient, EntryHash, AgentPubKey, DnaHash } from '@holochain/client';
-import { clientContext } from '../../contexts';
+import { clientContext, profilesStoreContext } from '../../contexts';
 import type { CriterionComment, Objection, Criterion } from './types';
+import type { ProfilesStore } from "@holochain-open-dev/profiles";
 import '@material/mwc-circular-progress';
 import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-snackbar';
@@ -12,6 +13,9 @@ import '@material/mwc-icon-button';
 import EditCriterionComment from './EditCriterionComment.svelte'; 
 import ObjectionMini from './Objection.svelte'
 import AlternativeMini from './Alternative.svelte'
+import { encodeHashToBase64 } from "@holochain/client";
+import type { AsyncStatus } from "@holochain-open-dev/stores";
+import type { Profile } from "@holochain-open-dev/profiles";
 
 const dispatch = createEventDispatcher();
 
@@ -24,6 +28,7 @@ export let criterionHash;
 export let commentReference;
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
+let profilesStore: ProfilesStore = (getContext(profilesStoreContext) as any).getProfileStore();
 
 let loading = true;
 let error: any = undefined;
@@ -35,12 +40,16 @@ let criterionComment: CriterionComment | undefined;
 let objection;
 let alternative;
 let respondingTo;
+let nickName;
 
 let editing = false;
-
 let errorSnackbar: Snackbar;
+
   
-$: editing,  error, loading, record, criterionComment, alternative;
+$: editing,  error, loading, record, criterionComment, alternative, nickName;
+
+// $: s = store.profilesStore.profiles.get(agentPubKey)
+// $: profile = $s.status == "complete" ? $s.value : undefined
 // object of objection hashes linked with .join(',') referencing their whole objection
 // $: if (objections) {
 //   objectionsLookup = Object.fromEntries(objections.map((o) => [o.objection_hash, o]));
@@ -50,12 +59,23 @@ $: editing,  error, loading, record, criterionComment, alternative;
 //   alternativesLookup = Object.fromEntries(alternatives.map((o) => [o.alternative_hash, o]));
 // }
 
+// const getNickName = (asyncProfile:AsyncStatus<Profile>) : string => {
+//   if (asyncProfile.status != "complete") return  "..."
+//   return asyncProfile.value ? asyncProfile.value.nickname : "?"
+// }
+
 onMount(async () => {
   if (criterionCommentHash === undefined) {
     throw new Error(`The criterionCommentHash input is required for the CriterionCommentDetail element`);
   }
   await fetchCriterionComment();
   loading = false;
+
+  await profilesStore.profiles.get(criterionComment.author).subscribe((profile) => {
+    if (profile.status == "complete") {
+      nickName = profile.value.nickname
+    }
+  })
 });
 
 async function fetchObjection(objection_hash) {
@@ -228,46 +248,53 @@ async function deleteCriterionComment() {
 <div class="chat-container">
   
   <!-- Example of a Comment Card -->
-  <div class="comment-card">
-    <!-- import profile-user.png -->
-    <!-- <img src="profile-user.png" alt="Profile Picture" width="50" height="50"> -->
-    <!-- {JSON.stringify(criterionComment.alternative_reference)} -->
-    <!-- Comment content -->
-    {#if objection}
-      <div>
-        <ObjectionMini objectionHash={criterionComment.objection_reference}></ObjectionMini>
-      </div>
-    {:else if alternative}
-      <AlternativeMini {alternative} {mySupport} {criterionHash}></AlternativeMini>
-      <!-- <div>{alternative.title}</div> -->
-    {:else if respondingTo}
-      <div class="comment-bubble">
-        {#if respondingTo.objection_reference}
-          <ObjectionMini objectionHash={respondingTo.objection_reference}></ObjectionMini>
-        {:else}
-          {respondingTo.comment}
-        <!-- {:else if respondingTo.alternative_reference} -->
-          <!-- <AlternativeMini alternative={} {mySupport} {criterionHash}></AlternativeMini> -->
-        {/if}
-      </div>
-    {/if}
+  <agent-avatar disable-tooltip={true} disable-copy={true} size={40} agent-pub-key="{encodeHashToBase64(criterionComment.author)}"></agent-avatar>
 
-    <!-- Comment details -->
-    <div class="comment-details">
-      <span class="comment-text">{criterionComment.comment}</span>
-      <span class="timestamp">{new Date(criterionComment.created / 1000).toLocaleString()}</span>
-      <span class="timestamp">
-      <button class="reply" on:click={() => {commentReference = {hash: criterionCommentHash, comment: criterionComment.comment}}}>Reply</button>
-      </span>
+  <div style="width: 100%; margin-right: 20px;">
+    <div>{nickName}</div>
+    <div class="comment-card" style={criterionComment.objection_reference ? "border: 1px solid red;" : ""}>
+      <!-- {JSON.stringify()} -->
+      <!-- import profile-user.png -->
+      <!-- <img src="profile-user.png" alt="Profile Picture" width="50" height="50"> -->
+      <!-- {JSON.stringify(criterionComment.alternative_reference)} -->
+      <!-- Comment content -->
+      {#if objection}
+        <div>
+          <ObjectionMini objectionHash={criterionComment.objection_reference}></ObjectionMini>
+        </div>
+      {:else if alternative}
+        <AlternativeMini {alternative} {mySupport} {criterionHash}></AlternativeMini>
+        <!-- <div>{alternative.title}</div> -->
+      {:else if respondingTo}
+        <div class="comment-bubble">
+          {#if respondingTo.objection_reference}
+            <ObjectionMini objectionHash={respondingTo.objection_reference}></ObjectionMini>
+          {:else}
+            {respondingTo.comment}
+          <!-- {:else if respondingTo.alternative_reference} -->
+            <!-- <AlternativeMini alternative={} {mySupport} {criterionHash}></AlternativeMini> -->
+          {/if}
+        </div>
+      {/if}
+
+      <!-- Comment details -->
+      <div class="comment-details">
+        <span class="comment-text">{criterionComment.comment}</span>
+        <span class="timestamp">{new Date(criterionComment.created / 1000).toLocaleString()}</span>
+        <span class="timestamp">
+        <button class="reply" on:click={() => {commentReference = {hash: criterionCommentHash, comment: criterionComment.comment}}}>Reply</button>
+        </span>
+      </div>
+
+      <!-- Action Buttons -->
+      <!-- <div class="action-buttons"> -->
+        <!-- <mwc-icon-button icon="edit" on:click={() => { editing = true; }}></mwc-icon-button> -->
+        <!-- <mwc-icon-button icon="delete" on:click={() => deleteCriterionComment()}></mwc-icon-button> -->
+        <!-- <button class="reply" on:click={() => {commentReference = {hash: criterionCommentHash, comment: criterionComment.comment}}}>Reply</button> -->
+      <!-- </div> -->
     </div>
-
-    <!-- Action Buttons -->
-    <!-- <div class="action-buttons"> -->
-      <!-- <mwc-icon-button icon="edit" on:click={() => { editing = true; }}></mwc-icon-button> -->
-      <!-- <mwc-icon-button icon="delete" on:click={() => deleteCriterionComment()}></mwc-icon-button> -->
-      <!-- <button class="reply" on:click={() => {commentReference = {hash: criterionCommentHash, comment: criterionComment.comment}}}>Reply</button> -->
-    <!-- </div> -->
   </div>
+
 </div>
 
 {/if}
@@ -290,8 +317,9 @@ async function deleteCriterionComment() {
 
   .chat-container {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 12px;
+    padding: 10px;
   }
 
   .comment-card {
@@ -300,6 +328,8 @@ async function deleteCriterionComment() {
     padding: 10px;
     position: relative;
     margin: 10px;
+    width: 100%;
+    margin-left: 0;
   }
 
   .comment-bubble {

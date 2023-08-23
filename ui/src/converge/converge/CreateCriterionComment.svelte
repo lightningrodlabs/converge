@@ -8,6 +8,7 @@ import '@material/mwc-snackbar';
 import type { Snackbar } from '@material/mwc-snackbar';
 import '@vaadin/date-time-picker/theme/material/vaadin-date-time-picker.js';
 import '@material/mwc-checkbox';
+import { encodeHashToBase64 } from "@holochain/client";
 
 import '@material/mwc-textfield';
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
@@ -126,7 +127,7 @@ async function createCriterionCommentCustom(inputComment, comment_reference, obj
     }
   }
 
-async function removeObjection() {
+  async function removeObjection() {
     try {
       const res = await client.callZome({
         cap_secret: null,
@@ -143,7 +144,7 @@ async function removeObjection() {
     }
   }
 
-async function addObjection() {
+  async function addObjection() {
     await removeObjection()
     try {
       const res = await client.callZome({
@@ -220,7 +221,7 @@ async function addObjection() {
     <div style="cursor: pointer; display:flex; flex-direction: column; align-items:end;" on:click={()=>{commentReference = undefined}}>✖</div>
   </div>
   {/if}
-  <div class="chat-input-container">
+  <div class="chat-input-container" style={commentIsAnObjection ? "border: 2px solid red;" : ""}>
     <textarea
       class="chat-input"
       bind:value={comment}
