@@ -10,7 +10,11 @@
   import type { EntryHash, Record, AgentPubKey, ActionHash, AppAgentClient, NewEntryAction } from '@holochain/client';
   import { onMount, setContext, getContext } from 'svelte';
   import { decode } from '@msgpack/msgpack';
-  
+  import "@holochain-open-dev/profiles/dist/elements/agent-avatar.js";
+  import "@holochain-open-dev/profiles/dist/elements/profiles-context.js";
+  import type { Profile } from "@holochain-open-dev/profiles";
+  import { encodeHashToBase64 } from "@holochain/client";
+
   // import {
   //   ProfilesStore,
   //   ProfilesClient,
@@ -130,6 +134,12 @@
             <!-- <img class="nav-image" src="/assets/add_circle_black_24dp-b42cee553b2665d6f62bd5d9ffc02837cf3c5a3084fc6a5674f5edf83776f565.svg" alt="Add circle black 24dp" border="0"> -->
             <span id="new-action">New deliberation</span>
           </div>
+        </li>
+        <li>
+          <profiles-context>
+            <agent-avatar disable-tooltip={true} disable-copy={true} size={10} agent-pub-key="{encodeHashToBase64(client.myPubKey)}"></agent-avatar>
+
+          </profiles-context>
         </li>
   
         </ul>

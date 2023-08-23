@@ -5,7 +5,13 @@
   import { view, viewHash, navigate } from './store.js';
   import { clientContext } from './contexts';
   import { ProfilesStore, ProfilesClient } from "@holochain-open-dev/profiles";
-  
+  import { encodeHashToBase64, type AgentPubKey } from "@holochain/client";
+
+  import '@shoelace-style/shoelace/dist/themes/light.css';
+  import "@holochain-open-dev/profiles/dist/elements/profiles-context.js";
+  import "@holochain-open-dev/profiles/dist/elements/profile-prompt.js";
+  import "@holochain-open-dev/profiles/dist/elements/my-profile.js";
+  import "@holochain-open-dev/profiles/dist/elements/list-profiles.js";
   import '@material/mwc-circular-progress';
   import "@holochain-open-dev/profiles/dist/elements/profiles-context.js";
   import CreateDeliberation from "./converge/converge/CreateDeliberation.svelte"
@@ -24,6 +30,7 @@
   let profilesStore = undefined;
 
   $: client, loading, store, profilesStore;
+  $: prof = profilesStore ? profilesStore.myProfile : undefined
 
   // let textValue = 'sadfassdaf';
   
@@ -43,9 +50,19 @@
     // profilesStore = setupProfilesStore();
     // We pass '' as url because it will dynamically be replaced in launcher environments
     client = await AppAgentWebsocket.connect('', 'converge');
+    // profilesStore = new ProfilesStore(new ProfilesClient(client, 'converge'), {
+    //   avatarMode: "avatar-optional",
+    // });
+
+
     profilesStore = new ProfilesStore(new ProfilesClient(client, 'converge'), {
       avatarMode: "avatar-optional",
+      minNicknameLength: 3,
     });
+
+    // store = new EmergenceStore(new EmergenceClient(url,installed_app_id, client,'emergence'), profilesStore, fileStorageClient, client.myPubKey)
+    // await store.sync(undefined);
+
     console.log(profilesStore)
     loading = false;
   });
@@ -72,34 +89,36 @@
 <main class="converge-container">
 {#if profilesStore}
 
-<profiles-context store={profilesStore}>
-  <profile-prompt>
-    <!-- <list-profiles on:agent-selected={e => alert(e.detail.agentPubKey)}></list-profiles> -->
-    <!-- <search-agent include-myself></search-agent> -->
-
+<!-- <profiles-context store={profilesStore}> -->
+<profiles-context store="{profilesStore}">
+  <!-- <list-profiles on:agent-selected={e => alert(e.detail.agentPubKey)}></list-profiles> -->
+  <!-- <search-agent include-myself></search-agent> -->
+  
   <Header />
-  <div class="white-container">
-  {#if loading}
-    <div style="display: flex; flex: 1; align-items: center; justify-content: center">
-      <mwc-circular-progress indeterminate />
-    </div>
-  {:else if currentView == "deliberation"}
+  <profile-prompt>
+    <div class="white-container">
+      {#if loading}
+      <div style="display: flex; flex: 1; align-items: center; justify-content: center">
+        <mwc-circular-progress indeterminate />
+      </div>
+      {:else if currentView == "deliberation"}
       <DeliberationDetail deliberationHash={currentHash} />
-  {:else if currentView == "proposal"}
+      {:else if currentView == "proposal"}
       <ProposalDetail proposalHash={currentHash} />
-  {:else if currentView == "create-deliberation"}
-    <CreateDeliberation />
-  {:else if currentView == "dashboard"}
-    <DeliberationsForDeliberator deliberator={client.myPubKey} />
-  {:else}
-    <div id="content" style="display: flex; flex-direction: column; flex: 1;">
-      <AllDeliberations />
-      <!-- <button on:click={() => navigate("create-deliberation")}>Create Deliberation</button> -->
+      {:else if currentView == "create-deliberation"}
+      <CreateDeliberation />
+      {:else if currentView == "dashboard"}
+      <DeliberationsForDeliberator deliberator={client.myPubKey} />
+      {:else}
+      <div id="content" style="display: flex; flex-direction: column; flex: 1;">
+        <AllDeliberations />
+        <!-- <button on:click={() => navigate("create-deliberation")}>Create Deliberation</button> -->
+      </div>
+      {/if}
+      <agent-avatar disable-tooltip={true} disable-copy={true} size={10} agent-pub-key="{encodeHashToBase64(client.myPubKey)}"></agent-avatar>
     </div>
-  {/if}
-  </div>
 </profile-prompt>
-<create-profile></create-profile>
+  <!-- <create-profile></create-profile> -->
 </profiles-context>
 {/if}
 </main>
