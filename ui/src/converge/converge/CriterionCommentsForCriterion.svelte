@@ -112,8 +112,8 @@ async function removeObjection() {
 </div>
 {:else if error}
 <span>Error fetching criterion comments: {error.data.data}.</span>
-{:else if hashes && hashes.length === 0}
-<span>No criterion comments found for this criterion.</span>
+<!-- {:else if hashes && hashes.length === 0} -->
+<!-- <span>No criterion comments found for this criterion.</span> -->
 {:else}
 <div class="criterion-popup-header">
   <select bind:value={filter}>

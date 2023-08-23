@@ -34,6 +34,7 @@ let addSupportPercentage = 0;
 let mySupport;
 let criterionPopupBoolean = false;
 let myDiv;
+let commentsNumber;
 const scoringLevel = 4;
 
 let errorSnackbar: Snackbar;
@@ -131,6 +132,21 @@ async function fetchSupport() {
         mySupport = 0;
         addSupportPercentage = 0;
       }
+
+      // get comments
+      try {
+        const records = await client.callZome({
+          cap_secret: null,
+          role_name: 'converge',
+          zome_name: 'converge',
+          fn_name: 'get_criterion_comments_for_criterion',
+          payload: criterionHash,
+        });
+        commentsNumber = records.length;
+      } catch (e) {
+        error = e;
+      }
+      loading = false;
     }
     // console.log(records)
   } catch (e) {
@@ -257,15 +273,17 @@ async function scrollToDiv() {
       <!-- <div style="display: flex; flex-direction: row; font-size: .8em">
         {JSON.stringify(support / supporters.length)} average support
       </div> -->
-    {:else}
+    {/if}
+
+    {#if commentsNumber && commentsNumber > 0}
       <div style="display: flex; flex-direction: row; font-size: .8em">
-        support: 0
+        comments: {commentsNumber}
       </div>
     {/if}
 
     {#if objections && objections.length > 0}
     <div style="display: flex; flex-direction: row; margin-bottom: 16px; font-size: .8em; color: red;">
-      (!) objections: {objections.length}
+      objections: {objections.length}
     </div>
     {/if}
 
