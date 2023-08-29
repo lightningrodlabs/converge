@@ -387,13 +387,17 @@ async function scrollToDiv() {
 
   <!-- OBJECT BUTTON -->
   <div style="display: flex; flex-direction: column; font-size: .8em">
-    <button style="height: 100%;; width: 80px" on:click={() => {criterionPopupBoolean = !criterionPopupBoolean; console.log(criterionPopupBoolean); scrollToDiv()}}>
+    <button style="height: 80%;; width: 80px; 
+    background-color: transparent;
+    border: none;
+    " on:click={() => {criterionPopupBoolean = !criterionPopupBoolean; console.log(criterionPopupBoolean); scrollToDiv()}}>
       {#if criterionPopupBoolean}
       <mwc-icon-button style="bottom: 8px;
-      position: relative;" icon="︿"></mwc-icon-button>
+      position: relative;" icon="↰"></mwc-icon-button>
       {:else}
       <mwc-icon-button style="top: 8px;
-      position: relative;" icon="﹀"></mwc-icon-button>
+      position: relative;" icon="↲"></mwc-icon-button>
+      <!-- <svg style="width: 20px; hegith: 20px;" viewBox="0 0 156 156"><rect fill="none" height="8px" width="8px"/><polyline fill="none" points="208 96 128 176 48 96" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="16"/></svg> -->
       {/if}
     </button>
   </div>

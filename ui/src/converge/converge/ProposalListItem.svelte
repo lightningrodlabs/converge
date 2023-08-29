@@ -11,12 +11,16 @@ import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
 import RateCriteria from './RateCriteria.svelte';
 import '@material/mwc-linear-progress';
+import '@material/mwc-icon-button'
+import ProposalDetail from './ProposalDetail.svelte';
+
 
 const dispatch = createEventDispatcher();
 
 export let proposalHash: ActionHash;
 export let deliberationHash: ActionHash | undefined;
 export let allProposalScores;
+export let hashes;
 // let deliberationHash: ActionHash | undefined;
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
@@ -30,10 +34,12 @@ let proposal: Proposal | undefined;
 let convergence;
 let maxWeight;
 let bestScoreKey;
+let proposalPopup = false;
+let proposalDetailHash = proposalHash;
 
 let errorSnackbar: Snackbar;
   
-$:  error, loading, record, proposal;
+$:  error, loading, record, proposal, proposalPopup, proposalDetailHash, hashes;
 
 $: if (convergence && maxWeight) {
   allProposalScores[proposalHash.join(',')] = convergence / maxWeight;
@@ -41,12 +47,46 @@ $: if (convergence && maxWeight) {
 }
 
 onMount(async () => {
+  window.addEventListener("keydown", checkKey);
+
   if (proposalHash === undefined) {
     throw new Error(`The proposalHash input is required for the ProposalDetail element`);
   }
   await fetchProposal();
   // await fetchDeliberation();
 });
+
+function checkKey(e) {
+  console.log(e.key)
+  if (e.key === "Escape" && !e.shiftKey) {
+    e.preventDefault();
+    proposalPopup = false;
+  } else if (e.key === "ArrowRight") {
+    moveRight()
+  } else if (e.key === "ArrowLeft") {
+    moveLeft()
+  }
+}
+
+function moveRight() {
+  console.log(proposalDetailHash)
+  // find next hash
+  let nextHash = hashes[hashes.indexOf(proposalDetailHash) + 1]
+  if (nextHash) {
+    proposalDetailHash = nextHash
+  }
+  console.log(proposalDetailHash)
+}
+
+function moveLeft() {
+  console.log(proposalDetailHash)
+  // find next hash
+  let nextHash = hashes[hashes.indexOf(proposalDetailHash) - 1]
+  if (nextHash) {
+    proposalDetailHash = nextHash
+  }
+  console.log(proposalDetailHash)
+}
 
 async function fetchProposal() {
   loading = true;
@@ -118,9 +158,9 @@ async function deleteProposal() {
 <span>Error fetching the proposal: {error.data.data}</span>
 {:else}
 
-<div class="outlined-item list-item-mini">
+<div class="outlined-item list-item-mini criterion-outer" on:click={()=>{proposalPopup = true}}>
   <div style="display: flex; flex-direction: column; font-size: .8em">
-    <div class="vertical-progress-bar-container">
+    <!-- <div class="vertical-progress-bar-container"> -->
   
     {#if convergence && maxWeight}
     <!-- {#each Array.from({ length: 35 * 10 / 16 }) as _, index}
@@ -133,7 +173,7 @@ async function deleteProposal() {
     </div>
     {/if}
     </div>
-  </div>
+  <!-- </div> -->
 <div class="two-sides">
   <div style="display: flex; flex: 1; flex-direction: column">
     <div style="display: flex; flex-direction: row; margin-bottom: 16px">
@@ -169,5 +209,26 @@ async function deleteProposal() {
 
 <RateCriteria bind:convergence bind:maxWeight deliberationHash={deliberationHash} proposalHash={proposalHash} display={false} />
 
+{#if proposalPopup}
+<div class="backdrop">
+  <div on:click={moveLeft}>
+<mwc-icon-button style="top: 8px; background-color: white;
+border-radius: 50px; margin-right: 8px;
+position: relative;" icon="⇦"></mwc-icon-button>  
+</div>
+<button class="close-button" on:click={() => {proposalDetailHash=proposalHash; proposalPopup = false}}>esc</button><br>
+<div class="popup-container" style="padding: 30px; width: 100%; height: 76%;">
+<!-- <div class="popup-container" style="padding: 30px 24px 30px 30px;"> -->
+  <!-- {#if proposalDetailHash} -->
+  <ProposalDetail proposalHash={proposalDetailHash} on:dismiss={() => proposalPopup = false} />
+    <!-- {/if} -->
+  </div>
+  <div on:click={moveRight}>
+<mwc-icon-button style="top: 8px; background-color: white;
+border-radius: 50px; margin: 8px;
+position: relative;" icon="⇨"></mwc-icon-button>  
+</div>
+</div>
 {/if}
 
+{/if}

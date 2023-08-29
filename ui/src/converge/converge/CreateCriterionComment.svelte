@@ -49,7 +49,11 @@ onMount(() => {
 function checkKey(e) {
   if (e.key === "Enter" && !e.shiftKey) {
     e.preventDefault();
-    createCriterionComment();
+    if (commentIsAnObjection) {
+      addObjection()
+    } else {
+      createCriterionComment();
+    }
   }
 }
 

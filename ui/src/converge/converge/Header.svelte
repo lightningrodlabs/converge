@@ -29,7 +29,7 @@
   //   AgentAvatar,
   // } from '@holochain-open-dev/profiles';
 
-  export let initialized: boolean = false;
+  // export let initialized: boolean = false;
 
   let client: AppAgentClient = (getContext(clientContext) as any).getClient();
   let currentView;
@@ -85,7 +85,7 @@
           </div>
         <div>
   
-        {#if initialized}
+        <!-- {#if initialized} -->
 
         <ul class="nav navbar-nav float-right">
   
@@ -149,7 +149,7 @@
         </li>
         
       </ul>
-      {/if}
+      <!-- {/if} -->
         </div><!-- /.navbar-collapse -->
         </div><!-- /.container-fluid -->
       </nav>

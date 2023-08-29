@@ -137,7 +137,7 @@ async function removeObjection() {
   <!-- <div on:click={()=>{filter='all'}} style="margin-right: 8px; cursor: pointer; color: gray; font-weight: bold; text-decoration: underline;">All</div> -->
 
 </div>
-<div bind:this={chatWindow} style="display: flex; flex-direction: column; max-height: 50vh; overflow-y: scroll; overflow-x: hidden;">
+<div bind:this={chatWindow} style="display: flex; flex-direction: column; max-height: 60vh; overflow-y: scroll; overflow-x: hidden;">
   {#each hashes as hash}
   <!-- <div style="margin-bottom: 8px;"> -->
     <CriterionCommentDetail {filter} criterionCommentHash={hash} {mySupport} {criterionHash} bind:commentReference></CriterionCommentDetail>

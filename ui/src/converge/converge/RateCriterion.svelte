@@ -266,7 +266,7 @@ async function addRating() {
 {:else if support}
 
 
-<div class="outlined-item" style="border-radius: 0;">
+<div class="outlined-item criterion-outer" style="border-radius: 0;">
   <!-- <div style="display: flex; flex-direction: column; font-size: .8em">
     <div class="vertical-progress-bar-container">
   
@@ -287,7 +287,7 @@ async function addRating() {
     </div>
   </div> -->
   <div class="two-sides">
-    <div style="display: flex; flex-direction: column">
+    <div style="display: flex; flex-direction: column; margin-right: 20px">
       <!-- <div style="display: flex; flex-direction: row">
         <span style="flex: 1"></span>
         <mwc-icon-button style="margin-left: 8px" icon="delete" on:click={() => deleteCriterion()}></mwc-icon-button>
@@ -302,21 +302,18 @@ async function addRating() {
   
       <!-- <span style="white-space: pre-line">{ criterion.objections }</span> -->
       {#if support}
-        <div style="display: flex; flex-direction: row; margin-bottom: 16px; font-size: .8em">
+        <!-- <div style="display: flex; flex-direction: row; margin-bottom: 16px; font-size: .8em">
           {supporters.length} supporters
-        </div>
+        </div> -->
+        <!-- <div style="display: flex; flex-direction: row; font-size: .8em">
+          weight: {averageSupport * 100}%
+        </div> -->
         <div style="display: flex; flex-direction: row; font-size: .8em">
-          <!-- {JSON.stringify(support / supporters.length)} average support -->
-          {averageSupport} average support
+          score: {combinedRating * 100}%
         </div>
-        <div style="display: flex; flex-direction: row; font-size: .8em">
-          <!-- {JSON.stringify(support / supporters.length)} average support -->
-          {combinedRating} average rating
-        </div>
-        <div style="display: flex; flex-direction: row; font-size: .8em">
-          <!-- {JSON.stringify(support / supporters.length)} average support -->
+        <!-- <div style="display: flex; flex-direction: row; font-size: .8em">
           {support * combinedRating} weight
-        </div>
+        </div> -->
         
       {:else}
         <div style="display: flex; flex-direction: row; font-size: .8em">

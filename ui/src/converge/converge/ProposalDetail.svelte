@@ -34,6 +34,10 @@ let maxWeight;
 let errorSnackbar: Snackbar;
   
 $:  error, loading, record, proposal, allRatings;
+$: if (proposalHash) {
+  fetchProposal();
+  fetchDeliberation();
+}
 
 onMount(async () => {
   if (proposalHash === undefined) {
@@ -112,13 +116,16 @@ async function fetchDeliberation() {
 <span>Error fetching the proposal: {error.data.data}</span>
 {:else}
 
-<button on:click={()=>{navigate('deliberation', deliberationHash)}}>back</button>
+<!-- <button on:click={()=>{navigate('deliberation', deliberationHash)}}>back</button> -->
 
-<div style="display: flex; 
-flex: 1;">
+<!-- <div style="display: flex; 
+flex: 1;"> -->
+<!-- {JSON.stringify(proposalHash.join(''))} -->
+<div class="outlined-item list-item-mini criterion-outer" style="width:96%">
   {#if convergence > 0 && maxWeight > 0}
   <div style="display: flex; flex-direction: column; font-size: .8em">
-  <div class="vertical-progress-bar-container" style="height: 100px; border: 1px dotted black;">
+  <div class="vertical-progress-bar-container">
+  <!-- <div class="vertical-progress-bar-container" style="height: 100px; border: 1px dotted black;"> -->
     {#each Array.from({ length: 35 * convergence / maxWeight }) as _, index}
       <div class="progress-line" style="opacity: {convergence / maxWeight}; background-color: rgb(254, 18, 18)"></div>
     {/each}

@@ -34,7 +34,8 @@
   let initialized: boolean = false;
 
   $: client, loading, store, profilesStore, initialized;
-  $: prof = profilesStore ? profilesStore.myProfile : undefined
+  // $: prof = profilesStore ? profilesStore.myProfile : undefined
+  // $: prof = profilesStore ? profilesStore : undefined
 
   // let textValue = 'sadfassdaf';
   
@@ -64,20 +65,20 @@
       minNicknameLength: 3,
     });
 
-    await profilesStore.profiles.get(client.myPubKey).subscribe((profile) => {
-      if (profile.status == "complete") {
-        console.log(profile.value.nickname)
-        initialized = true;
-      } else {
-        console.log("not complete")
-      }
-    })
-    // console.log(x)
+    // await profilesStore;
 
-    // store = new EmergenceStore(new EmergenceClient(url,installed_app_id, client,'emergence'), profilesStore, fileStorageClient, client.myPubKey)
-    // await store.sync(undefined);
+    // if (profilesStore.profiles && profilesStore.profiles.get(client.myPubKey)) {
+    //   await profilesStore.profiles.get(client.myPubKey).subscribe((profile) => {
+    //     if (profile.status == "complete") {
+    //       console.log(profile.value.nickname)
+    //       initialized = true;
+    //     } else {
+    //       console.log("not complete")
+    //     }
+    //   })
+    // }
 
-    console.log(profilesStore)
+    // console.log(profilesStore)
     loading = false;
   });
 
@@ -98,25 +99,20 @@
   });
 </script>
 
-<!-- <textarea  on:mousemove={(e)=>{console.log(e)}} disabled>lkjnsfd lasjdf lasjasdf</textarea>
-<button on:click={() => {}}>Dashboard</button> -->
-
-<!-- <textarea disabled bind:value={textValue} id="myTextarea" rows="10" cols="30"></textarea>
-<button on:click={logSelectionDetails}>Log Selection</button> -->
-
-<main class="converge-container">
 {#if profilesStore}
+<!-- {JSON.stringify(prof)} -->
 <!-- {profile}... -->
 <!-- <profiles-context store={profilesStore}> -->
   <profiles-context store="{profilesStore}">
     <!-- {#if !initialized} -->
-      <!-- <create-profile></create-profile> -->
+    <!-- <create-profile></create-profile> -->
     <!-- {:else} -->
-      <!-- <list-profiles on:agent-selected={e => alert(e.detail.agentPubKey)}></list-profiles> -->
-  <!-- <search-agent include-myself></search-agent> -->
-  
-  <Header {initialized} />
-  <profile-prompt>
+    <!-- <list-profiles on:agent-selected={e => alert(e.detail.agentPubKey)}></list-profiles> -->
+    <!-- <search-agent include-myself></search-agent> -->
+    
+    <profile-prompt>
+    <main class="converge-container">
+    <Header />
     <div class="white-container">
       {#if loading}
       <div style="display: flex; flex: 1; align-items: center; justify-content: center">
@@ -137,12 +133,12 @@
       </div>
       {/if}
     </div>
-</profile-prompt>
+  </main>
+  </profile-prompt>
   <!-- <create-profile></create-profile> -->
 <!-- {/if} -->
 </profiles-context>
 {/if}
-</main>
 
 <style>
   main {

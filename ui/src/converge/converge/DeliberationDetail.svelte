@@ -251,7 +251,7 @@ async function leaveDeliberation() {
     <mwc-tab-bar>
       <mwc-tab on:click={() => {activeTab = "criteria"}} label="Criteria ({criteriaCount})"></mwc-tab>
       <mwc-tab on:click={() => {activeTab = "proposals"}}  label="Proposals ({proposalCount})"></mwc-tab>
-      <mwc-tab on:click={() => {activeTab = "activity"}}  label="Activity"></mwc-tab>
+      <!-- <mwc-tab on:click={() => {activeTab = "activity"}}  label="Activity"></mwc-tab> -->
     </mwc-tab-bar>
     
     <!-- <p>Active tab: {activeTab}</p> -->

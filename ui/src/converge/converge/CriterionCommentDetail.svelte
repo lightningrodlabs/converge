@@ -327,7 +327,7 @@ async function deleteCriterionComment() {
     border-radius: 10px;
     padding: 10px;
     position: relative;
-    margin: 10px;
+    margin: 6px;
     width: 100%;
     margin-left: 0;
   }

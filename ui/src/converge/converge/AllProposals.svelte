@@ -62,11 +62,11 @@ async function fetchProposals() {
 {:else}
 <div style="display: flex; flex-direction: column">
   {#each hashes as hash}
-    <div on:click={() => navigate('proposal', hash)} style="margin-bottom: 8px;">
+    <!-- <div on:click={() => navigate('proposal', hash)} style="margin-bottom: 8px;"> -->
       {#if deliberationHash}
-        <ProposalListItem bind:allProposalScores proposalHash={hash} {deliberationHash} on:proposal-deleted={() => fetchProposals()} />
+        <ProposalListItem bind:allProposalScores proposalHash={hash} {deliberationHash} {hashes} on:proposal-deleted={() => fetchProposals()} />
       {/if}
-    </div>
+    <!-- </div> -->
   {/each}
 </div>
 {/if}
