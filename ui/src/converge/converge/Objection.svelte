@@ -31,16 +31,15 @@
 </script>
 
 <style>
-  .red-alarm {
+  /* .red-alarm {
     background-color: black;
     color: red;
     display: inline-block;
     padding: 4px 10px;
     border-radius: 50%;
     font-weight: bolder;
-    /* width: 20px; */
-    /* height: 20px; */
   }
+   */
 </style>
 
 {#if objection}

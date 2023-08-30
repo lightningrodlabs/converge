@@ -40,6 +40,8 @@ let proposalFormPopup = false;
 let errorSnackbar: Snackbar;
 let activeTab = "criteria";
 let criteriaCount = 0;
+let criteriaFilter;
+let proposalFilter;
 let proposalCount = 0;
 
 let sortByOptions = [
@@ -48,7 +50,7 @@ let sortByOptions = [
 ];
 let selectedSortBy = "support";
 
-$: editing,  error, loading, record, deliberation, activeTab, criterionFormPopup, proposalFormPopup, criteriaCount, proposalCount;
+$: editing,  error, loading, record, deliberation, activeTab, criterionFormPopup, proposalFormPopup, criteriaCount, proposalCount, criteriaFilter, proposalFilter;
 
 function sortItems() {
   // items = items.slice().sort((a, b) => b[selectedSortBy] - a[selectedSortBy]);
@@ -174,6 +176,10 @@ async function leaveDeliberation() {
   }
 }
 
+  let isExpanded = false;   
+  function expandSearch() {
+      isExpanded = !isExpanded;
+  }
 </script>
 
 <mwc-snackbar bind:this={errorSnackbar} leading>
@@ -267,14 +273,23 @@ async function leaveDeliberation() {
     <option value={option.value}>  Sort by: {option.label}</option>
     {/each}
   </select>
-  <div class="search-button"><FaSearch/></div>
+  
+  <div class="search-container">
+    <div class="search-button" on:click={expandSearch}><FaSearch/></div>
+    <input bind:value={criteriaFilter} type="text" class="search-input {isExpanded ? 'expanded' : ''}" placeholder="Search criteria...">
+  </div>
+
+  <!-- <div class="search-container"><FaSearch/></div> -->
+
+
+  <!-- <div class="search-button"><FaSearch/></div> -->
   <button on:click={() => {criterionFormPopup = true; console.log(criterionFormPopup)}} class="add-button">Add criterion</button>
   <!-- <mwc-button dense outlined>Add criterion</mwc-button> -->
   <!-- {#if criterionForm} -->
   <CreateCriterion deliberationHash={deliberationHash} alternativeTo={null} bind:criterionFormPopup />
   <!-- {/if} -->
   <br><br>
-  <AllCriteria deliberationHash={deliberationHash} bind:criteriaCount />
+  <AllCriteria deliberationHash={deliberationHash} filter={criteriaFilter} bind:criteriaCount />
 {:else if activeTab == "proposals"}
   <p>What solutions would meet our criteria?</p>
   <select bind:value={selectedSortBy} on:change={sortItems}>
@@ -282,7 +297,13 @@ async function leaveDeliberation() {
     <option value={option.value}>  Sort by: {option.label}</option>
     {/each}
   </select>
-  <div class="search-button"><FaSearch/></div>
+
+  <div class="search-container">
+    <div class="search-button" on:click={expandSearch}><FaSearch/></div>
+    <input bind:value={proposalFilter} type="text" class="search-input {isExpanded ? 'expanded' : ''}" placeholder="Search criteria...">
+  </div>
+
+  <!-- <div class="search-button"><FaSearch/></div> -->
   <button on:click={() => {proposalFormPopup = true; console.log(proposalFormPopup)}} class="add-button">Add proposal</button>
 
   <CreateProposal deliberationHash={deliberationHash} bind:proposalFormPopup/>
@@ -291,3 +312,51 @@ async function leaveDeliberation() {
 {/if}
 {/if}
 
+<style>
+  /* .search-container {
+      display: flex;
+      align-items: center;
+  } */
+
+  /* .search-button { */
+      /* background: #333; */
+      /* color: white; */
+      /* padding: 10px; */
+      /* border-radius: 5px; */
+      /* cursor: pointer; */
+  /* } */
+  
+
+.search-container {
+  width: fit-content;
+  display: inline-block;
+  border: 1px solid rgb(188, 187, 187);
+  /* padding: 2px; */
+  /* padding: 5px 5px 0px 5px; */
+  position: relative;
+  /* top: 3px; */
+  border-radius: 4px;
+}
+
+  .search-button {
+    width: 1em;
+    padding: 2px 0px 4px 4px;
+    display: inline-block;
+    position: relative;
+    top: 2px;
+  }
+
+  .search-input {
+      border: none;
+      padding: 8px;
+      /* border-radius: 5px; */
+      padding: 0px;
+      width: 0;
+      outline: none;
+      transition: width 0.2s;
+  }
+
+  .search-input.expanded {
+      width: 130px;
+  }
+</style>

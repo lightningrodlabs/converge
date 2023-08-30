@@ -17,6 +17,7 @@ const dispatch = createEventDispatcher();
 
 export let deliberationHash: ActionHash;
 export let criterionHash: ActionHash;
+export let filter;
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
@@ -39,7 +40,7 @@ const scoringLevel = 4;
 
 let errorSnackbar: Snackbar;
   
-$:  error, loading, record, criterion, supporters, sponsored, criterionPopupBoolean;
+$:  error, loading, record, criterion, supporters, sponsored, criterionPopupBoolean, filter;
 
 onMount(async () => {
   if (criterionHash === undefined) {
@@ -230,6 +231,7 @@ async function scrollToDiv() {
   myDiv.scrollIntoView({ behavior: 'smooth' });
 }
 </script>
+
 <!-- <button on:click={myDiv.scrollIntoView({ behavior: 'smooth' })}>Scroll to Div</button> -->
 <mwc-snackbar bind:this={errorSnackbar} leading>
 </mwc-snackbar>
@@ -240,6 +242,8 @@ async function scrollToDiv() {
 {:else if error}
 <span>Error fetching the criterion: {error.data.data}</span>
 {:else}
+{#if !filter || (filter && criterion.title.includes(filter))}
+<div class="criterion-outer" style="margin-bottom: 8px;">
 <div class="criterion">
 <div style="display: flex; flex-direction: column; font-size: .8em">
   <div class="vertical-progress-bar-container">
@@ -408,4 +412,6 @@ async function scrollToDiv() {
   <!-- hi -->
   <CriterionPopup on:switched-tab={scrollToDiv} {criterionHash} {objections} {deliberationHash} bind:criterionPopupBoolean {criterion} {supporters} {sponsored} {support} {addSupportPercentage} {mySupport}/>
 <!-- </div> -->
+</div>
+{/if}
 {/if}

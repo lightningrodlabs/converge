@@ -22,7 +22,7 @@ let allCombinedRatings = {};
 let allWeight = {};
 let allRatings = undefined;
 
-$: hashes, loading, error, allRatings, allWeight, allSupport, convergence;
+$: hashes, loading, error, allRatings, allWeight, allSupport, convergence, proposalHash;
 $: if (allRatings) {
     console.log('allRatings updated:', allRatings);
     // hashes.forEach(hash => {

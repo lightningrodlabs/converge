@@ -8,6 +8,7 @@ import type { ConvergeSignal } from './types';
 
 export let deliberationHash: ActionHash;
 export let criteriaCount = 0;
+export let filter;
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
@@ -60,9 +61,7 @@ async function fetchCriteria() {
 {:else}
 <div style="display: flex; flex-direction: column">
   {#each hashes as hash}
-    <div class="criterion-outer" style="margin-bottom: 8px;">
-      <Criterion criterionHash={hash} {deliberationHash}  on:criterion-deleted={() => fetchCriteria()}></Criterion>
-    </div>
+      <Criterion criterionHash={hash} {deliberationHash} {filter} on:criterion-deleted={() => fetchCriteria()}></Criterion>
   {/each}
 </div>
 {/if}

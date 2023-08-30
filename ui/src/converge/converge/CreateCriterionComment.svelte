@@ -99,7 +99,7 @@ async function createCriterionComment() {
 
 async function createCriterionCommentCustom(inputComment, comment_reference, objection_reference, alternative_reference, created) {  
     const criterionComment: CriterionComment = { 
-      comment: comment!,
+      comment: inputComment!,
       comment_reference: comment_reference,
       objection_reference: objection_reference,
       alternative_reference: alternative_reference,

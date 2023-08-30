@@ -329,7 +329,14 @@ async function addRating() {
   
     </div>
   
-    <div style="display: flex; flex-direction: column; margin-bottom: 16px; font-size: .8em">
+    <div
+    on:mouseover={e => {
+      openEvaluation = true
+    }}
+    on:mouseleave={e => {
+      openEvaluation = false
+    }}
+    style="display: flex; flex-direction: column; font-size: .8em">
         {#if openEvaluation}
           <div style="text-align: center; flex-direction: row; font-size: 1em">
             <span style="white-space: pre-line;">How well is this criterion met by the proposal?</span>
@@ -345,9 +352,6 @@ async function addRating() {
                 myEvaluation = addEvaluationPercentage / scoringLevel;
                 addRating();
               }}
-              on:mouseleave={e => {
-                openEvaluation = false
-              }}
               value={addEvaluationPercentage}
               class="star-slider"
               withTickMarks
@@ -358,6 +362,9 @@ async function addRating() {
             </mwc-slider>
             <span style="white-space: pre-line; text-align: center; top: 12px; position: relative;">FULLY
               MET</span>
+          </div>
+          <div style="text-align: center; flex-direction: row; font-size: 1em">
+            <button on:click={removeRating} style="white-space: pre-line;">Remove evaluation</button>
           </div>
           <!-- <div style="text-align: center; flex-direction: row; mfont-size: .8em"> -->
             <!-- <button on:click={() => openEvaluation = false}>Cancel</button> -->
@@ -375,9 +382,6 @@ async function addRating() {
               MET</span>
             <mwc-slider
             style="--mdc-theme-primary: red;"
-            on:mouseover={e => {
-              openEvaluation = true
-            }}
             value={myEvaluation * scoringLevel}
             class="star-slider"
             step="1"
@@ -386,6 +390,9 @@ async function addRating() {
           </mwc-slider>
           <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative; opacity: 0;">FULLY
             MET</span>
+          </div>
+          <div style="opacity: 0; text-align: center; flex-direction: row; font-size: 1em">
+            <button style="white-space: pre-line;">Remove evaluation</button>
           </div>
         {:else}
           <div style="text-align: center; flex-direction: row; font-size: 1em;">
@@ -396,9 +403,6 @@ async function addRating() {
               MET</span>
             <mwc-slider
             style="--mdc-theme-primary: red;"
-            on:mouseover={e => {
-              openEvaluation = true
-            }}
             disabled=true
             value={0}
             class="star-slider"
@@ -408,6 +412,9 @@ async function addRating() {
           </mwc-slider>
           <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative; opacity: 0;">FULLY
             MET</span>
+          </div>
+          <div style="opacity: 0; text-align: center; flex-direction: row; font-size: 1em">
+            <button style="white-space: pre-line;">Remove evaluation</button>
           </div>
         {/if}
     </div>

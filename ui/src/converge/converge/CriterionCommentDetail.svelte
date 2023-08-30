@@ -282,7 +282,7 @@ async function deleteCriterionComment() {
         <span class="comment-text">{criterionComment.comment}</span>
         <span class="timestamp">{new Date(criterionComment.created / 1000).toLocaleString()}</span>
         <span class="timestamp">
-        <button class="reply" on:click={() => {commentReference = {hash: criterionCommentHash, comment: criterionComment.comment}}}>Reply</button>
+        <button class="reply" on:click={() => {commentReference = {hash: criterionCommentHash, comment: criterionComment.comment};}}>Reply</button>
         </span>
       </div>
 

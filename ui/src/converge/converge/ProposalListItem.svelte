@@ -60,6 +60,7 @@ function checkKey(e) {
   console.log(e.key)
   if (e.key === "Escape" && !e.shiftKey) {
     e.preventDefault();
+    proposalDetailHash=proposalHash;
     proposalPopup = false;
   } else if (e.key === "ArrowRight") {
     moveRight()
@@ -207,7 +208,7 @@ async function deleteProposal() {
 </div>
 </div>
 
-<RateCriteria bind:convergence bind:maxWeight deliberationHash={deliberationHash} proposalHash={proposalHash} display={false} />
+<RateCriteria bind:convergence bind:maxWeight deliberationHash={deliberationHash} proposalHash={proposalDetailHash} display={false} />
 
 {#if proposalPopup}
 <div class="backdrop">
