@@ -9,6 +9,7 @@ import { view, viewHash, navigate } from '../../store.js';
 
 export let deliberationHash: ActionHash;
 export let proposalCount = 0;
+export let filter;
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
@@ -17,7 +18,7 @@ let loading = true;
 let error: any = undefined;
 let allProposalScores = {};
 
-$: hashes, loading, error, allProposalScores;
+$: hashes, loading, error, allProposalScores, filter;
 
 onMount(async () => {
 
@@ -64,7 +65,7 @@ async function fetchProposals() {
   {#each hashes as hash}
     <!-- <div on:click={() => navigate('proposal', hash)} style="margin-bottom: 8px;"> -->
       {#if deliberationHash}
-        <ProposalListItem bind:allProposalScores proposalHash={hash} {deliberationHash} {hashes} on:proposal-deleted={() => fetchProposals()} />
+        <ProposalListItem bind:allProposalScores proposalHash={hash} {deliberationHash} {hashes} {filter} on:proposal-deleted={() => fetchProposals()} />
       {/if}
     <!-- </div> -->
   {/each}

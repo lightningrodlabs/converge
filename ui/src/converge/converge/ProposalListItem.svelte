@@ -20,6 +20,7 @@ const dispatch = createEventDispatcher();
 export let proposalHash: ActionHash;
 export let deliberationHash: ActionHash | undefined;
 export let allProposalScores;
+export let filter;
 export let hashes;
 // let deliberationHash: ActionHash | undefined;
 
@@ -157,7 +158,7 @@ async function deleteProposal() {
 </div>
 {:else if error}
 <span>Error fetching the proposal: {error.data.data}</span>
-{:else}
+{:else if !filter || proposal.title.includes(filter)}
 
 <div class="outlined-item list-item-mini criterion-outer" on:click={()=>{proposalPopup = true}}>
   <div style="display: flex; flex-direction: column; font-size: .8em">

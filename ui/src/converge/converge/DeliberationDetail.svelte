@@ -48,13 +48,14 @@ let sortByOptions = [
   { value: "support", label: "Support" },
   { value: "objections", label: "Objections" },
 ];
-let selectedSortBy = "support";
+let criteriaSort = "support";
+let proposalSort = "support";
 
-$: editing,  error, loading, record, deliberation, activeTab, criterionFormPopup, proposalFormPopup, criteriaCount, proposalCount, criteriaFilter, proposalFilter;
+$: editing,  error, loading, record, deliberation, activeTab, criterionFormPopup, proposalFormPopup, criteriaCount, proposalCount, criteriaFilter, proposalFilter, criteriaSort, proposalSort;
 
-function sortItems() {
-  // items = items.slice().sort((a, b) => b[selectedSortBy] - a[selectedSortBy]);
-}
+// function sortItems() {
+//   items = items.slice().sort((a, b) => b[selectedSortBy] - a[selectedSortBy]);
+// }
 
 onMount(async () => {
   if (deliberationHash === undefined) {
@@ -176,9 +177,13 @@ async function leaveDeliberation() {
   }
 }
 
-  let isExpanded = false;   
+  let isExpanded = false;
   function expandSearch() {
-      isExpanded = !isExpanded;
+    if (isExpanded) {
+      criteriaFilter = "";
+      proposalFilter = "";
+    }
+    isExpanded = !isExpanded;
   }
 </script>
 
@@ -268,7 +273,7 @@ async function leaveDeliberation() {
 {#if activeTab == "criteria"}
   <!--<FaSort/> -->
   <p>What characteristics should a proposal have?</p>
-  <select bind:value={selectedSortBy} on:change={sortItems}>
+  <select bind:value={criteriaSort}>
     {#each sortByOptions as option}
     <option value={option.value}>  Sort by: {option.label}</option>
     {/each}
@@ -289,10 +294,14 @@ async function leaveDeliberation() {
   <CreateCriterion deliberationHash={deliberationHash} alternativeTo={null} bind:criterionFormPopup />
   <!-- {/if} -->
   <br><br>
-  <AllCriteria deliberationHash={deliberationHash} filter={criteriaFilter} bind:criteriaCount />
+  <!-- {#if criteriaSort == "support"} -->
+  <AllCriteria deliberationHash={deliberationHash} filter={criteriaFilter} sort={criteriaSort} bind:criteriaCount />
+  <!-- {:else if criteriaSort == "objections"}
+  <AllCriteria deliberationHash={deliberationHash} filter={criteriaFilter} sort="objections" bind:criteriaCount />
+  {/if} -->
 {:else if activeTab == "proposals"}
   <p>What solutions would meet our criteria?</p>
-  <select bind:value={selectedSortBy} on:change={sortItems}>
+  <select bind:value={proposalSort}>
     {#each sortByOptions as option}
     <option value={option.value}>  Sort by: {option.label}</option>
     {/each}
@@ -300,7 +309,7 @@ async function leaveDeliberation() {
 
   <div class="search-container">
     <div class="search-button" on:click={expandSearch}><FaSearch/></div>
-    <input bind:value={proposalFilter} type="text" class="search-input {isExpanded ? 'expanded' : ''}" placeholder="Search criteria...">
+    <input bind:value={proposalFilter} type="text" class="search-input {isExpanded ? 'expanded' : ''}" placeholder="Search proposals...">
   </div>
 
   <!-- <div class="search-button"><FaSearch/></div> -->
@@ -308,7 +317,8 @@ async function leaveDeliberation() {
 
   <CreateProposal deliberationHash={deliberationHash} bind:proposalFormPopup/>
   <br><br>
-  <AllProposals deliberationHash={deliberationHash} bind:proposalCount/>
+  
+  <AllProposals deliberationHash={deliberationHash} filter={proposalFilter} bind:proposalCount/>
 {/if}
 {/if}
 

@@ -17,6 +17,7 @@ const dispatch = createEventDispatcher();
 
 export let deliberationHash: ActionHash;
 export let criterionHash: ActionHash;
+export let sortableCriteria;
 export let filter;
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
@@ -49,6 +50,19 @@ onMount(async () => {
   await fetchCriterion();
   await fetchSupport();
   await fetchObjections();
+  console.log(criterionHash.join(','))
+  console.log(sortableCriteria)
+  let criterionHashKey = criterionHash.join(',')
+  sortableCriteria[criterionHashKey] = {
+    objections: objections,
+    // supporters: supporters,
+    // sponsored: sponsored,
+    support: support,
+    hash: criterionHash,
+    // addSupportPercentage: addSupportPercentage,
+    // mySupport: mySupport,
+  };
+
   client.on('signal', signal => {
     if (signal.zome_name !== 'converge') return;
     const payload = signal.payload as ConvergeSignal;
@@ -242,6 +256,9 @@ async function scrollToDiv() {
 {:else if error}
 <span>Error fetching the criterion: {error.data.data}</span>
 {:else}
+<!-- {criterionHash}
+{criterion.title} -->
+<!-- {objections} -->
 {#if !filter || (filter && criterion.title.includes(filter))}
 <div class="criterion-outer" style="margin-bottom: 8px;">
 <div class="criterion">
