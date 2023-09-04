@@ -31,7 +31,16 @@ let supportPercentage = 0;
 $: title, criterionFormPopup, supportPercentage;
 $: isCriterionValid = true && title !== '';
 
+function checkKey(e) {
+  if (e.key === "Escape" && !e.shiftKey) {
+    e.preventDefault();
+    dismissPopup();
+  }
+}
+
 onMount(() => {
+  window.addEventListener("keydown", checkKey);
+
     // // Add an event listener to the backdrop to dismiss the popup when clicked outside
     // function handleOutsideClick(event) {
     //   if (criterionFormPopup && !event.target.closest('.popup-container')) {

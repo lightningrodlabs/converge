@@ -17,7 +17,7 @@ let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 let hashes: Array<ActionHash> | undefined;
 let loading = true;
 let error: any = undefined;
-let allSupport = {};
+export let allSupport = {};
 let allCombinedRatings = {};
 let allWeight = {};
 let allRatings = undefined;

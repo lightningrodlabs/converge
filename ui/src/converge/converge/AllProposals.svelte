@@ -10,6 +10,7 @@ import { view, viewHash, navigate } from '../../store.js';
 export let deliberationHash: ActionHash;
 export let proposalCount = 0;
 export let filter;
+export let sort;
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
@@ -17,11 +18,29 @@ let hashes: Array<ActionHash> | undefined;
 let loading = true;
 let error: any = undefined;
 let allProposalScores = {};
+let sortableProposals = {};
+let sortedProposals = [];
+let anyProposalPopup = false;
 
-$: hashes, loading, error, allProposalScores, filter;
+$: hashes, loading, error, allProposalScores, sortableProposals, sortedProposals, filter;
+// $: if (sort && sortableProposals && hashes && Object.values(sortableProposals).length == hashes.length && anyProposalPopup == false) {
+// $: if ((anyProposalPopup == false) && sort && sortableProposals && hashes && Object.values(sortableProposals).length == hashes.length) {
+// $: if (sort == "score" || sort == "respondants") {
+//   if ((anyProposalPopup == false) && sort && sortableProposals && hashes && Object.values(sortableProposals).length == hashes.length) {
+//     console.log('9898')
+//     let sortedProposalsJoined = Object.values(sortableProposals).sort((a, b) => {
+//       if (sort === 'score') {
+//         return b.score - a.score;
+//       } else if (sort === 'respondants') {
+//         return b.respondants - a.respondants;
+//       }
+//     });
+//     sortedProposals = sortedProposalsJoined.map((c) => c.hash);
+//     console.log(sort, sortedProposalsJoined)
+// }
+// }
 
 onMount(async () => {
-
   await fetchProposals();
   client.on('signal', signal => {
     if (signal.zome_name !== 'converge') return;
@@ -44,6 +63,7 @@ async function fetchProposals() {
     });
     // proposalCount = 1;
     hashes = records.map(r => r.signed_action.hashed.hash);
+    sortedProposals = hashes;
   } catch (e) {
     error = e;
   }
@@ -63,11 +83,18 @@ async function fetchProposals() {
 {:else}
 <div style="display: flex; flex-direction: column">
   {#each hashes as hash}
-    <!-- <div on:click={() => navigate('proposal', hash)} style="margin-bottom: 8px;"> -->
-      {#if deliberationHash}
-        <ProposalListItem bind:allProposalScores proposalHash={hash} {deliberationHash} {hashes} {filter} on:proposal-deleted={() => fetchProposals()} />
-      {/if}
-    <!-- </div> -->
+    {#if deliberationHash}
+    <!-- {JSON.stringify(sortableProposals)} -->
+      <!-- {#if sort == "score"} -->
+        <!-- {#each sortedProposals as hash} -->
+          <ProposalListItem bind:anyProposalPopup bind:sortableProposals bind:allProposalScores proposalHash={hash} {deliberationHash} {hashes} {filter} on:proposal-deleted={() => fetchProposals()} />
+        <!-- {/each} -->
+      <!-- {:else if sort == "respondants"} -->
+        <!-- {#each sortedProposals as hash} -->
+          <ProposalListItem bind:anyProposalPopup bind:sortableProposals bind:allProposalScores proposalHash={hash} {deliberationHash} {hashes} {filter} on:proposal-deleted={() => fetchProposals()} />
+        <!-- {/each} -->
+      <!-- {/if} -->
+    {/if}
   {/each}
 </div>
 {/if}

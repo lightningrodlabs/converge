@@ -336,6 +336,9 @@ async function addRating() {
     on:mouseleave={e => {
       openEvaluation = false
     }}
+    on:focus={e => {
+      openEvaluation = true
+    }}
     style="display: flex; flex-direction: column; font-size: .8em">
         {#if openEvaluation}
           <div style="text-align: center; flex-direction: row; font-size: 1em">

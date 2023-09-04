@@ -43,19 +43,20 @@ let criteriaCount = 0;
 let criteriaFilter;
 let proposalFilter;
 let proposalCount = 0;
+let detectSort;
 
 let sortByOptions = [
-  { value: "support", label: "Support" },
-  { value: "objections", label: "Objections" },
+  "support",
+  "objections",
+  "comments",
+  "weight",
+  "my support",
+  "my objections"
 ];
-let criteriaSort = "support";
-let proposalSort = "support";
+let criteriaSort;
+let proposalSort;
 
-$: editing,  error, loading, record, deliberation, activeTab, criterionFormPopup, proposalFormPopup, criteriaCount, proposalCount, criteriaFilter, proposalFilter, criteriaSort, proposalSort;
-
-// function sortItems() {
-//   items = items.slice().sort((a, b) => b[selectedSortBy] - a[selectedSortBy]);
-// }
+$: editing, error, loading, record, deliberation, activeTab, criterionFormPopup, proposalFormPopup, criteriaCount, proposalCount, criteriaFilter, proposalFilter, criteriaSort, proposalSort;
 
 onMount(async () => {
   if (deliberationHash === undefined) {
@@ -222,22 +223,6 @@ async function leaveDeliberation() {
   <div style="display: flex; flex-direction: row; margin-bottom: 16px">
     <span style="white-space: pre-line">{ deliberation.description }</span>
   </div>
-
-  <!-- <div style="display: flex; flex-direction: row; margin-bottom: 16px">
-    <h1>{ deliberation.title }</h1>
-  </div>
-
-  <div class="deliberation-section">
-    <div style="margin-right: 4px"><strong>Description</strong></div>
-    <p style="white-space: pre-line">{ deliberation.description }</p>
-  </div> -->
-  
-  <!-- <div class="deliberation-section" style="display: flex; flex-direction: row; margin-bottom: 16px">
-    <span style="margin-right: 4px"><strong>Settings:</strong></span>
-    <span style="white-space: pre-line">{ deliberation.settings }</span>
-  </div> -->
-  
-  <!-- <div class="deliberation-section"> -->
     <div style="display: flex; flex-direction: row; width: fit-content; margin-bottom: 6px;">
       
       {deliberators.length} 
@@ -250,8 +235,6 @@ async function leaveDeliberation() {
       {:else}
         <div on:click={joinDeliberation}>Join</div>
       {/if}
-    <!-- </div> -->
-    <!-- <div style="display: flex; flex-direction: row; width: 100%;"> -->
 
     </div>
 
@@ -265,7 +248,6 @@ async function leaveDeliberation() {
       <!-- <mwc-tab on:click={() => {activeTab = "activity"}}  label="Activity"></mwc-tab> -->
     </mwc-tab-bar>
     
-    <!-- <p>Active tab: {activeTab}</p> -->
   </div>
 
 </div>
@@ -275,7 +257,7 @@ async function leaveDeliberation() {
   <p>What characteristics should a proposal have?</p>
   <select bind:value={criteriaSort}>
     {#each sortByOptions as option}
-    <option value={option.value}>  Sort by: {option.label}</option>
+    <option value={option}>  Sort by: {option}</option>
     {/each}
   </select>
   
@@ -301,11 +283,11 @@ async function leaveDeliberation() {
   {/if} -->
 {:else if activeTab == "proposals"}
   <p>What solutions would meet our criteria?</p>
-  <select bind:value={proposalSort}>
-    {#each sortByOptions as option}
-    <option value={option.value}>  Sort by: {option.label}</option>
+  <!-- <select bind:value={proposalSort}>
+    {#each ["score", "respondants"] as option}
+    <option value={option}>  Sort by: {option}</option>
     {/each}
-  </select>
+  </select> -->
 
   <div class="search-container">
     <div class="search-button" on:click={expandSearch}><FaSearch/></div>
@@ -318,25 +300,11 @@ async function leaveDeliberation() {
   <CreateProposal deliberationHash={deliberationHash} bind:proposalFormPopup/>
   <br><br>
   
-  <AllProposals deliberationHash={deliberationHash} filter={proposalFilter} bind:proposalCount/>
+  <AllProposals sort={proposalSort} deliberationHash={deliberationHash} filter={proposalFilter} bind:proposalCount/>
 {/if}
 {/if}
 
 <style>
-  /* .search-container {
-      display: flex;
-      align-items: center;
-  } */
-
-  /* .search-button { */
-      /* background: #333; */
-      /* color: white; */
-      /* padding: 10px; */
-      /* border-radius: 5px; */
-      /* cursor: pointer; */
-  /* } */
-  
-
 .search-container {
   width: fit-content;
   display: inline-block;

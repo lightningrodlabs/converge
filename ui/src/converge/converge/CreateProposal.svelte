@@ -28,7 +28,15 @@ let errorSnackbar: Snackbar;
 $: title, description, proposalFormPopup;
 $: isProposalValid = true && title !== '' && description !== '';
 
+function checkKey(e) {
+  if (e.key === "Escape" && !e.shiftKey) {
+    e.preventDefault();
+    dismissPopup();
+  }
+}
+
 onMount(() => {
+  window.addEventListener("keydown", checkKey);
 });
 
 async function createProposal() {  
@@ -85,6 +93,11 @@ async function createProposal() {
               outlined
               label="Cancel"
               on:click={() => dismissPopup()}
+              on:keydown={(e) => {
+                if (e.key === 'Escape') {
+                  dismissPopup();
+                }
+              }}
               style="flex: 1; margin-right: 16px"
             ></mwc-button>
             <mwc-button 
@@ -92,6 +105,12 @@ async function createProposal() {
               label="Create Proposal"
               disabled={!isProposalValid}
               on:click={() => createProposal()}
+              on:keydown={(e) => {
+                if (e.key === 'Escape') {
+                  dismissPopup();
+                }
+              }}
+              style="flex: 1; margin-right: 16px"
             ></mwc-button>
           </div>
         </div>

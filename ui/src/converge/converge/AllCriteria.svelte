@@ -21,28 +21,23 @@ let sortedCriteria = [];
 
 $: hashes, loading, error, sortedCriteria, sortableCriteria, sort, filter;
 $: if (sort && sortableCriteria && hashes && Object.values(sortableCriteria).length == hashes.length) {
-  console.log(sortableCriteria)
   let sortedCriteriaJoined = Object.values(sortableCriteria).sort((a, b) => {
     if (sort === 'support') {
       return b.support - a.support;
-    } else if (sort === 'oppose') {
-      // return a.support - b.support
-      if (a.objections && b.objections) {
-        return a.objections.length - b.objections.length;
-      } else {
-        return 0
-      }
-    // } else if (sort === 'abstain') {
-    //   return b.abstain - a.abstain;
-    // } else if (sort === 'created') {
-    //   return b.created - a.created;
+    } else if (sort === 'objections') {
+      return b.objections - a.objections;
+    } else if (sort === 'comments') {
+      return b.comments - a.comments;
+    } else if (sort === 'weight') {
+      return b.weight - a.weight;
+    } else if (sort === 'my support') {
+      return b.mySupport - a.mySupport;
+    } else if (sort === 'my objections') {
+      return b.myObjections - a.myObjections;
     }
-    //  else {
-    //   return hashes
-    // }
   });
   sortedCriteria = sortedCriteriaJoined.map((c) => c.hash);
-  console.log(sortedCriteria)
+  console.log(sort, sortedCriteriaJoined)
 }
 
 onMount(async () => {
@@ -95,6 +90,22 @@ async function fetchCriteria() {
       <Criterion criterionHash={hash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}></Criterion>
     {/each}
   {:else if sort == "objections"}
+    {#each sortedCriteria as hash}
+      <Criterion criterionHash={hash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}></Criterion>
+    {/each}
+  {:else if sort == "comments"}
+    {#each sortedCriteria as hash}
+      <Criterion criterionHash={hash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}></Criterion>
+    {/each}
+  {:else if sort == "weight"}
+    {#each sortedCriteria as hash}
+      <Criterion criterionHash={hash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}></Criterion>
+    {/each}
+  {:else if sort == "my support"}
+    {#each sortedCriteria as hash}
+      <Criterion criterionHash={hash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}></Criterion>
+    {/each}
+  {:else if sort == "my objections"}
     {#each sortedCriteria as hash}
       <Criterion criterionHash={hash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}></Criterion>
     {/each}

@@ -22,6 +22,8 @@ export let deliberationHash: ActionHash | undefined;
 export let allProposalScores;
 export let filter;
 export let hashes;
+export let sortableProposals;
+export let anyProposalPopup;
 // let deliberationHash: ActionHash | undefined;
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
@@ -37,6 +39,7 @@ let maxWeight;
 let bestScoreKey;
 let proposalPopup = false;
 let proposalDetailHash = proposalHash;
+let allSupport;
 
 let errorSnackbar: Snackbar;
   
@@ -45,16 +48,27 @@ $:  error, loading, record, proposal, proposalPopup, proposalDetailHash, hashes;
 $: if (convergence && maxWeight) {
   allProposalScores[proposalHash.join(',')] = convergence / maxWeight;
   bestScoreKey = Object.keys(allProposalScores).reduce((a, b) => allProposalScores[a] > allProposalScores[b] ? a : b);
+
+  if (!proposalPopup) {
+    let hashKey = proposalHash.join(',')
+    sortableProposals[hashKey] = {
+      score: convergence / maxWeight,
+      respondants: allSupport,
+      hash: proposalHash,
+    };
+    console.log(sortableProposals)
+  }
 }
 
 onMount(async () => {
-  window.addEventListener("keydown", checkKey);
-
   if (proposalHash === undefined) {
     throw new Error(`The proposalHash input is required for the ProposalDetail element`);
   }
   await fetchProposal();
   // await fetchDeliberation();
+
+  window.addEventListener("keydown", checkKey);
+
 });
 
 function checkKey(e) {
@@ -63,6 +77,7 @@ function checkKey(e) {
     e.preventDefault();
     proposalDetailHash=proposalHash;
     proposalPopup = false;
+    anyProposalPopup = false;
   } else if (e.key === "ArrowRight") {
     moveRight()
   } else if (e.key === "ArrowLeft") {
@@ -160,7 +175,9 @@ async function deleteProposal() {
 <span>Error fetching the proposal: {error.data.data}</span>
 {:else if !filter || proposal.title.includes(filter)}
 
-<div class="outlined-item list-item-mini criterion-outer" on:click={()=>{proposalPopup = true}}>
+<!-- {JSON.stringify(sortableProposals[proposalHash.join(',')].score)} -->
+
+<div class="outlined-item list-item-mini criterion-outer" on:click={()=>{proposalPopup = true; anyProposalPopup = true;}}>
   <div style="display: flex; flex-direction: column; font-size: .8em">
     <!-- <div class="vertical-progress-bar-container"> -->
   
@@ -209,7 +226,7 @@ async function deleteProposal() {
 </div>
 </div>
 
-<RateCriteria bind:convergence bind:maxWeight deliberationHash={deliberationHash} proposalHash={proposalDetailHash} display={false} />
+<RateCriteria bind:allSupport bind:convergence bind:maxWeight deliberationHash={deliberationHash} proposalHash={proposalDetailHash} display={false} />
 
 {#if proposalPopup}
 <div class="backdrop">
@@ -218,11 +235,11 @@ async function deleteProposal() {
 border-radius: 50px; margin-right: 8px;
 position: relative;" icon="⇦"></mwc-icon-button>  
 </div>
-<button class="close-button" on:click={() => {proposalDetailHash=proposalHash; proposalPopup = false}}>esc</button><br>
-<div class="popup-container" style="padding: 30px; width: 100%; height: 76%;">
+<button class="close-button" on:click={() => {proposalDetailHash=proposalHash; proposalPopup = false; anyProposalPopup = false;}}>esc</button><br>
+<div class="popup-container" style="padding: 30px; width: 100%; height: 76%; overflow: scroll;">
 <!-- <div class="popup-container" style="padding: 30px 24px 30px 30px;"> -->
   <!-- {#if proposalDetailHash} -->
-  <ProposalDetail proposalHash={proposalDetailHash} on:dismiss={() => proposalPopup = false} />
+  <ProposalDetail proposalHash={proposalDetailHash} on:dismiss={() => {proposalPopup = false; anyProposalPopup = false;}} />
     <!-- {/if} -->
   </div>
   <div on:click={moveRight}>

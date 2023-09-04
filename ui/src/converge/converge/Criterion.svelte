@@ -50,18 +50,18 @@ onMount(async () => {
   await fetchCriterion();
   await fetchSupport();
   await fetchObjections();
-  console.log(criterionHash.join(','))
-  console.log(sortableCriteria)
+  console.log(objections)
   let criterionHashKey = criterionHash.join(',')
   sortableCriteria[criterionHashKey] = {
-    objections: objections,
-    // supporters: supporters,
-    // sponsored: sponsored,
+    objections: objections.length,
     support: support,
     hash: criterionHash,
-    // addSupportPercentage: addSupportPercentage,
-    // mySupport: mySupport,
+    comments: commentsNumber,
+    weight: support / supporters.length,
+    mySupport: mySupport,
+    myObjections: objections.filter(item => item.agent.join(",") === client.myPubKey.join(",")).length,
   };
+  console.log(sortableCriteria)
 
   client.on('signal', signal => {
     if (signal.zome_name !== 'converge') return;
@@ -386,7 +386,6 @@ async function scrollToDiv() {
           <mwc-slider
           style="--mdc-theme-primary: blue;"
           on:mouseover={e => {
-            // console.log('hi')
             openSupport = true
           }}
           disabled=true
