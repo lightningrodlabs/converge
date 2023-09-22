@@ -11,20 +11,20 @@ export let proposalHash: ActionHash;
 export let convergence = 0;
 export let maxWeight = 0;
 export let display: boolean = true;
+export let allSupport = {};
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
 let hashes: Array<ActionHash> | undefined;
 let loading = true;
 let error: any = undefined;
-export let allSupport = {};
 let allCombinedRatings = {};
 let allWeight = {};
 let allRatings = undefined;
 
 $: hashes, loading, error, allRatings, allWeight, allSupport, convergence, proposalHash;
 $: if (allRatings) {
-    console.log('allRatings updated:', allRatings);
+    // console.log('allRatings updated:', allRatings);
     // hashes.forEach(hash => {
     //   console.log(`allRatings[${hash.join(',')}]:`, allRatings[hash.join(',')]);
     // });
@@ -34,9 +34,10 @@ $: if (allRatings) {
     if (Object.keys(allSupport).length > 0) {
       maxWeight = calculateAverage(allSupport)
     }
-    if (Object.keys(allWeight).length > 0) {
+    // if (Object.keys(allWeight).length > 0) {
       convergence = calculateAverage(allWeight)
-    }
+      // console.log("convergence", convergence)
+    // }
   }
 
 onMount(async () => {
@@ -60,17 +61,18 @@ onMount(async () => {
 
   // Calculate the average of the numeric values in the data object
   function calculateAverage(data) {
+    // console.log('hihihop7987i7yiu7t7utgg')
     const values = Object.values(data);
     // console.log(data)
 
     // Filter out non-numeric values
     const numericValues = values.filter((value) => typeof value === 'number' && !isNaN(value));
-    console.log(numericValues)
+    // console.log(numericValues)
 
     if (numericValues.length === 0) return 0;
 
     const sum: any = numericValues.reduce((acc: any, num) => acc + num, 0);
-    console.log(sum, numericValues)
+    // console.log(sum, numericValues)
     return sum / numericValues.length;
   }
 

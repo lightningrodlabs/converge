@@ -66,10 +66,21 @@ onMount(async () => {
 
   client.on('signal', signal => {
     if (signal.zome_name !== 'converge') return;
-    const payload = signal.payload as ConvergeSignal;
+    const payload = signal.payload as ConvergeSignal;  
+    if (['LinkCreated'].includes(payload.type)) {
+      if (['CriterionToSupporters', 'DeliberationToCriteria', 'DeliberationToProposals', 'ProposalToCriteria'].includes(Object.keys(signal.payload['link_type'])[0])) {
+        console.log("CREATED", Object.keys(signal.payload['link_type'])[0]);
+        // wait a second
+        // setTimeout(() => {
+          // fetchDeliberation();
+          // joinDeliberation();
+        // }, 2000);
+      }
+    }
     if (!['LinkCreated', 'LinkDeleted'].includes(payload.type)) return;
     if (!['DeliberatorToDeliberations'].includes(Object.keys(signal.payload['link_type'])[0])) return;
     fetchDeliberation();
+    // joinDeliberation();
   });
 });
 

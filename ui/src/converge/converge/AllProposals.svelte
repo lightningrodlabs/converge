@@ -91,7 +91,7 @@ async function fetchProposals() {
         <!-- {/each} -->
       <!-- {:else if sort == "respondants"} -->
         <!-- {#each sortedProposals as hash} -->
-          <ProposalListItem bind:anyProposalPopup bind:sortableProposals bind:allProposalScores proposalHash={hash} {deliberationHash} {hashes} {filter} on:proposal-deleted={() => fetchProposals()} />
+          <!-- <ProposalListItem bind:anyProposalPopup bind:sortableProposals bind:allProposalScores proposalHash={hash} {deliberationHash} {hashes} {filter} on:proposal-deleted={() => fetchProposals()} /> -->
         <!-- {/each} -->
       <!-- {/if} -->
     {/if}
