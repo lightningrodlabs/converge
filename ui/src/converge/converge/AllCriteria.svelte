@@ -1,5 +1,5 @@
 <script lang="ts">
-import { onMount, getContext } from 'svelte';
+import { createEventDispatcher, onMount, getContext } from 'svelte';
 import '@material/mwc-circular-progress';
 import type { EntryHash, Record, AgentPubKey, ActionHash, AppAgentClient, NewEntryAction } from '@holochain/client';
 import { clientContext } from '../../contexts';
@@ -10,6 +10,8 @@ export let deliberationHash: ActionHash;
 export let criteriaCount = 0;
 export let filter;
 export let sort;
+
+const dispatch = createEventDispatcher();
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
@@ -71,6 +73,10 @@ async function fetchCriteria() {
   loading = false;
 }
 
+async function joinSignal() {
+  dispatch('criterion-rated',{})
+}
+
 </script>
 
 <!-- {JSON.stringify(sortableCriteria)} -->
@@ -87,7 +93,7 @@ async function fetchCriteria() {
 <div style="display: flex; flex-direction: column">
   {#if sort == "support"}
     {#each sortedCriteria as hash}
-      <Criterion criterionHash={hash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}></Criterion>
+      <Criterion on:criterion-rated={joinSignal} criterionHash={hash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}></Criterion>
     {/each}
   {:else if sort == "objections"}
     {#each sortedCriteria as hash}

@@ -54,7 +54,9 @@ onMount(() => {
     // return () => {
     //   document.removeEventListener('click', handleOutsideClick);
     // };
-    fetchAlternative();
+    if (alternativeTo) {
+      fetchAlternative();
+    }
   });
 
 async function fetchAlternative() {
@@ -131,7 +133,6 @@ async function createCriterion() {
     }
 
     title = '';
-    dispatch('criterion-created', { criterionHash: record.signed_action.hashed.hash });
   } catch (e) {
     console.log(e)
     errorSnackbar.labelText = `Error creating the criterion: ${e.data.data}`;
@@ -160,9 +161,12 @@ async function createCriterion() {
       // if (record) {
         // console.log(record)
       // }
+      dispatch('criterion-created', {  });
     } catch (e) {
       console.log(e);
     }
+  } else {
+    dispatch('criterion-created', {  });
   }
 
   dismissPopup()

@@ -140,7 +140,7 @@ async function fetchSupport() {
       sponsored = supporters.some(item => item["agent"] === client.myPubKey.join(","));
       // console.log(sponsored, criterionHash, support)
       if (sponsored) {
-        console.log(supporters)
+        // console.log(supporters)
         mySupport = JSON.parse(supporters.find(item => item["agent"] === client.myPubKey.join(","))["tag"]).percentage;
         addSupportPercentage = mySupport * scoringLevel;
       } else {
@@ -213,6 +213,7 @@ async function addSupport() {
         tag: String(JSON.stringify(tag)),
       },
     });
+    dispatch('criterion-rated', { criterionHash: criterionHash });
     // openSupport = false;
     if (record) {
       console.log("record: ")

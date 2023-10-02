@@ -1,5 +1,5 @@
 <script lang="ts">
-import { onMount, getContext } from 'svelte';
+import { createEventDispatcher, onMount, getContext } from 'svelte';
 import '@material/mwc-circular-progress';
 import type { EntryHash, Record, AgentPubKey, ActionHash, AppAgentClient, NewEntryAction } from '@holochain/client';
 import { clientContext } from '../../contexts';
@@ -11,6 +11,8 @@ export let deliberationHash: ActionHash;
 export let proposalCount = 0;
 export let filter;
 export let sort;
+
+const dispatch = createEventDispatcher();
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
@@ -70,6 +72,11 @@ async function fetchProposals() {
   loading = false;
 }
 
+async function rateAlert() {
+  console.log('rate-alert-5')
+  dispatch('proposal-rated');
+}
+
 </script>
 
 {#if loading}
@@ -87,7 +94,7 @@ async function fetchProposals() {
     <!-- {JSON.stringify(sortableProposals)} -->
       <!-- {#if sort == "score"} -->
         <!-- {#each sortedProposals as hash} -->
-          <ProposalListItem bind:anyProposalPopup bind:sortableProposals bind:allProposalScores proposalHash={hash} {deliberationHash} {hashes} {filter} on:proposal-deleted={() => fetchProposals()} />
+          <ProposalListItem on:proposal-rated={rateAlert} bind:anyProposalPopup bind:sortableProposals bind:allProposalScores proposalHash={hash} {deliberationHash} {hashes} {filter} on:proposal-deleted={() => fetchProposals()} />
         <!-- {/each} -->
       <!-- {:else if sort == "respondants"} -->
         <!-- {#each sortedProposals as hash} -->

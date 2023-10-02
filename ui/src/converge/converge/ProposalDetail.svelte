@@ -71,6 +71,11 @@ async function fetchProposal() {
   loading = false;
 }
 
+async function rateAlert() {
+  console.log('rate-alert-4')
+  dispatch('proposal-rated');
+}
+
 async function deleteProposal() {
   try {
     await client.callZome({
@@ -158,7 +163,7 @@ flex: 1;"> -->
       <!-- {deliberationHash} -->
       {#if deliberationHash}
         <!-- {JSON.stringify(convergence)} -->
-        <RateCriteria bind:convergence bind:maxWeight deliberationHash={deliberationHash} proposalHash={proposalHash} />
+        <RateCriteria on:proposal-rated={rateAlert} bind:convergence bind:maxWeight deliberationHash={deliberationHash} proposalHash={proposalHash} />
       {/if}
     </span>
   </div>

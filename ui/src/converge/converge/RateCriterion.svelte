@@ -151,7 +151,7 @@ async function fetchSupport() {
         objectionCount = 0;
       }
       let adjustedSupport = Math.max(0, support - objectionCount)
-      console.log(objections, support, objectionCount, adjustedSupport)
+      // console.log(objections, support, objectionCount, adjustedSupport)
       averageSupport = adjustedSupport / supporters.length
       if (supporters) {
         sponsored = supporters.some(item => item["agent"] === client.myPubKey.join(","));
@@ -241,6 +241,8 @@ async function addRating() {
         percentage: String(addEvaluationPercentage / scoringLevel),
       },
     });
+    console.log('proposal-rated-1')
+    dispatch('proposal-rated')
     if (record) {
       console.log(record)
     }

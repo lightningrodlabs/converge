@@ -1,5 +1,5 @@
 <script lang="ts">
-import { onMount, getContext } from 'svelte';
+import { createEventDispatcher, onMount, getContext } from 'svelte';
 import '@material/mwc-circular-progress';
 import type { EntryHash, Record, AgentPubKey, ActionHash, AppAgentClient, NewEntryAction } from '@holochain/client';
 import { clientContext } from '../../contexts';
@@ -12,6 +12,8 @@ export let convergence = 0;
 export let maxWeight = 0;
 export let display: boolean = true;
 export let allSupport = {};
+
+const dispatch = createEventDispatcher();
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
@@ -92,6 +94,12 @@ async function fetchCriteria() {
   loading = false;
 }
 
+async function rateAlert() {
+  console.log('proposal-rated-2')
+  dispatch('proposal-rated')
+  console.log('lkjkl')
+}
+
 async function fetchRatings() {
   try {
     const records = await client.callZome({
@@ -101,7 +109,7 @@ async function fetchRatings() {
       fn_name: 'get_ratings_for_proposal',
       payload: proposalHash,
     });
-    console.log(records)
+    // console.log(records)
     if (records) {
       let newRatings = records.reduce((acc, item) => {
         // Convert Uint8Arrays to strings for comparison and use as keys
@@ -123,7 +131,7 @@ async function fetchRatings() {
       }, {});
       allRatings = newRatings
     }
-    console.log(allRatings)
+    // console.log(allRatings)
   } catch (e) {
     console.log(e)
     error = e;
@@ -155,9 +163,9 @@ score {JSON.stringify(convergence / maxWeight)} -->
     <!-- <RateCriterion criterionHash={hash} proposalHash={proposalHash} /> -->
     <!-- <div style="margin-bottom: 8px;"> -->
       {#if allRatings && allRatings[hash.join(',')]}
-        <RateCriterion bind:allWeight bind:allSupport bind:allCombinedRatings criterionHash={hash} proposalHash={proposalHash} display={true} ratings={allRatings[hash.join(',')]} />
+        <RateCriterion on:proposal-rated={rateAlert} bind:allWeight bind:allSupport bind:allCombinedRatings criterionHash={hash} proposalHash={proposalHash} display={true} ratings={allRatings[hash.join(',')]} />
       {:else}
-        <RateCriterion bind:allWeight bind:allSupport bind:allCombinedRatings criterionHash={hash} proposalHash={proposalHash} display={true} ratings={[]} />
+        <RateCriterion on:proposal-rated={rateAlert} bind:allWeight bind:allSupport bind:allCombinedRatings criterionHash={hash} proposalHash={proposalHash} display={true} ratings={[]} />
       {/if}
     <!-- </div> -->
   {/each}
@@ -168,9 +176,9 @@ score {JSON.stringify(convergence / maxWeight)} -->
   {#if hashes && hashes.length > 0}
     {#each hashes as hash}
       {#if allRatings && allRatings[hash.join(',')]}
-        <RateCriterion bind:allWeight bind:allSupport bind:allCombinedRatings criterionHash={hash} proposalHash={proposalHash} {display} ratings={allRatings[hash.join(',')]} />
+        <RateCriterion on:proposal-rated={rateAlert} bind:allWeight bind:allSupport bind:allCombinedRatings criterionHash={hash} proposalHash={proposalHash} {display} ratings={allRatings[hash.join(',')]} />
       {:else}
-        <RateCriterion bind:allWeight bind:allSupport bind:allCombinedRatings criterionHash={hash} proposalHash={proposalHash} {display} ratings={[]} />
+        <RateCriterion on:proposal-rated={rateAlert} bind:allWeight bind:allSupport bind:allCombinedRatings criterionHash={hash} proposalHash={proposalHash} {display} ratings={[]} />
       {/if}
     {/each}
   {/if}

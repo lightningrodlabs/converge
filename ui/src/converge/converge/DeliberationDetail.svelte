@@ -13,7 +13,7 @@ import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
 import '@material/mwc-tab';
 import '@material/mwc-tab-bar';
-import EditDeliberation from './EditDeliberation.svelte'; 
+import EditDeliberation from './EditDeliberation.svelte';
 import { view, viewHash, navigate } from '../../store.js';
 import CreateCriterion from './CreateCriterion.svelte';
 import AllCriteria from './AllCriteria.svelte';
@@ -64,31 +64,35 @@ onMount(async () => {
   }
   await fetchDeliberation();
 
-  client.on('signal', signal => {
-    if (signal.zome_name !== 'converge') return;
-    const payload = signal.payload as ConvergeSignal;  
-    if (['LinkCreated'].includes(payload.type)) {
-      if (['CriterionToSupporters', 'DeliberationToCriteria', 'DeliberationToProposals', 'ProposalToCriteria'].includes(Object.keys(signal.payload['link_type'])[0])) {
-        console.log("CREATED", Object.keys(signal.payload['link_type'])[0]);
+  // client.on('signal', signal => {
+    // if (signal.zome_name !== 'converge') return;
+    // const payload = signal.payload as ConvergeSignal;  
+    // if (['LinkCreated'].includes(payload.type)) {
+      // if (['CriterionToSupporters', 'DeliberationToCriteria', 'DeliberationToProposals', 'ProposalToCriteria'].includes(Object.keys(signal.payload['link_type'])[0])) {
+        // console.log("CREATED", Object.keys(signal.payload['link_type'])[0]);
         // wait a second
         // setTimeout(() => {
           // fetchDeliberation();
           // joinDeliberation();
         // }, 2000);
-      }
-    }
-    if (!['LinkCreated', 'LinkDeleted'].includes(payload.type)) return;
-    if (!['DeliberatorToDeliberations'].includes(Object.keys(signal.payload['link_type'])[0])) return;
-    fetchDeliberation();
+      // }
+    // }
+    // if (!['LinkCreated', 'LinkDeleted'].includes(payload.type)) return;
+    // if (['DeliberatorToDeliberations', 'DeliberationToDeliberators'].includes(Object.keys(signal.payload['link_type'])[0])) {
+    // } else {
+      // fetchDeliberation();
+    // }
+    // console.log("----", payload.type, Object.keys(signal.payload['link_type'])[0]);
+    // console.log(!['DeliberatorToDeliberations'].includes(Object.keys(signal.payload['link_type'])[0]))
     // joinDeliberation();
-  });
+  // });
 });
 
 async function fetchDeliberation() {
   loading = true;
   error = undefined;
   record = undefined;
-  deliberation = undefined;
+  // deliberation = undefined;
   
   try {
     record = await client.callZome({
@@ -150,7 +154,14 @@ async function deleteDeliberation() {
   }
 }
 
+async function newActivity(event) {
+  console.log("new activity")
+  console.log(event)
+  joinDeliberation()
+}
+
 async function joinDeliberation() {
+  if (deliberators.includes(client.myPubKey.join(','))) return;
   try {
     await client.callZome({
       cap_secret: null,
@@ -162,7 +173,8 @@ async function joinDeliberation() {
         target_deliberation_hash: deliberationHash
       },
     });
-    dispatch('deliberation-joined', { deliberationHash: deliberationHash });
+    deliberators = [...deliberators, client.myPubKey.join(',')]
+    // dispatch('deliberation-joined', { deliberationHash: deliberationHash });
   } catch (e: any) {
     errorSnackbar.labelText = `Error joining the deliberation: ${e.data.data}`;
     errorSnackbar.show();
@@ -181,7 +193,8 @@ async function leaveDeliberation() {
         target_deliberation_hash: deliberationHash
       },
     });
-    dispatch('deliberation-left', { deliberationHash: deliberationHash });
+    deliberators = deliberators.filter(item => item !== client.myPubKey.join(','));
+    // dispatch('deliberation-left', { deliberationHash: deliberationHash });
     // navigate('')
   } catch (e: any) {
     errorSnackbar.labelText = `Error leaving the deliberation: ${e.data.data}`;
@@ -244,7 +257,7 @@ async function leaveDeliberation() {
       {#if deliberators.includes(client.myPubKey.join(','))}
         <div style="text-decoration: underline; cursor: pointer; width: fit-content; display:flex; flex-direction: column;" on:click={leaveDeliberation}>Leave</div>
       {:else}
-        <div on:click={joinDeliberation}>Join</div>
+        <div on:click={newActivity}>Join</div>
       {/if}
 
     </div>
@@ -284,11 +297,12 @@ async function leaveDeliberation() {
   <button on:click={() => {criterionFormPopup = true; console.log(criterionFormPopup)}} class="add-button">Add criterion</button>
   <!-- <mwc-button dense outlined>Add criterion</mwc-button> -->
   <!-- {#if criterionForm} -->
-  <CreateCriterion deliberationHash={deliberationHash} alternativeTo={null} bind:criterionFormPopup />
+  <CreateCriterion on:criterion-created={newActivity} deliberationHash={deliberationHash} alternativeTo={null} bind:criterionFormPopup />
   <!-- {/if} -->
   <br><br>
   <!-- {#if criteriaSort == "support"} -->
-  <AllCriteria deliberationHash={deliberationHash} filter={criteriaFilter} sort={criteriaSort} bind:criteriaCount />
+  
+  <AllCriteria on:criterion-rated={newActivity} deliberationHash={deliberationHash} filter={criteriaFilter} sort={criteriaSort} bind:criteriaCount />
   <!-- {:else if criteriaSort == "objections"}
   <AllCriteria deliberationHash={deliberationHash} filter={criteriaFilter} sort="objections" bind:criteriaCount />
   {/if} -->
@@ -308,10 +322,10 @@ async function leaveDeliberation() {
   <!-- <div class="search-button"><FaSearch/></div> -->
   <button on:click={() => {proposalFormPopup = true; console.log(proposalFormPopup)}} class="add-button">Add proposal</button>
 
-  <CreateProposal deliberationHash={deliberationHash} bind:proposalFormPopup/>
+  <CreateProposal on:proposal-created={newActivity} deliberationHash={deliberationHash} bind:proposalFormPopup/>
   <br><br>
   
-  <AllProposals sort={proposalSort} deliberationHash={deliberationHash} filter={proposalFilter} bind:proposalCount/>
+  <AllProposals on:proposal-rated={newActivity} sort={proposalSort} deliberationHash={deliberationHash} filter={proposalFilter} bind:proposalCount/>
 {/if}
 {/if}
 

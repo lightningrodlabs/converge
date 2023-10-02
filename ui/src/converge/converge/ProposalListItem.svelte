@@ -56,7 +56,7 @@ $: if (convergence && maxWeight) {
       respondants: allSupport,
       hash: proposalHash,
     };
-    console.log(sortableProposals)
+    // console.log(sortableProposals)
   }
 }
 
@@ -121,13 +121,18 @@ async function fetchProposal() {
     });
     if (record) {
       proposal = decode((record.entry as any).Present.entry) as Proposal;
-      console.log(proposal)
+      // console.log(proposal)
     }
   } catch (e) {
     error = e;
   }
 
   loading = false;
+}
+
+async function rateAlert() {
+  console.log('proposal-rated-3')
+  dispatch('proposal-rated');
 }
 
 async function deleteProposal() {
@@ -226,7 +231,7 @@ async function deleteProposal() {
 </div>
 </div>
 
-<RateCriteria bind:allSupport bind:convergence bind:maxWeight deliberationHash={deliberationHash} proposalHash={proposalDetailHash} display={false} />
+<RateCriteria on:proposal-rated={rateAlert} bind:allSupport bind:convergence bind:maxWeight deliberationHash={deliberationHash} proposalHash={proposalDetailHash} display={false} />
 
 {#if proposalPopup}
 <div class="backdrop">
@@ -239,7 +244,7 @@ position: relative;" icon="⇦"></mwc-icon-button>
 <div class="popup-container" style="padding: 30px; width: 100%; height: 76%; overflow: scroll;">
 <!-- <div class="popup-container" style="padding: 30px 24px 30px 30px;"> -->
   <!-- {#if proposalDetailHash} -->
-  <ProposalDetail proposalHash={proposalDetailHash} on:dismiss={() => {proposalPopup = false; anyProposalPopup = false;}} />
+  <ProposalDetail on:proposal-rated={rateAlert} proposalHash={proposalDetailHash} on:dismiss={() => {proposalPopup = false; anyProposalPopup = false;}} />
     <!-- {/if} -->
   </div>
   <div on:click={moveRight}>
