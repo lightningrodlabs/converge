@@ -2,10 +2,10 @@
 import { onMount, getContext } from 'svelte';
 import '@material/mwc-circular-progress';
 import type { EntryHash, Record, AgentPubKey, ActionHash, AppAgentClient, NewEntryAction } from '@holochain/client';
-import { clientContext } from '../../contexts';
+import { clientContext } from '../../../contexts';
 import DeliberationDetail from './DeliberationDetail.svelte';
-import type { ConvergeSignal } from './types';
-import { view, viewHash, navigate } from '../../store.js';
+import type { ConvergeSignal } from '../types';
+import { view, viewHash, navigate } from '../../../store.js';
 import DeliberationListItem from './DeliberationListItem.svelte';
 
 

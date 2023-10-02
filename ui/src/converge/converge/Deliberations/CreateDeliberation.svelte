@@ -1,15 +1,15 @@
 <script lang="ts">
 import { createEventDispatcher, getContext, onMount } from 'svelte';
 import type { AppAgentClient, Record, EntryHash, AgentPubKey, ActionHash, DnaHash } from '@holochain/client';
-import { clientContext } from '../../contexts';
-import type { Deliberation } from './types';
+import { clientContext } from '../../../contexts';
+import type { Deliberation } from '../types';
 import '@material/mwc-button';
 import '@material/mwc-snackbar';
 import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-textfield';
 import '@material/mwc-radio';
 import '@material/mwc-formfield';
-import { view, viewHash, navigate } from '../../store.js';
+import { view, viewHash, navigate } from '../../../store.js';
 
 import '@material/mwc-textarea';
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();

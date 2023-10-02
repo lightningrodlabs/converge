@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount, getContext } from 'svelte';
-  import { clientContext } from '../../contexts';
+  import { clientContext } from '../../../contexts';
   import type { ActionHash, AppAgentClient } from "@holochain/client";
 
   export let alternative;

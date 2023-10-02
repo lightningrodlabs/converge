@@ -3,14 +3,14 @@
   import '@material/mwc-circular-progress';
   import { decode } from '@msgpack/msgpack';
   import type { Record, ActionHash, AppAgentClient, EntryHash, AgentPubKey, DnaHash } from '@holochain/client';
-  import { clientContext } from '../../contexts';
-  import type { Criterion, ConvergeSignal, CriterionComment } from './types';
+  import { clientContext } from '../../../contexts';
+  import type { Criterion, ConvergeSignal, CriterionComment } from '../types';
   import '@material/mwc-circular-progress';
   import '@material/mwc-slider';
   import type { Snackbar } from '@material/mwc-snackbar';
   import '@material/mwc-snackbar';
   import '@material/mwc-icon-button';
-  import { navigate } from '../../store';
+  import { navigate } from '../../../store';
     import ObjectionsForCriteria from './ObjectionsForCriteria.svelte';
     import CreateAlternative from './CreateAlternative.svelte';
     import CreateCriterion from './CreateCriterion.svelte';

@@ -3,15 +3,15 @@ import { createEventDispatcher, onMount, getContext } from 'svelte';
 import '@material/mwc-circular-progress';
 import { decode } from '@msgpack/msgpack';
 import type { Record, ActionHash, AppAgentClient, EntryHash, AgentPubKey, DnaHash } from '@holochain/client';
-import { clientContext } from '../../contexts';
-import type { Criterion, ConvergeSignal } from './types';
+import { clientContext } from '../../../contexts';
+import type { Criterion, ConvergeSignal } from '../types';
 import '@material/mwc-circular-progress';
 import '@material/mwc-slider';
 import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
 import CriterionPopup from './CriterionPopup.svelte';
-    import { navigate } from '../../store';
+    import { navigate } from '../../../store';
 
 const dispatch = createEventDispatcher();
 

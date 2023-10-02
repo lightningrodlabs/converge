@@ -1,12 +1,14 @@
 <script lang="ts">
 import { onMount, getContext } from 'svelte';
 import '@material/mwc-circular-progress';
-import type { Record, ActionHash, EntryHash, AgentPubKey, AppAgentClient, NewEntryAction } from '@holochain/client';
-import { clientContext } from '../../contexts';
+import type { Record, EntryHash, ActionHash, AgentPubKey, AppAgentClient, NewEntryAction } from '@holochain/client';
+import { clientContext } from '../../../contexts';
 import DeliberationDetail from './DeliberationDetail.svelte';
-import type { ConvergeSignal } from './types';
+import type { ConvergeSignal } from '../types';
+    import DeliberationListItem from './DeliberationListItem.svelte';
+    import { view, viewHash, navigate } from '../../../store.js';
 
-export let proposalHash: ActionHash;
+export let deliberator: AgentPubKey;
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
@@ -18,8 +20,8 @@ let error: any = undefined;
 $: hashes, loading, error;
 
 onMount(async () => {
-  if (proposalHash === undefined) {
-    throw new Error(`The proposalHash input is required for the DeliberationsForProposal element`);
+  if (deliberator === undefined) {
+    throw new Error(`The deliberator input is required for the DeliberationsForDeliberator element`);
   }
 
   try {
@@ -27,26 +29,28 @@ onMount(async () => {
       cap_secret: null,
       role_name: 'converge',
       zome_name: 'converge',
-      fn_name: 'get_deliberations_for_proposal',
-      payload: proposalHash,
+      fn_name: 'get_deliberations_for_deliberator',
+      payload: deliberator,
     });
     hashes = records.map(r => r.signed_action.hashed.hash);
   } catch (e) {
     error = e;
   }
   loading = false;
-  
+
   client.on('signal', signal => {
     if (signal.zome_name !== 'converge') return;
     const payload = signal.payload as ConvergeSignal;
     if (payload.type !== 'LinkCreated') return;
-    if (payload.link_type !== 'ProposalToDeliberations') return;
+    if (payload.link_type !== 'DeliberatorToDeliberations') return;
 
     hashes = [...hashes, payload.action.hashed.content.target_address];
   });
 });
 
 </script>
+
+<h2>Deliberations I've joined</h2>
 
 {#if loading }
 <div style="display: flex; flex: 1; align-items: center; justify-content: center">
@@ -55,12 +59,15 @@ onMount(async () => {
 {:else if error}
 <span>Error fetching deliberations: {error.data.data}.</span>
 {:else if hashes.length === 0}
-<span>No deliberations found for this proposal.</span>
+<span>No deliberations found for this deliberator.</span>
 {:else}
 <div style="display: flex; flex-direction: column">
   {#each hashes as hash}
     <div style="margin-bottom: 8px;">
-      <DeliberationDetail deliberationHash={hash}></DeliberationDetail>
+    <span on:click={() => navigate('deliberation', hash)}>
+      <!-- <DeliberationDetail deliberationHash={hash}></DeliberationDetail> -->
+      <DeliberationListItem deliberationHash={hash}></DeliberationListItem>
+    </span>
     </div>
   {/each}
 </div>

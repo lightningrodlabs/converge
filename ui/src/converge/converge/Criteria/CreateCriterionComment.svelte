@@ -1,8 +1,8 @@
 <script lang="ts">
 import { createEventDispatcher, getContext, onMount } from 'svelte';
 import type { AppAgentClient, Record, EntryHash, AgentPubKey, ActionHash, DnaHash } from '@holochain/client';
-import { clientContext } from '../../contexts';
-import type { CriterionComment } from './types';
+import { clientContext } from '../../../contexts';
+import type { CriterionComment } from '../types';
 import '@material/mwc-button';
 import '@material/mwc-snackbar';
 import type { Snackbar } from '@material/mwc-snackbar';

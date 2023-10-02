@@ -2,9 +2,9 @@
 import { onMount, getContext } from 'svelte';
 import '@material/mwc-circular-progress';
 import type { Record, EntryHash, ActionHash, AgentPubKey, AppAgentClient, NewEntryAction } from '@holochain/client';
-import { clientContext } from '../../contexts';
+import { clientContext } from '../../../contexts';
 import CriterionDetail from './Criterion.svelte';
-import type { ConvergeSignal } from './types';
+import type { ConvergeSignal } from '../types';
 //  import mwc-checkbox
 import ObjectionMini from './Objection.svelte'
 import '@material/mwc-switch';

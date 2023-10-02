@@ -16,13 +16,13 @@
   import "@holochain-open-dev/profiles/dist/elements/profile-detail.js";
   import '@material/mwc-circular-progress';
   import "@holochain-open-dev/profiles/dist/elements/profiles-context.js";
-  import CreateDeliberation from "./converge/converge/CreateDeliberation.svelte"
-  import AllDeliberations from "./converge/converge/AllDeliberations.svelte"
-  import CreateCriterion from './converge/converge/CreateCriterion.svelte';
-  import DeliberationDetail from './converge/converge/DeliberationDetail.svelte';
-  import ProposalDetail from './converge/converge/ProposalDetail.svelte';
+  import CreateDeliberation from "./converge/converge/Deliberations/CreateDeliberation.svelte"
+  import AllDeliberations from "./converge/converge/Deliberations/AllDeliberations.svelte"
+  import CreateCriterion from './converge/converge/Criteria/CreateCriterion.svelte';
+  import DeliberationDetail from './converge/converge/Deliberations/DeliberationDetail.svelte';
+  import ProposalDetail from './converge/converge/Proposals/ProposalDetail.svelte';
   import Header from './converge/converge/Header.svelte';
-  import DeliberationsForDeliberator from './converge/converge/DeliberationsForDeliberator.svelte';
+  import DeliberationsForDeliberator from './converge/converge/Deliberations/DeliberationsForDeliberator.svelte';
     import { MyProfile } from '@holochain-open-dev/profiles/dist/elements/my-profile.js';
 
   let client: AppAgentClient | undefined;

@@ -3,13 +3,13 @@ import { createEventDispatcher, onMount, getContext } from 'svelte';
 import '@material/mwc-circular-progress';
 import { decode } from '@msgpack/msgpack';
 import type { Record, ActionHash, AppAgentClient, EntryHash, AgentPubKey, DnaHash } from '@holochain/client';
-import { clientContext } from '../../contexts';
-import type { Proposal } from './types';
+import { clientContext } from '../../../contexts';
+import type { Proposal } from '../types';
 import '@material/mwc-circular-progress';
 import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
-import { view, viewHash, navigate } from '../../store.js';
+import { view, viewHash, navigate } from '../../../store.js';
 import RateCriteria from './RateCriteria.svelte';
 
 const dispatch = createEventDispatcher();

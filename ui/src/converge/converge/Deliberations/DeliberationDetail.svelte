@@ -3,8 +3,8 @@ import { createEventDispatcher, onMount, getContext } from 'svelte';
 import '@material/mwc-circular-progress';
 import { decode } from '@msgpack/msgpack';
 import type { Record, ActionHash, AppAgentClient, EntryHash, AgentPubKey, DnaHash } from '@holochain/client';
-import { clientContext } from '../../contexts';
-import type { Deliberation, ConvergeSignal } from './types';
+import { clientContext } from '../../../contexts';
+import type { Deliberation, ConvergeSignal } from '../types';
 import FaSort from 'svelte-icons/fa/FaSort.svelte';
 import FaSearch from 'svelte-icons/fa/FaSearch.svelte';
 import '@material/mwc-circular-progress';
@@ -14,11 +14,11 @@ import '@material/mwc-icon-button';
 import '@material/mwc-tab';
 import '@material/mwc-tab-bar';
 import EditDeliberation from './EditDeliberation.svelte';
-import { view, viewHash, navigate } from '../../store.js';
-import CreateCriterion from './CreateCriterion.svelte';
-import AllCriteria from './AllCriteria.svelte';
-import CreateProposal from './CreateProposal.svelte';
-import AllProposals from './AllProposals.svelte';
+import { view, viewHash, navigate } from '../../../store.js';
+import CreateCriterion from '../Criteria/CreateCriterion.svelte';
+import AllCriteria from '../Criteria/AllCriteria.svelte';
+import CreateProposal from '../Proposals/CreateProposal.svelte';
+import AllProposals from '../Proposals/AllProposals.svelte';
 
 const dispatch = createEventDispatcher();
 

@@ -2,9 +2,9 @@
 import { createEventDispatcher, onMount, getContext } from 'svelte';
 import '@material/mwc-circular-progress';
 import type { EntryHash, Record, AgentPubKey, ActionHash, AppAgentClient, NewEntryAction } from '@holochain/client';
-import { clientContext } from '../../contexts';
+import { clientContext } from '../../../contexts';
 import Criterion from './Criterion.svelte';
-import type { ConvergeSignal } from './types';
+import type { ConvergeSignal } from '../types';
 
 export let deliberationHash: ActionHash;
 export let criteriaCount = 0;
