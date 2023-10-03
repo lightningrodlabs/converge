@@ -13,12 +13,84 @@ pub mod all_deliberations;
 pub mod proposal;
 pub mod criterion;
 pub mod deliberation;
-use hdk::prelude::*;
+use hdk::prelude::{*, tracing::field::debug};
 use converge_integrity::*;
+use serde::de;
+// use hc_zome_profiles_integrity::LinkTypes as ProfileLinkTypes;
 #[hdk_extern]
 pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
+    let mut functions: BTreeSet<(ZomeName, FunctionName)> = BTreeSet::new();
+    functions.insert((zome_info()?.name, FunctionName(String::from("new_activity_receiver"))));
+    let functions = GrantedFunctions::Listed(functions);
+    let access = CapAccess::Unrestricted;
+    let capability_grant = CapGrantEntry {
+        functions,
+        access,
+        tag: String::from("unrestricted"),
+    };
+    create_cap_grant(capability_grant)?;
+
     Ok(InitCallbackResult::Pass)
 }
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ActivityPayload {
+    deliberation_hash: ActionHash,
+    message: String,
+}
+
+#[hdk_extern]
+pub fn new_activity_sender(data: ActivityPayload) -> ExternResult<InitCallbackResult> {
+    // let all_agents: Vec<AgentPubKey> = vec![];
+
+    let zome_call_response = call(
+        CallTargetCell::Local,
+        ZomeName::from(String::from("converge")),
+        FunctionName(String::from("get_deliberators_for_deliberation")),
+        None,
+        data.clone().deliberation_hash,
+    )?;
+    debug!("zome_call_response: {:?}", zome_call_response);
+
+
+    match zome_call_response {
+        ZomeCallResponse::Ok(result) => {
+            debug!("result: {:?}", result);
+            let all_agents: Vec<AgentPubKey> = result.decode().ok().unwrap();
+            debug!("all_agents: {:?}", all_agents);
+            for agent in all_agents {
+                if (agent != agent_info()?.agent_latest_pubkey.into()) {
+                    let zome_call_response = call_remote(
+                        agent.clone(),
+                        "converge",
+                        FunctionName(String::from("new_activity_receiver")),
+                        None,
+                        data.clone(),
+                    )?;
+                    debug!("zome_call_response: {:?}", zome_call_response);
+                }
+            }
+        }
+        ZomeCallResponse::NetworkError(err) => {
+            debug!("network error: {:?}", err);
+        }
+        ZomeCallResponse::Unauthorized(a,b,c,d,e) => {
+            debug!("unauthorized: {:?}", a);
+        }
+        _ => {
+            debug!("error: {:?}", zome_call_response);
+        },
+    }
+    Ok(InitCallbackResult::Pass)
+}
+
+#[hdk_extern]
+pub fn new_activity_receiver(data: ActivityPayload) -> ExternResult<()> {
+    emit_signal("activity received")?;
+    debug!("data: {:?}", data);
+    Ok(())
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "type")]
 pub enum Signal {

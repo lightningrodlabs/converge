@@ -26,6 +26,7 @@ export let deliberationHash: ActionHash;
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
+let outdated = false;
 let loading = true;
 let error: any = undefined;
 
@@ -64,6 +65,21 @@ onMount(async () => {
   }
   await fetchDeliberation();
 
+  client.on('signal', signal => {
+    if (signal.zome_name !== 'converge') return;
+    const payload = signal.payload as ConvergeSignal;
+    console.log(typeof(payload))
+    if (payload == 'activity received') {
+      console.log(signal)
+      setTimeout(() => {
+        console.log("activity received")
+        outdated = true;
+      }, 2000);
+      // fetchDeliberation();
+    }
+    // console.log(payload)
+  });
+
   // client.on('signal', signal => {
     // if (signal.zome_name !== 'converge') return;
     // const payload = signal.payload as ConvergeSignal;  
@@ -89,6 +105,7 @@ onMount(async () => {
 });
 
 async function fetchDeliberation() {
+  outdated = false;
   loading = true;
   error = undefined;
   record = undefined;
@@ -158,6 +175,24 @@ async function newActivity(event) {
   console.log("new activity")
   console.log(event)
   joinDeliberation()
+  sendActivityNotice({})
+}
+
+async function sendActivityNotice(event) {
+  try {
+    await client.callZome({
+      cap_secret: null,
+      role_name: 'converge',
+      zome_name: 'converge',
+      fn_name: 'new_activity_sender',
+      payload: {
+        deliberation_hash: deliberationHash,
+        message: 'event'
+      },
+    });
+  } catch (e: any) {
+    console.log(e)
+  }
 }
 
 async function joinDeliberation() {
@@ -203,13 +238,20 @@ async function leaveDeliberation() {
 }
 
   let isExpanded = false;
+  let isExpanded2 = true;
   function expandSearch() {
     if (isExpanded) {
       criteriaFilter = "";
-      proposalFilter = "";
     }
     isExpanded = !isExpanded;
   }
+  function expandSearch2() {
+    if (isExpanded2) {
+      proposalFilter = "";
+    }
+    isExpanded2 = !isExpanded2;
+  }
+
 </script>
 
 <mwc-snackbar bind:this={errorSnackbar} leading>
@@ -233,6 +275,16 @@ async function leaveDeliberation() {
 ></EditDeliberation>
 {:else}
 
+{#if outdated}
+<div on:click={fetchDeliberation} style="cursor: pointer; display: flex; flex-direction: row; align-items: center; justify-content: center; background-color: #ffcc00; padding: 4px;">
+  <span style="margin-right: 8px">This page is outdated. Click to refresh. ↺</span>
+</div>
+{:else}
+<div style="cursor: pointer; display: flex; flex-direction: row; align-items: center; justify-content: center; background: transparent; padding: 4px;">
+  <span style="margin-right: 8px">&nbsp;</span>
+</div>
+{/if}
+
 <div style="display: flex; flex-direction: column">
   <!-- <div style="display: flex; flex-direction: row">
     <span style="flex: 1"></span>
@@ -241,7 +293,7 @@ async function leaveDeliberation() {
   </div> -->
 
   <div style="display: flex; flex-direction: row; margin-bottom: 0px">
-    <h1>{ deliberation.title }</h1>
+    <h1 style="margin-top: 4px;">{ deliberation.title }</h1>
   </div>
 
   <div style="display: flex; flex-direction: row; margin-bottom: 16px">
@@ -255,7 +307,7 @@ async function leaveDeliberation() {
       &nbsp;|&nbsp;&nbsp;
 
       {#if deliberators.includes(client.myPubKey.join(','))}
-        <div style="text-decoration: underline; cursor: pointer; width: fit-content; display:flex; flex-direction: column;" on:click={leaveDeliberation}>Leave</div>
+        <div style="cursor: pointer; width: fit-content; display:flex; flex-direction: column;" on:click={leaveDeliberation}>Leave</div>
       {:else}
         <div on:click={newActivity}>Join</div>
       {/if}
@@ -315,8 +367,8 @@ async function leaveDeliberation() {
   </select> -->
 
   <div class="search-container">
-    <div class="search-button" on:click={expandSearch}><FaSearch/></div>
-    <input bind:value={proposalFilter} type="text" class="search-input {isExpanded ? 'expanded' : ''}" placeholder="Search proposals...">
+    <div class="search-button" on:click={expandSearch2}><FaSearch/></div>
+    <input bind:value={proposalFilter} type="text" class="search-input {isExpanded2 ? 'expanded' : ''}" placeholder="Search proposals...">
   </div>
 
   <!-- <div class="search-button"><FaSearch/></div> -->

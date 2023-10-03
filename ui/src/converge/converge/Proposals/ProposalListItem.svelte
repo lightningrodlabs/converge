@@ -212,6 +212,10 @@ async function deleteProposal() {
       <span style="white-space: pre-line">{ proposal.description }</span>
     </div>
 
+    <div class="overflow-content" style="display: flex; flex-direction: row; margin-bottom: 16px; font-size: 0.8em; position: relative;">
+      <span style="white-space: pre-line">score: { convergence / maxWeight * 100 }%</span>
+    </div>
+
   </div>
   <div style="display: flex; flex-direction: column">
     

@@ -28,18 +28,31 @@ $: hashes, loading, error, allProposalScores, sortableProposals, sortedProposals
 // $: if (sort && sortableProposals && hashes && Object.values(sortableProposals).length == hashes.length && anyProposalPopup == false) {
 // $: if ((anyProposalPopup == false) && sort && sortableProposals && hashes && Object.values(sortableProposals).length == hashes.length) {
 // $: if (sort == "score" || sort == "respondants") {
-//   if ((anyProposalPopup == false) && sort && sortableProposals && hashes && Object.values(sortableProposals).length == hashes.length) {
-//     console.log('9898')
-//     let sortedProposalsJoined = Object.values(sortableProposals).sort((a, b) => {
-//       if (sort === 'score') {
-//         return b.score - a.score;
-//       } else if (sort === 'respondants') {
-//         return b.respondants - a.respondants;
-//       }
-//     });
-//     sortedProposals = sortedProposalsJoined.map((c) => c.hash);
-//     console.log(sort, sortedProposalsJoined)
-// }
+  // console.log(sortableProposals)
+  // if ((anyProposalPopup == false) && sort && sortableProposals && hashes && Object.values(sortableProposals).length == hashes.length) {
+  //   let sortedProposalsJoined = Object.values(sortableProposals).sort((a, b) => {
+  //     if (sort === 'score') {
+  //       return b.score - a.score;
+  //     } else if (sort === 'respondants') {
+  //       return a.respondants - b.respondants;
+  //     } else {
+  //       return 1
+  //     }
+  //     return 1
+  //   });
+  //   let x = sortedProposalsJoined.map((proposal) => {
+  //     return proposal.hash;
+  //   })
+  //   // let x = {}
+  //   // for (let i = 0; i < sortedProposalsJoined.length; i++) {
+  //   //   x[i] = sortedProposalsJoined[i].hash.join('');
+  //   // }
+  //   console.log(sortedProposals)
+  //   console.log(sortedProposalsJoined)
+  //   console.log(x)
+  // }
+  // sortedProposals = [...sortedProposals]
+  // }
 // }
 
 onMount(async () => {
@@ -64,8 +77,8 @@ async function fetchProposals() {
       payload: deliberationHash,
     });
     // proposalCount = 1;
-    hashes = records.map(r => r.signed_action.hashed.hash);
-    sortedProposals = hashes;
+    hashes = records.map(r => r.signed_action.hashed.hash)
+    sortedProposals = hashes
   } catch (e) {
     error = e;
   }
@@ -98,7 +111,7 @@ async function rateAlert() {
         <!-- {/each} -->
       <!-- {:else if sort == "respondants"} -->
         <!-- {#each sortedProposals as hash} -->
-          <!-- <ProposalListItem bind:anyProposalPopup bind:sortableProposals bind:allProposalScores proposalHash={hash} {deliberationHash} {hashes} {filter} on:proposal-deleted={() => fetchProposals()} /> -->
+          <!-- <ProposalListItem on:proposal-rated={rateAlert} bind:anyProposalPopup bind:sortableProposals bind:allProposalScores proposalHash={hash} {deliberationHash} {hashes} {filter} on:proposal-deleted={() => fetchProposals()} /> -->
         <!-- {/each} -->
       <!-- {/if} -->
     {/if}

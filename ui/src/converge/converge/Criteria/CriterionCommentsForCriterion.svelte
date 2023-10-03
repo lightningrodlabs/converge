@@ -23,7 +23,7 @@ let loading = true;
 let error: any = undefined;
 let commentReference;
 let chatWindow;
-let filter;
+let filter = "all";
 let commentIsAnObjection: boolean = false;
 
 $: hashes, loading, error, chatWindow;
@@ -104,6 +104,10 @@ async function removeObjection() {
     border-bottom: 1px solid rgb(213, 213, 213);
     background-color: rgb(247, 247, 247);
   }
+
+  .underline {
+    text-decoration: underline;
+  }
 </style>
 
 {#if loading }
@@ -116,11 +120,25 @@ async function removeObjection() {
 <!-- <span>No criterion comments found for this criterion.</span> -->
 {:else}
 <div class="criterion-popup-header">
-  <select bind:value={filter}>
+  <!-- <select bind:value={filter}>
     <option value='all'>Filter: none</option>
     <option value='objections'>Filter: objections</option>
     <option value='alternatives'>Filter: alternatives</option>
-  </select>
+  </select> -->
+
+  <!-- <ul>
+    <li value='all'>Filter: none</li>
+    <li value='objections'>Filter: objections</li>
+    <li value='alternatives'>Filter: alternatives</li>
+  </ul> -->
+
+  <!-- filters as tabs -->
+  Filter:
+  <div style="display: flex; flex-direction: row; margin-left: 8px;">
+    <div style="margin-right: 8px; cursor: pointer;" class:underline={filter=='all'} on:click={() => {filter='all'}}>all</div>
+    <div style="margin-right: 8px; cursor: pointer;" class:underline={filter=='objections'} on:click={() => {filter='objections'}}>objections</div>
+    <div style="margin-right: 8px; cursor: pointer;" class:underline={filter=='alternatives'} on:click={() => {filter='alternatives'}}>alternatives</div>
+  </div>
 
   {#if objections}
     {@const agentStringToCheck = Object.values(client.myPubKey).join(',')}
@@ -137,7 +155,7 @@ async function removeObjection() {
   <!-- <div on:click={()=>{filter='all'}} style="margin-right: 8px; cursor: pointer; color: gray; font-weight: bold; text-decoration: underline;">All</div> -->
 
 </div>
-<div bind:this={chatWindow} style="display: flex; flex-direction: column; max-height: 60vh; overflow-y: scroll; overflow-x: hidden;">
+<div bind:this={chatWindow} style="display: flex; flex-direction: column; max-height: 60vh; min-height: 10px; overflow-y: scroll; overflow-x: hidden;">
   {#each hashes as hash}
   <!-- <div style="margin-bottom: 8px;"> -->
     <CriterionCommentDetail {filter} criterionCommentHash={hash} {mySupport} {criterionHash} bind:commentReference></CriterionCommentDetail>

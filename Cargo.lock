@@ -344,6 +344,7 @@ name = "converge"
 version = "0.0.1"
 dependencies = [
  "converge_integrity",
+ "hc_zome_profiles_integrity",
  "hdk",
  "holochain_integrity_types 0.2.1",
  "serde",

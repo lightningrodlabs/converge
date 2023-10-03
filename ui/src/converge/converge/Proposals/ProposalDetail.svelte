@@ -126,7 +126,6 @@ async function fetchDeliberation() {
 <!-- <div style="display: flex; 
 flex: 1;"> -->
 <!-- {JSON.stringify(proposalHash.join(''))} -->
-{JSON.stringify(convergence)}
 <div class="outlined-item list-item-mini criterion-outer" style="width:96%">
   {#if convergence > 0 && maxWeight > 0}
   <div style="display: flex; flex-direction: column; font-size: .8em">
