@@ -61,7 +61,7 @@ onMount(async () => {
     mySupport: mySupport,
     myObjections: objections.filter(item => item.agent.join(",") === client.myPubKey.join(",")).length,
   };
-  console.log(sortableCriteria)
+  // console.log(sortableCriteria)
 
   client.on('signal', signal => {
     if (signal.zome_name !== 'converge') return;

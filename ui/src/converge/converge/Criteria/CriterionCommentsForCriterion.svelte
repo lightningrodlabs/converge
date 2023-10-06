@@ -158,7 +158,7 @@ async function removeObjection() {
 <div bind:this={chatWindow} style="display: flex; flex-direction: column; max-height: 60vh; min-height: 10px; overflow-y: scroll; overflow-x: hidden;">
   {#each hashes as hash}
   <!-- <div style="margin-bottom: 8px;"> -->
-    <CriterionCommentDetail {filter} criterionCommentHash={hash} {mySupport} {criterionHash} bind:commentReference></CriterionCommentDetail>
+    <CriterionCommentDetail {objections} {filter} criterionCommentHash={hash} {mySupport} {criterionHash} bind:commentReference></CriterionCommentDetail>
     <!-- </div> -->
     {/each}
   </div>

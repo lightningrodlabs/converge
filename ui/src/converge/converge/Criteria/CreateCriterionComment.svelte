@@ -167,7 +167,7 @@ async function createCriterionCommentCustom(inputComment, comment_reference, obj
       // let s = decode((record.entry as any).Present.entry) as Criterion;
       // console.log(s)
 
-      createCriterionCommentCustom('', null, res, null, Date.now())
+      createCriterionCommentCustom(comment, null, res, null, Date.now())
 
     } catch (e) {
       console.log("error", e)

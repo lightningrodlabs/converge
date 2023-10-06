@@ -10,7 +10,7 @@ import { view, viewHash, navigate } from '../../../store.js';
 export let deliberationHash: ActionHash;
 export let proposalCount = 0;
 export let filter;
-export let sort;
+export let sort = "score";
 
 const dispatch = createEventDispatcher();
 
@@ -55,8 +55,42 @@ $: hashes, loading, error, allProposalScores, sortableProposals, sortedProposals
   // }
 // }
 
+async function sortProposals() {
+  console.log(sortableProposals)
+  // if ((anyProposalPopup == false) && sort && sortableProposals && hashes && Object.values(sortableProposals).length == hashes.length) {
+    console.log('hello')
+    console.log(JSON.stringify(sortableProposals))
+    let sortedProposalsJoined = Object.values(sortableProposals).sort((a, b) => {
+      console.log(a.score, b.score)
+      if (sort === 'score') {
+        return b.score - a.score;
+      } else if (sort === 'respondants') {
+        return a.respondants - b.respondants;
+      } else {
+        return 1
+      }
+      return 1
+    });
+    let x = sortedProposalsJoined.map((proposal) => {
+      return proposal.hash;
+    })
+    // let x = {}
+    // for (let i = 0; i < sortedProposalsJoined.length; i++) {
+    //   x[i] = sortedProposalsJoined[i].hash.join('');
+    // }
+    console.log(sortedProposals)
+    console.log(sortedProposalsJoined)
+    console.log(x)
+  // }
+  sortedProposals = [...sortedProposals]
+}
+
+
 onMount(async () => {
   await fetchProposals();
+
+  await sortProposals();
+
   client.on('signal', signal => {
     if (signal.zome_name !== 'converge') return;
     const payload = signal.payload as ConvergeSignal;
@@ -102,7 +136,7 @@ async function rateAlert() {
 <span>No proposals found.</span>
 {:else}
 <div style="display: flex; flex-direction: column">
-  {#each hashes as hash}
+  {#each sortedProposals as hash}
     {#if deliberationHash}
     <!-- {JSON.stringify(sortableProposals)} -->
       <!-- {#if sort == "score"} -->

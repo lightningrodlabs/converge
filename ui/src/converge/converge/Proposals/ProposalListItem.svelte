@@ -88,21 +88,25 @@ function checkKey(e) {
 function moveRight() {
   console.log(proposalDetailHash)
   // find next hash
-  let nextHash = hashes[hashes.indexOf(proposalDetailHash) + 1]
-  if (nextHash) {
-    proposalDetailHash = nextHash
+  if (hashes.length > hashes.indexOf(proposalDetailHash) + 1) {
+    let nextHash = hashes[hashes.indexOf(proposalDetailHash) + 1]
+    if (nextHash) {
+      proposalDetailHash = nextHash
+    }
+    console.log(proposalDetailHash)
   }
-  console.log(proposalDetailHash)
 }
 
 function moveLeft() {
   console.log(proposalDetailHash)
   // find next hash
-  let nextHash = hashes[hashes.indexOf(proposalDetailHash) - 1]
-  if (nextHash) {
-    proposalDetailHash = nextHash
+  if (hashes.indexOf(proposalDetailHash) > 0) {
+    let nextHash = hashes[hashes.indexOf(proposalDetailHash) - 1]
+    if (nextHash) {
+      proposalDetailHash = nextHash
+    }
+    console.log(proposalDetailHash)
   }
-  console.log(proposalDetailHash)
 }
 
 async function fetchProposal() {
@@ -209,7 +213,9 @@ async function deleteProposal() {
     </div> -->
     
     <div class="overflow-content" style="display: flex; flex-direction: row; margin-bottom: 16px; font-size: 0.8em; position: relative;">
-      <span style="white-space: pre-line">{ proposal.description }</span>
+      <span style="white-space: pre-line; max-height: 56px; overflow: hidden;">
+        { proposal.description }
+      </span>
     </div>
 
     <div class="overflow-content" style="display: flex; flex-direction: row; margin-bottom: 16px; font-size: 0.8em; position: relative;">
@@ -235,7 +241,7 @@ async function deleteProposal() {
 </div>
 </div>
 
-<RateCriteria on:proposal-rated={rateAlert} bind:allSupport bind:convergence bind:maxWeight deliberationHash={deliberationHash} proposalHash={proposalDetailHash} display={false} />
+<RateCriteria on:proposal-rated={rateAlert} bind:allSupport bind:convergence bind:maxWeight deliberationHash={deliberationHash} proposalHash={proposalHash} display={false} />
 
 {#if proposalPopup}
 <div class="backdrop">

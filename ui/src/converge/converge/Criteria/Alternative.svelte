@@ -51,20 +51,6 @@
   }
 </script>
 
-<style>
-  .green-alert {
-    background-color: rgb(203, 203, 203);
-    color: green;
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 50%;
-    font-weight: bolder;
-    padding: 4px 7px;
-    /* width: 8px;
-    height: 20px; */
-  }
-</style>
-
 <div><div class="green-alert">↯</div> <span style="font-weight: bold; color: green;">Alternative: </span>{alternative.title}
 {#if mySupport}
 <button on:click={() => acceptAlternative(alternative.hash)}>Transfer support</button>

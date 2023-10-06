@@ -228,3 +228,15 @@ mwc-slider[disabled] .mdc-slider__thumb-knob {
   /* width: 20px; */
   /* height: 20px; */
 }
+
+.green-alert {
+  background-color: rgb(203, 203, 203);
+  color: green;
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 50%;
+  font-weight: bolder;
+  padding: 4px 7px;
+  /* width: 8px;
+  height: 20px; */
+}

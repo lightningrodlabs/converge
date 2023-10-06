@@ -13,6 +13,17 @@ pub fn add_criterion_for_objector(
     input: AddCriterionForObjectorInput,
 ) -> ExternResult<ActionHash> {
 
+    call(
+        CallTargetCell::Local,
+        ZomeName::from(String::from("converge")),
+        FunctionName(String::from("remove_criterion_for_objector")),
+        None,
+        RemoveCriterionForObjectorInput{
+            base_objector: input.base_objector.clone(),
+            target_criterion_hash: input.target_criterion_hash.clone(),
+        }
+    )?;
+
     // remove previous support
     let links = get_links(
         input.base_objector.clone(),
@@ -82,32 +93,32 @@ pub struct Objection {
 
 #[hdk_extern]
 pub fn get_objection_link(link_hash: ActionHash) -> ExternResult<Objection> {
-    debug!("link_hash: {:?}", link_hash);
+    // debug!("link_hash: {:?}", link_hash);
     let link: Option<Record> = get(link_hash, GetOptions::default())?;
-    debug!("record: {:?}", link.clone());
+    // debug!("record: {:?}", link.clone());
     let mut tag: String = "".to_string();
     let mut objector: AgentPubKey;
     let mut criterion_hash: ActionHash;
-    debug!("criterion hash");
+    // debug!("criterion hash");
 
     if let Some(l) = link.clone() {
         let o: CreateLink = l.signed_action.hashed.content.try_into().unwrap();
-        debug!("o: {:?}", o.clone());
+        // debug!("o: {:?}", o.clone());
         tag = String::from_utf8(o.tag.0).unwrap();
-        debug!("tag: {:?}", tag.clone());
+        // debug!("tag: {:?}", tag.clone());
         // let x = EntryHash::try_from(o.base_address).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected entryhash".into()))).unwrap();
         // debug!("x: {:?}", x.clone());
         objector = AgentPubKey::try_from(o.author).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected agentpubkey".into()))).unwrap();
-        debug!("objector: {:?}", objector.clone());
-        debug!("target address: {:?}", o.target_address.clone());
+        // debug!("objector: {:?}", objector.clone());
+        // debug!("target address: {:?}", o.target_address.clone());
         criterion_hash = ActionHash::try_from(o.base_address).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap();
-        debug!("criterion hash: {:?}", criterion_hash.clone());
+        // debug!("criterion hash: {:?}", criterion_hash.clone());
         let objection = Objection {
             base_objector: Some(objector.clone()),
             target_criterion_hash: Some(criterion_hash.clone()),
             comment: Some(tag),
         };
-        debug!("------------------------------------------: {:?}", objection.clone());
+        // debug!("------------------------------------------: {:?}", objection.clone());
         Ok(objection)
     } else {
         let objection = Objection {

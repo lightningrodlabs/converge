@@ -21,8 +21,8 @@ let error: any = undefined;
 let sortableCriteria = {};
 let sortedCriteria = [];
 
-$: hashes, loading, error, sortedCriteria, sortableCriteria, sort, filter;
-$: if (sort && sortableCriteria && hashes && Object.values(sortableCriteria).length == hashes.length) {
+async function sortCriteria() {
+// setTimeout(() => {
   let sortedCriteriaJoined = Object.values(sortableCriteria).sort((a, b) => {
     if (sort === 'support') {
       return b.support - a.support;
@@ -40,18 +40,26 @@ $: if (sort && sortableCriteria && hashes && Object.values(sortableCriteria).len
   });
   sortedCriteria = sortedCriteriaJoined.map((c) => c.hash);
   console.log(sort, sortedCriteriaJoined)
+  // }, 4000)
+}
+
+$: hashes, loading, error, sortedCriteria, sortableCriteria, sort, filter;
+$: if (sort && sortableCriteria && hashes && Object.values(sortableCriteria).length == hashes.length) {
+  sortCriteria();
 }
 
 onMount(async () => {
 
   await fetchCriteria();
+  await sortCriteria()
   client.on('signal', signal => {
     if (signal.zome_name !== 'converge') return;
     const payload = signal.payload as ConvergeSignal;
     if (payload.type !== 'EntryCreated') return;
     if (payload.app_entry.type !== 'Criterion') return;
     // hashes = [...hashes, payload.action.hashed.hash];
-    fetchCriteria();
+    // sortedCriteria = [...sortedCriteria, payload.action.hashed.hash];
+    fetchCriteria()
   });
 });
 
@@ -97,23 +105,23 @@ async function joinSignal() {
     {/each}
   {:else if sort == "objections"}
     {#each sortedCriteria as hash}
-      <Criterion criterionHash={hash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}></Criterion>
+      <Criterion on:criterion-rated={joinSignal} criterionHash={hash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}></Criterion>
     {/each}
   {:else if sort == "comments"}
     {#each sortedCriteria as hash}
-      <Criterion criterionHash={hash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}></Criterion>
+      <Criterion on:criterion-rated={joinSignal} criterionHash={hash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}></Criterion>
     {/each}
   {:else if sort == "weight"}
     {#each sortedCriteria as hash}
-      <Criterion criterionHash={hash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}></Criterion>
+      <Criterion on:criterion-rated={joinSignal} criterionHash={hash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}></Criterion>
     {/each}
   {:else if sort == "my support"}
     {#each sortedCriteria as hash}
-      <Criterion criterionHash={hash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}></Criterion>
+      <Criterion on:criterion-rated={joinSignal} criterionHash={hash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}></Criterion>
     {/each}
   {:else if sort == "my objections"}
     {#each sortedCriteria as hash}
-      <Criterion criterionHash={hash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}></Criterion>
+      <Criterion on:criterion-rated={joinSignal} criterionHash={hash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}></Criterion>
     {/each}
   {/if}
 </div>

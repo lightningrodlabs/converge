@@ -126,9 +126,9 @@ async function fetchDeliberation() {
 <!-- <div style="display: flex; 
 flex: 1;"> -->
 <!-- {JSON.stringify(proposalHash.join(''))} -->
-<div class="outlined-item list-item-mini criterion-outer" style="width:96%">
+<div class="outlined-item list-item criterion-outer" style="width:96%">
   {#if convergence > 0 && maxWeight > 0}
-  <div style="display: flex; flex-direction: column; font-size: .8em">
+  <div style="display: flex; flex-direction: column; font-size: .8em; max-height: 100px;">
   <div class="vertical-progress-bar-container">
   <!-- <div class="vertical-progress-bar-container" style="height: 100px; border: 1px dotted black;"> -->
     {#each Array.from({ length: 35 * convergence / maxWeight }) as _, index}
@@ -139,15 +139,15 @@ flex: 1;"> -->
   {/if}
   <div class="two-sides">
 
-  <div style="display: flex; flex: 1; flex-direction: column">
-  <div style="display: flex; flex-direction: row; margin-bottom: 16px">
+  <div style="display: flex; flex: 1; flex-direction: column; width:inherit">
+  <div style="display: flex; flex-direction: row; margin-bottom: 16px; width:inherit">
     <span style="margin-right: 4px"><strong>{ proposal.title }</strong></span>
     <!-- <span style="white-space: pre-line">{ proposal.title }</span> -->
   </div>
 
-  <div class="deliberation-section" style="display: flex; flex-direction: row; margin-bottom: 16px">
+  <div class="deliberation-section" style="display: flex; flex-direction: row; margin-bottom: 16px; width:inherit">
     <!-- <span style="margin-right: 4px"><strong>Description:</strong></span> -->
-    <span style="white-space: pre-line">{ proposal.description }</span>
+    <span style="white-space: pre-line; width:inherit">{ proposal.description }</span>
   </div>
 </div>
 </div>

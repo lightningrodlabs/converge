@@ -3,6 +3,7 @@
   import { clientContext } from '../../../contexts';
   import type { ActionHash, AppAgentClient } from "@holochain/client";
 
+  export let objections;
   export let objectionHash;
   let objection;
 
@@ -42,8 +43,20 @@
    */
 </style>
 
+
+
+{#if objections}
 {#if objection}
-<div><div class="red-alarm">!</div> <span style="font-weight: bold; color: red;">Objection: </span>{objection.comment}</div>
-{:else}
-.........
+{@const objectionStringToCheck = Object.values(objectionHash).join(',')}
+{@const objectionIsPresent = objections.some(agentObj => Object.values(agentObj.objection_hash).join(',') === objectionStringToCheck)}
+{#if objectionIsPresent}
+  {@const agent = objections.find(agentObj => Object.values(agentObj.objection_hash).join(',') === objectionStringToCheck)}
+  <!-- <div style="margin-right: 8px; cursor: pointer; color: gray; text-decoration: underline;" on:click={() => {removeObjection()}}>Remove objection</div> -->
+
+  
+  <div><div class="red-alarm">!</div> <span style="font-weight: bold; color: red;">Objection: </span>{objection.comment}</div>
+  {:else}
+  <div><span style="font-weight: bold; color: orange;">Objection (removed): </span>{objection.comment}</div>
+  {/if}
+{/if}
 {/if}

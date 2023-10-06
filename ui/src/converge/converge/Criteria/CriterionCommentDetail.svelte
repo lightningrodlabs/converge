@@ -23,6 +23,7 @@ export let criterionCommentHash: ActionHash;
 export let filter;
 export let mySupport;
 export let criterionHash;
+export let objections;
 // export let objections;
 // export let alternatives;
 export let commentReference;
@@ -196,52 +197,7 @@ async function deleteCriterionComment() {
   } }
   on:edit-canceled={() => { editing = false; } }
 ></EditCriterionComment>
-{:else if false}
 
-<div style="display: flex; flex-direction: column;">
-  <!-- <div style="display: flex; flex-direction: row">
-    <span style="flex: 1"></span>
-    <mwc-icon-button style="margin-left: 8px" icon="edit" on:click={() => { editing = true; } }></mwc-icon-button>
-    <mwc-icon-button style="margin-left: 8px" icon="delete" on:click={() => deleteCriterionComment()}></mwc-icon-button>
-  </div> -->
-  
-  <!-- {#if criterionComment && criterionComment.objection_reference && objectionsLookup}
-    {JSON.stringify(objectionsLookup[criterionComment.objection_reference.join(',')].tag)}
-  {/if}
-
-  {#if criterionComment && criterionComment.alternative_reference && alternativesLookup}
-    {JSON.stringify(alternativesLookup[criterionComment.alternative_reference.join(',')].tag)}
-  {/if} -->
-====================<br>
-  {#if objection}
-    {objection.comment}
-  {/if}
-
-  {#if alternative}
-    {JSON.stringify(alternative.title)}
-    hi
-  {/if}
-
-  {#if respondingTo}
-    {JSON.stringify(respondingTo.comment)}
-  {/if}
-
-  <!-- {JSON.stringify(criterionComment.alternative_reference)} -->
-  <!-- <button on:click={()=>{fetchAlternative(criterionComment.alternative_reference)}}>fetch alternative</button> -->
-
-  <div style="display: flex; flex-direction: row; margin-bottom: 4px">
-    <span style="margin-right: 4px"><strong>Comment:</strong></span>
-    <span style="white-space: pre-line">{ criterionComment.comment }</span>
-  </div>
-
-  <div style="display: flex; flex-direction: row; margin-bottom: 4px">
-    <span style="margin-right: 4px"><strong>Created:</strong></span>
-    <span style="white-space: pre-line">{ new Date(criterionComment.created / 1000).toLocaleString() }</span>
-  </div>
-
-  <button style="width: fit-content;" on:click={() => {commentReference = {hash: criterionCommentHash, comment: criterionComment.comment}}}>Reply</button>
-
-</div>
 {:else}
 <!-- Assuming you have necessary MWC components and styles imported -->
 
@@ -252,7 +208,8 @@ async function deleteCriterionComment() {
 
   <div style="width: 100%; margin-right: 20px;">
     <div>{nickName}</div>
-    <div class="comment-card" style={criterionComment.objection_reference ? "border: 1px solid red;" : ""}>
+    <!-- <div class="comment-card" style={criterionComment.objection_reference ? "border: 1px solid red;" : ""}> -->
+    <div class="comment-card">
       <!-- {JSON.stringify()} -->
       <!-- import profile-user.png -->
       <!-- <img src="profile-user.png" alt="Profile Picture" width="50" height="50"> -->
@@ -260,7 +217,7 @@ async function deleteCriterionComment() {
       <!-- Comment content -->
       {#if objection}
         <div>
-          <ObjectionMini objectionHash={criterionComment.objection_reference}></ObjectionMini>
+          <ObjectionMini {objections} objectionHash={criterionComment.objection_reference}></ObjectionMini>
         </div>
       {:else if alternative}
         <AlternativeMini {alternative} {mySupport} {criterionHash}></AlternativeMini>
@@ -268,9 +225,12 @@ async function deleteCriterionComment() {
       {:else if respondingTo}
         <div class="comment-bubble">
           {#if respondingTo.objection_reference}
-            <ObjectionMini objectionHash={respondingTo.objection_reference}></ObjectionMini>
+            <ObjectionMini {objections} objectionHash={respondingTo.objection_reference}></ObjectionMini>
+          {:else if respondingTo.alternative_reference}
+            <div><div class="green-alert">↯</div> <span style="font-weight: bold; color: green;">Alternative: </span>
+            {respondingTo.comment.substring(0,200)}{#if respondingTo.comment.length > 200}...{/if}</div>
           {:else}
-            {respondingTo.comment}
+            {respondingTo.comment.substring(0,200)}{#if respondingTo.comment.length > 200}...{/if}
           <!-- {:else if respondingTo.alternative_reference} -->
             <!-- <AlternativeMini alternative={} {mySupport} {criterionHash}></AlternativeMini> -->
           {/if}
@@ -279,7 +239,9 @@ async function deleteCriterionComment() {
 
       <!-- Comment details -->
       <div class="comment-details">
-        <span class="comment-text">{criterionComment.comment}</span>
+        {#if !objection && !alternative}
+          <span class="comment-text">{criterionComment.comment}</span>
+        {/if}
         <span class="timestamp">{new Date(criterionComment.created / 1000).toLocaleString()}</span>
         <span class="timestamp">
         <button class="reply" on:click={() => {commentReference = {hash: criterionCommentHash, comment: criterionComment.comment};}}>Reply</button>
@@ -303,16 +265,20 @@ async function deleteCriterionComment() {
   .reply {
     width: fit-content;
     border: none;
-    background: lightgray;
-    border-radius: 4px;
-    margin-left: 10px;
+    border: 1px solid lightgray;
+    background: transparent;
+    border-radius: 2px;
+    /* margin-left: 10px; */
     color: gray;
     cursor: pointer;
+    padding: 0px 4px;
+    margin: 5px 1px;
   }
 
   .reply:hover {
-    background: gray;
-    color: white;
+    /* background: gray; */
+    border: 1px solid gray;
+    color: black;
   }
 
   .chat-container {
@@ -337,18 +303,20 @@ async function deleteCriterionComment() {
     border-radius: 10px;
     padding: 10px;
     margin-bottom: 8px;
-  }
+    color: rgb(97, 97, 97);
+}
 
   .comment-details {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
+    /* display: flex; */
+    /* flex-direction: row; */
+    /* justify-content: space-between; */
     align-items: end;
   }
 
   .comment-text {
-    white-space: pre-line;
-    flex: 1;
+    /* white-space: pre-line; */
+    /* flex: 1; */
+    display: block;
   }
 
   .timestamp {

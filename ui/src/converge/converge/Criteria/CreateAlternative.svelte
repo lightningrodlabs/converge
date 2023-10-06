@@ -131,7 +131,9 @@
           target_criterion_hash: alternativeHash,
         },
       });
-      createCriterionComment('', null, null, alternativeHash, Date.now())
+      let title = allCriteria.filter(c => c.hash.join(',') === alternativeHash.join(','))[0].title
+      console.log(title)
+      createCriterionComment('Alternative: ' + title, null, null, alternativeHash, Date.now())
       selectedCriterion = undefined;
       // console.log(res)
     } catch (e) {

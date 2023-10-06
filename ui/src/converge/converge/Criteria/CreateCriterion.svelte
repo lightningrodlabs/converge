@@ -112,7 +112,7 @@ async function createCriterion() {
         },
       });
       const criterionComment: CriterionComment = { 
-        comment: '',
+        comment: title,
         comment_reference: null,
         objection_reference: null,
         alternative_reference: criterionHash,
