@@ -71,10 +71,10 @@ onMount(async () => {
     console.log(typeof(payload))
     if (payload == 'activity received') {
       console.log(signal)
-      setTimeout(() => {
+      // setTimeout(() => {
         console.log("activity received")
         outdated = true;
-      }, 2000);
+      // }, 2000);
       // fetchDeliberation();
     }
     // console.log(payload)
@@ -331,7 +331,7 @@ async function leaveDeliberation() {
 {#if activeTab == "criteria"}
   <!--<FaSort/> -->
   <p>What characteristics should a proposal have?</p>
-  <select bind:value={criteriaSort}>
+  <select bind:value={criteriaSort} style="cursor: pointer">
     {#each sortByOptions as option}
     <option value={option}>  Sort by: {option}</option>
     {/each}

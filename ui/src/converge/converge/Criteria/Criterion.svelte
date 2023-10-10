@@ -274,7 +274,7 @@ async function scrollToDiv() {
   </div>
 </div>
 <div class="two-sides" bind:this={myDiv}>
-  <div style="display: flex; flex-direction: column">
+  <div style="display: flex; flex-direction: column; width: 100%;">
     <!-- <div style="display: flex; flex-direction: row">
       <span style="flex: 1"></span>
       <mwc-icon-button style="margin-left: 8px" icon="delete" on:click={() => deleteCriterion()}></mwc-icon-button>
@@ -290,7 +290,7 @@ async function scrollToDiv() {
     <!-- <span style="white-space: pre-line">{ criterion.objections }</span> -->
     {#if support}
       <div style="display: flex; flex-direction: row; font-size: .8em">
-        support: {support / supporters.length}
+        support: {Math.round(support / supporters.length * 100)}%
       </div>
       <!-- <div style="display: flex; flex-direction: row; font-size: .8em">
         {JSON.stringify(support / supporters.length)} average support
@@ -407,7 +407,7 @@ async function scrollToDiv() {
   </div>
 
   <!-- OBJECT BUTTON -->
-  <div style="display: flex; flex-direction: column; font-size: .8em">
+  <div style="flex-direction: column; font-size: .8em; width: 100%; text-align: right;">
     <button style="height: 80%;; width: 80px; 
     background-color: transparent;
     border: none;

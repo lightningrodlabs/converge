@@ -30,6 +30,10 @@ h2 {
   text-align: left;
 } */
 
+.dashboard-item {
+  cursor: pointer;
+}
+
 .dashboard-item > div {
   white-space: pre-line;
   margin: 6px;
@@ -147,6 +151,7 @@ body {
 
 .list-item-mini {
   height: 100px;
+  cursor: pointer;
 }
 
 .two-sides {

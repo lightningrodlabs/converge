@@ -13,16 +13,18 @@ pub fn add_criterion_for_objector(
     input: AddCriterionForObjectorInput,
 ) -> ExternResult<ActionHash> {
 
-    call(
-        CallTargetCell::Local,
-        ZomeName::from(String::from("converge")),
-        FunctionName(String::from("remove_criterion_for_objector")),
-        None,
-        RemoveCriterionForObjectorInput{
-            base_objector: input.base_objector.clone(),
-            target_criterion_hash: input.target_criterion_hash.clone(),
-        }
-    )?;
+    if input.base_objector.clone().eq(&agent_info()?.agent_latest_pubkey) {
+        call(
+            CallTargetCell::Local,
+            ZomeName::from(String::from("converge")),
+            FunctionName(String::from("remove_criterion_for_objector")),
+            None,
+            RemoveCriterionForObjectorInput{
+                base_objector: input.base_objector.clone(),
+                target_criterion_hash: input.target_criterion_hash.clone(),
+            }
+        )?;    
+    }
 
     // remove previous support
     let links = get_links(

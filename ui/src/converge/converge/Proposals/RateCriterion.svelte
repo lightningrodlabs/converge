@@ -157,6 +157,7 @@ async function fetchSupport() {
         sponsored = supporters.some(item => item["agent"] === client.myPubKey.join(","));
       }
       allSupport[criterionHash.join(',')] = averageSupport;
+      console.log("all support" + JSON.stringify(allSupport))
     }
   } catch (e) {
     console.log(e)
@@ -206,6 +207,32 @@ async function fetchObjections() {
 //     error = e;
 //   }
 // }
+async function removeRatingAndFetch() {
+  await removeRating()
+  console.log("ASDFASDFASDF" + JSON.stringify(supporters))
+  console.log(client.myPubKey.join(","))
+  supporters = supporters.filter(item => item.agent !== client.myPubKey.join(","));
+  console.log("ASDFASDFASDF" + JSON.stringify(supporters))
+  let objectionCount;
+  if (objections) {
+    objectionCount = objections.length;
+  } else {
+    objectionCount = 0;
+  }
+  let adjustedSupport = Math.max(0, support - objectionCount)
+  // console.log(objections, support, objectionCount, adjustedSupport)
+  if (supporters.length > 0) {
+    averageSupport = adjustedSupport / supporters.length
+  } else {
+    averageSupport = 0;
+  }
+  if (supporters) {
+    sponsored = supporters.some(item => item["agent"] === client.myPubKey.join(","));
+  }
+  allSupport[criterionHash.join(',')] = averageSupport;
+  console.log(allSupport)
+  dispatch('proposal-rated')
+}
 
 async function removeRating() {
   try {
@@ -369,7 +396,10 @@ async function addRating() {
               MET</span>
           </div>
           <div style="text-align: center; flex-direction: row; font-size: 1em">
-            <button on:click={removeRating} style="white-space: pre-line;">Remove evaluation</button>
+            <button on:click={e => {
+              removeRatingAndFetch();
+            }}
+             style="white-space: pre-line;">Remove evaluation</button>
           </div>
           <!-- <div style="text-align: center; flex-direction: row; mfont-size: .8em"> -->
             <!-- <button on:click={() => openEvaluation = false}>Cancel</button> -->

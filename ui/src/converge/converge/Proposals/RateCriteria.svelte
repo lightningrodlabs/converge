@@ -38,7 +38,7 @@ $: if (allRatings) {
     }
     // if (Object.keys(allWeight).length > 0) {
       convergence = calculateAverage(allWeight)
-      // console.log("convergence", convergence)
+      console.log("convergence", convergence)
     // }
   }
 

@@ -219,7 +219,7 @@ async function deleteProposal() {
     </div>
 
     <div class="overflow-content" style="display: flex; flex-direction: row; margin-bottom: 16px; font-size: 0.8em; position: relative;">
-      <span style="white-space: pre-line">score: { convergence / maxWeight * 100 }%</span>
+      <span style="white-space: pre-line">score: { Math.round(convergence / maxWeight * 100) }%</span>
     </div>
 
   </div>
