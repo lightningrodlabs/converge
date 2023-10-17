@@ -311,7 +311,13 @@ async function scrollToDiv() {
 
   </div>
 
-  <div style="display: flex; flex-direction: column; margin-bottom: 16px; font-size: .8em">
+  <div style="display: flex; flex-direction: column; margin-bottom: 16px; font-size: .8em"
+  on:mouseenter={e => {
+    openSupport = true
+  }}
+  on:mouseleave={e => {
+    openSupport = false
+  }}>
       {#if openSupport}
         <div style="text-align: center; flex-direction: row; font-size: 1em">
           <span style="white-space: pre-line;">How important is this criterion to you?</span>
@@ -331,9 +337,6 @@ async function scrollToDiv() {
               } else {
                 addSupport()
               }
-            }}
-            on:mouseleave={e => {
-              openSupport = false
             }}
             value={addSupportPercentage}
             withTickMarks
@@ -365,9 +368,6 @@ async function scrollToDiv() {
             IMPORTANT</span>
           <mwc-slider
           style="--mdc-theme-primary: blue;"
-          on:mouseover={e => {
-            openSupport = true
-          }}
           value={mySupport * scoringLevel}
           class="star-slider"
           step="1"
@@ -386,9 +386,6 @@ async function scrollToDiv() {
             IMPORTANT</span>
           <mwc-slider
           style="--mdc-theme-primary: blue;"
-          on:mouseover={e => {
-            openSupport = true
-          }}
           disabled=true
           value={addSupportPercentage}
           class="star-slider"
