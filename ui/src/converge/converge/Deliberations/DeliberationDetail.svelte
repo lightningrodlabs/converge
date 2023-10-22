@@ -68,14 +68,9 @@ onMount(async () => {
   client.on('signal', signal => {
     if (signal.zome_name !== 'converge') return;
     const payload = signal.payload as ConvergeSignal;
-    console.log(typeof(payload))
-    if (payload == 'activity received') {
-      console.log(signal)
-      // setTimeout(() => {
-        console.log("activity received")
-        outdated = true;
-      // }, 2000);
-      // fetchDeliberation();
+    if (payload.message == 'live_update' && payload.deliberation_hash.join(',') == deliberationHash.join(',')) {
+      console.log("activity received")
+      outdated = true;
     }
     // console.log(payload)
   });
@@ -187,7 +182,7 @@ async function sendActivityNotice(event) {
       fn_name: 'new_activity_sender',
       payload: {
         deliberation_hash: deliberationHash,
-        message: 'event'
+        message: 'live_update'
       },
     });
   } catch (e: any) {
@@ -330,8 +325,8 @@ async function leaveDeliberation() {
 
 {#if activeTab == "criteria"}
   <!--<FaSort/> -->
-  <p>What characteristics should a proposal have?</p>
-  <select bind:value={criteriaSort} style="cursor: pointer">
+  <p>What criteria would a solution to this problem need to meet?</p>
+  <select bind:value={criteriaSort} style="cursor: pointer; height: 28px;">
     {#each sortByOptions as option}
     <option value={option}>  Sort by: {option}</option>
     {/each}
@@ -359,7 +354,7 @@ async function leaveDeliberation() {
   <AllCriteria deliberationHash={deliberationHash} filter={criteriaFilter} sort="objections" bind:criteriaCount />
   {/if} -->
 {:else if activeTab == "proposals"}
-  <p>What solutions would meet our criteria?</p>
+  <p>What is a solution that would meet our criteria?</p>
   <!-- <select bind:value={proposalSort}>
     {#each ["score", "respondants"] as option}
     <option value={option}>  Sort by: {option}</option>
@@ -405,6 +400,7 @@ async function leaveDeliberation() {
       border: none;
       padding: 8px;
       /* border-radius: 5px; */
+      height: 26px;
       padding: 0px;
       width: 0;
       outline: none;

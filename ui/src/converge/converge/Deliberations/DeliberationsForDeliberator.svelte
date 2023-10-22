@@ -62,7 +62,7 @@ onMount(async () => {
 <span>No deliberations found for this deliberator.</span>
 {:else}
 <div style="display: flex; flex-direction: column">
-  {#each hashes as hash}
+  {#each hashes.reverse() as hash}
     <div style="margin-bottom: 8px;">
     <span on:click={() => navigate('deliberation', hash)}>
       <!-- <DeliberationDetail deliberationHash={hash}></DeliberationDetail> -->

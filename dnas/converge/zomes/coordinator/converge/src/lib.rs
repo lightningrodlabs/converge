@@ -86,7 +86,7 @@ pub fn new_activity_sender(data: ActivityPayload) -> ExternResult<InitCallbackRe
 
 #[hdk_extern]
 pub fn new_activity_receiver(data: ActivityPayload) -> ExternResult<()> {
-    emit_signal("activity received")?;
+    emit_signal(data.clone())?;
     debug!("data: {:?}", data);
     Ok(())
 }

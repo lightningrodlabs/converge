@@ -186,7 +186,13 @@ async function deleteProposal() {
 
 <!-- {JSON.stringify(sortableProposals[proposalHash.join(',')].score)} -->
 
-<div class="outlined-item list-item-mini criterion-outer" on:click={()=>{proposalPopup = true; anyProposalPopup = true;}}>
+<div class="outlined-item list-item-mini criterion-outer" on:click={()=>{
+  proposalPopup = true;
+  anyProposalPopup = true;
+  x = document.getElementsByClassName("popup-container")[0]
+  x.style.display = 'none';
+  x.style.display = 'block';
+  }}>
   <div style="display: flex; flex-direction: column; font-size: .8em">
     <!-- <div class="vertical-progress-bar-container"> -->
   
