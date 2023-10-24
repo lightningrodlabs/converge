@@ -10,7 +10,6 @@ members = ["dnas/*/zomes/coordinator/*", "dnas/*/zomes/integrity/*"]
 [workspace.dependencies]
 hdi = "=0.2.3"
 hdk = "=0.1.3"
-holochain_integrity_types = "=0.2.1"
 serde = "=1.0.163"
 
 [workspace.dependencies.converge]

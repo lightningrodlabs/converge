@@ -117,7 +117,7 @@ async function fetchProposals() {
     error = e;
   }
   loading = false;
-}
+} 
 
 async function rateAlert() {
   console.log('rate-alert-5')

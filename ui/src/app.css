@@ -221,6 +221,7 @@ mwc-slider[disabled] .mdc-slider__thumb-knob {
   background: rgb(243, 241, 241);
   padding: px;
   padding: 6px 9px;
+  z-index: 99999999;
 }
 
 .red-alarm {

@@ -18,6 +18,8 @@ export let deliberationHash: ActionHash;
 export let proposalFormPopup; // Prop to control popup visibility
 function dismissPopup() {
   proposalFormPopup = false; // Set active to false to hide the popup
+  title = '';
+  description = '';
 }
 
 let title: string = '';
