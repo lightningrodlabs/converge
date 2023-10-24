@@ -59,7 +59,7 @@ async function fetchDeliberations() {
 <span>No deliberations found.</span>
 {:else}
 <!-- <div style="display: flex; flex-direction: column"> -->
-  {#each hashes as hash}
+  {#each hashes.reverse() as hash}
     <span on:click={() => navigate('deliberation', hash)}>
       <DeliberationListItem deliberationHash={hash}  on:deliberation-deleted={() => fetchDeliberations()}></DeliberationListItem>
     </span>

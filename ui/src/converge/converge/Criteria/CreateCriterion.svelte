@@ -15,6 +15,7 @@ let alternativeToFull: Criterion;
 function dismissPopup() {
   supportPercentage = 0;
   criterionFormPopup = false; // Set active to false to hide the popup
+  title = '';
 }
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
@@ -220,7 +221,7 @@ async function createCriterion() {
           <mwc-button
             outlined
             label="Cancel"
-            on:click={() => dismissPopup()}
+            on:mousedown={() => dismissPopup()}
             style="flex: 1; margin-right: 16px"
           ></mwc-button>
 
@@ -229,7 +230,7 @@ async function createCriterion() {
             raised
             label="Create Criterion"
             disabled={!isCriterionValid}
-            on:click={() => createCriterion()}
+            on:mousedown={() => createCriterion()}
           ></mwc-button>
         </div>
         

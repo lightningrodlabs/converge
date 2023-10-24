@@ -74,6 +74,11 @@ async function fetchProposal() {
 async function rateAlert() {
   console.log('rate-alert-4')
   dispatch('proposal-rated');
+  console.log("CONVERGENCE: ", convergence)
+  // loading = true;
+  // setTimeout(() => {
+  //   loading = false;
+  // }, 10);
 }
 
 async function deleteProposal() {
