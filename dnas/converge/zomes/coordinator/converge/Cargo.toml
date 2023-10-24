@@ -9,8 +9,7 @@ name = "converge"
 
 [dependencies]
 hdk = { workspace = true }
-<<<<<<< HEAD
-hc_zome_profiles_integrity = "0.2.0"
+holochain_integrity_types = { workspace = true }
 
 serde = { workspace = true }
 

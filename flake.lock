@@ -213,48 +213,25 @@
         "nix-filter": "nix-filter",
         "nixpkgs": "nixpkgs",
         "pre-commit-hooks-nix": "pre-commit-hooks-nix",
+        "repo-git": "repo-git",
         "rust-overlay": "rust-overlay_2",
         "scaffolding": [
           "holochain-flake",
           "empty"
         ],
         "versions": [
-          "holochain-nix-versions"
+          "versions"
         ]
       },
       "locked": {
-        "lastModified": 1688518351,
-        "narHash": "sha256-LU4/kPsHkMVGnWLUpNGpsmfep1NPFI8HXe7A1mwkzvM=",
+        "lastModified": 1697955857,
+        "narHash": "sha256-v9SlW4mUYJpCbdULWUux3hvt3eHZgncM84EYeNrGMdA=",
         "owner": "holochain",
         "repo": "holochain",
-        "rev": "a92af07552c5cb70436c501b67e0c064ac699157",
+        "rev": "942acf43cdc488cbef592d206137c5edbffce021",
         "type": "github"
       },
       "original": {
-        "owner": "holochain",
-        "repo": "holochain",
-        "rev": "a92af07552c5cb70436c501b67e0c064ac699157",
-        "type": "github"
-      }
-    },
-    "holochain-nix-versions": {
-      "inputs": {
-        "holochain": "holochain",
-        "lair": "lair",
-        "launcher": "launcher",
-        "scaffolding": "scaffolding"
-      },
-      "locked": {
-        "dir": "versions/0_2",
-        "lastModified": 1697724434,
-        "narHash": "sha256-bXyClBX1D84pZEdqzdCU748iva8m6GSEoeIL3WoRoLo=",
-        "owner": "holochain",
-        "repo": "holochain",
-        "rev": "bddebddd949b5bb2fbfa1746083fdc5b3a94ace0",
-        "type": "github"
-      },
-      "original": {
-        "dir": "versions/0_2",
         "owner": "holochain",
         "repo": "holochain",
         "type": "github"
@@ -358,6 +335,18 @@
         "type": "github"
       }
     },
+    "repo-git": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-d6xi4mKdjkX2JFicDIv5niSzpyI0m/Hnm8GGAIU04kY=",
+        "type": "file",
+        "url": "file:/dev/null"
+      },
+      "original": {
+        "type": "file",
+        "url": "file:/dev/null"
+      }
+    },
     "root": {
       "inputs": {
         "flake-parts": [
@@ -365,11 +354,11 @@
           "flake-parts"
         ],
         "holochain-flake": "holochain-flake",
-        "holochain-nix-versions": "holochain-nix-versions",
         "nixpkgs": [
           "holochain-flake",
           "nixpkgs"
-        ]
+        ],
+        "versions": "versions"
       }
     },
     "rust-overlay": {
@@ -450,6 +439,29 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "versions": {
+      "inputs": {
+        "holochain": "holochain",
+        "lair": "lair",
+        "launcher": "launcher",
+        "scaffolding": "scaffolding"
+      },
+      "locked": {
+        "dir": "versions/0_2",
+        "lastModified": 1697955857,
+        "narHash": "sha256-v9SlW4mUYJpCbdULWUux3hvt3eHZgncM84EYeNrGMdA=",
+        "owner": "holochain",
+        "repo": "holochain",
+        "rev": "942acf43cdc488cbef592d206137c5edbffce021",
+        "type": "github"
+      },
+      "original": {
+        "dir": "versions/0_2",
+        "owner": "holochain",
+        "repo": "holochain",
         "type": "github"
       }
     }
