@@ -6,6 +6,7 @@
   import { clientContext, profilesStoreContext } from './contexts';
   import { ProfilesStore, ProfilesClient } from "@holochain-open-dev/profiles";
   import { encodeHashToBase64, type AgentPubKey } from "@holochain/client";
+  import { WeClient, isWeContext } from '@lightningrodlabs/we-applet';
 
   import '@shoelace-style/shoelace/dist/themes/light.css';
   import "@holochain-open-dev/profiles/dist/elements/profiles-context.js";
@@ -54,16 +55,35 @@
   onMount(async () => {
     // profilesStore = setupProfilesStore();
     // We pass '' as url because it will dynamically be replaced in launcher environments
-    client = await AppAgentWebsocket.connect('', 'converge');
+    // client = await AppAgentWebsocket.connect('', 'converge');
     // profilesStore = new ProfilesStore(new ProfilesClient(client, 'converge'), {
     //   avatarMode: "avatar-optional",
     // });
 
+    if (isWeContext()) {
+      const weClient = await WeClient.connect();
+      console.log(weClient.renderInfo)
 
-    profilesStore = new ProfilesStore(new ProfilesClient(client, 'converge'), {
-      avatarMode: "avatar-optional",
-      minNicknameLength: 3,
-    });
+      if (
+        !(weClient.renderInfo.type === "applet-view")
+        && !(weClient.renderInfo.view.type === "main")
+      ) throw new Error("This Applet only implements the applet main view.");
+
+      client = weClient.renderInfo.appletClient;
+      console.log("client... ", client)
+      profilesStore = new ProfilesStore(weClient.renderInfo.profilesClient, {
+        avatarMode: "avatar-optional",
+        minNicknameLength: 3,
+      })
+    } else {
+      // We pass '' as url because it will dynamically be replaced in launcher environments
+      client = await AppAgentWebsocket.connect('', 'dcan');
+      profilesStore = new ProfilesStore(new ProfilesClient(client, 'converge'), {
+        avatarMode: "avatar-optional",
+        minNicknameLength: 3,
+      });
+    }
+
 
     // await profilesStore;
 
