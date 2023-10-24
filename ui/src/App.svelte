@@ -6,7 +6,6 @@
   import { clientContext, profilesStoreContext } from './contexts';
   import { ProfilesStore, ProfilesClient } from "@holochain-open-dev/profiles";
   import { encodeHashToBase64, type AgentPubKey } from "@holochain/client";
-  import { WeClient, isWeContext } from '@lightningrodlabs/we-applet';
 
   import '@shoelace-style/shoelace/dist/themes/light.css';
   import "@holochain-open-dev/profiles/dist/elements/profiles-context.js";
@@ -24,7 +23,8 @@
   import ProposalDetail from './converge/converge/Proposals/ProposalDetail.svelte';
   import Header from './converge/converge/Header.svelte';
   import DeliberationsForDeliberator from './converge/converge/Deliberations/DeliberationsForDeliberator.svelte';
-    import { MyProfile } from '@holochain-open-dev/profiles/dist/elements/my-profile.js';
+  import { MyProfile } from '@holochain-open-dev/profiles/dist/elements/my-profile.js';
+  import { WeClient, isWeContext } from '@lightningrodlabs/we-applet';
 
   let client: AppAgentClient | undefined;
   let loading = true;
