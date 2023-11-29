@@ -293,7 +293,7 @@ async function addRating() {
 {:else if error}
 <span>Error fetching the criterion: {error}</span>
 {:else if support}
-
+{#key support}
 
 <div class="outlined-item criterion-outer" style="border-radius: 0;">
   <!-- <div style="display: flex; flex-direction: column; font-size: .8em">
@@ -494,5 +494,6 @@ async function addRating() {
 </div>
 </div>
 {/if}
+{/key}
 {/if}
 {/if}

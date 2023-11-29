@@ -19,6 +19,15 @@ use serde::de;
 // use hc_zome_profiles_integrity::LinkTypes as ProfileLinkTypes;
 #[hdk_extern]
 pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
+    #[cfg(any(
+        target_os = "linux",
+        target_os = "freebsd",
+        target_os = "dragonfly",
+        target_os = "openbsd",
+        target_os = "netbsd"
+    ))]
+    std::env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
+
     let mut functions: BTreeSet<(ZomeName, FunctionName)> = BTreeSet::new();
     functions.insert((zome_info()?.name, FunctionName(String::from("new_activity_receiver"))));
     let functions = GrantedFunctions::Listed(functions);

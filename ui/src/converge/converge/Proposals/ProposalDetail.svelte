@@ -166,8 +166,10 @@ flex: 1;"> -->
     <span style="white-space: pre-line">
       <!-- {deliberationHash} -->
       {#if deliberationHash}
+      {#key deliberationHash}
         <!-- {JSON.stringify(convergence)} -->
         <RateCriteria on:proposal-rated={rateAlert} bind:convergence bind:maxWeight deliberationHash={deliberationHash} proposalHash={proposalHash} />
+      {/key}
       {/if}
     </span>
   </div>
