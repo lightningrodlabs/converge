@@ -100,6 +100,12 @@ pub fn new_activity_receiver(data: ActivityPayload) -> ExternResult<()> {
     Ok(())
 }
 
+#[hdk_extern]
+pub fn get_dna_hash(_:()) -> ExternResult<String> {
+    let x = hdk::info::dna_info()?;
+    Ok(x.hash.to_string())
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "type")]
 pub enum Signal {

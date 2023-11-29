@@ -25,6 +25,7 @@
   import DeliberationsForDeliberator from './converge/converge/Deliberations/DeliberationsForDeliberator.svelte';
   import { MyProfile } from '@holochain-open-dev/profiles/dist/elements/my-profile.js';
   import { WeClient, isWeContext } from '@lightningrodlabs/we-applet';
+  import Holochain from "./assets/holochain.png";
 
   let client: AppAgentClient | undefined;
   let loading = true;
@@ -33,8 +34,9 @@
   let currentView: string | undefined;
   let profilesStore = undefined;
   let initialized: boolean = false;
+  let dna;
 
-  $: client, loading, store, profilesStore, initialized;
+  $: client, loading, store, profilesStore, initialized, dna;
   // $: prof = profilesStore ? profilesStore.myProfile : undefined
   // $: prof = profilesStore ? profilesStore : undefined
 
@@ -99,6 +101,25 @@
     // }
 
     // console.log(profilesStore)
+
+    try {
+      dna = await client
+        .callZome({
+            cap_secret: null,
+            role_name: 'converge',
+            zome_name: 'converge',
+            fn_name: 'get_dna_hash',
+            payload: null,
+        });
+        console.log("dna")
+      console.log(dna)
+    } catch (e) {
+      console.log("no dna")
+
+      console.log(e)
+    }
+
+
     loading = false;
   });
 
@@ -125,6 +146,7 @@
 <!-- <profiles-context store={profilesStore}> -->
   <profiles-context store="{profilesStore}">
     <!-- {#if !initialized} -->
+
     <!-- <create-profile></create-profile> -->
     <!-- {:else} -->
     <!-- <list-profiles on:agent-selected={e => alert(e.detail.agentPubKey)}></list-profiles> -->
@@ -158,6 +180,15 @@
   <!-- <create-profile></create-profile> -->
 <!-- {/if} -->
 </profiles-context>
+{/if}
+
+{#if dna && !loading && currentView != "instructions" && currentView != ""}
+<footer style="margin: 10px;">
+<small>
+  <img class="holochain-logo" src={Holochain} alt="holochain logo"/>
+  Private Holochain network: {dna}
+</small>
+</footer>
 {/if}
 
 <style>
