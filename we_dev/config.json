@@ -1,0 +1,58 @@
+{
+    "groups": [
+      {
+        "name": "Lightning Rod Labs",
+        "networkSeed": "098rc1m-09384u-crm-29384u-cmkj",
+        "icon": {
+          "type": "filesystem",
+          "path": "/home/leo/hApps/converge/we_dev/lrl-icon.png"
+        },
+        "creatingAgent": {
+          "agentNum": 1,
+          "agentProfile": {
+            "nickname": "Zippy",
+            "avatar": {
+              "type": "filesystem",
+              "path": "/home/leo/hApps/converge/we_dev/zippy.jpg"
+            }
+          }
+        },
+        "joiningAgents": [
+          {
+            "agentNum": 2,
+            "agentProfile": {
+              "nickname": "Zerbina",
+              "avatar": {
+                "type": "filesystem",
+                "path": "/home/leo/hApps/converge/we_dev/zerbina.jpg"
+              }
+            }
+          }
+        ],
+        "applets": [
+          {
+            "name": "Converge Hot Reload",
+            "instanceName": "Converge Hot Reload",
+            "registeringAgent": 1,
+            "joiningAgents": [2]
+          }
+        ]
+      }
+    ],
+    "applets": [
+      {
+        "name": "Converge Hot Reload",
+        "subtitle": "Collaborate with friends or strangers",
+        "description": "Let's do it!",
+        "icon": {
+          "type": "filesystem",
+          "path": "/home/leo/hApps/converge/we_dev/kando_icon.png"
+        },
+        "source": {
+          "type": "localhost",
+          "happPath": "/home/leo/hApps/converge/workdir/converge.happ",
+          "uiPort": 8888
+        }
+      }
+    ]
+  }

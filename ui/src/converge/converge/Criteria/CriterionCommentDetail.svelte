@@ -16,6 +16,7 @@ import AlternativeMini from './Alternative.svelte'
 import { encodeHashToBase64 } from "@holochain/client";
 import type { AsyncStatus } from "@holochain-open-dev/stores";
 import type { Profile } from "@holochain-open-dev/profiles";
+import Avatar from '../Avatar.svelte';
 
 const dispatch = createEventDispatcher();
 
@@ -45,7 +46,6 @@ let nickName;
 
 let editing = false;
 let errorSnackbar: Snackbar;
-
   
 $: editing,  error, loading, record, criterionComment, alternative, nickName;
 
@@ -73,6 +73,7 @@ onMount(async () => {
   loading = false;
 
   await profilesStore.profiles.get(criterionComment.author).subscribe((profile) => {
+    console.log("profile: ", profile)
     if (profile.status == "complete") {
       nickName = profile.value.nickname
     }
@@ -204,10 +205,12 @@ async function deleteCriterionComment() {
 <div class="chat-container">
   
   <!-- Example of a Comment Card -->
-  <agent-avatar disable-tooltip={true} disable-copy={true} size={40} agent-pub-key="{encodeHashToBase64(criterionComment.author)}"></agent-avatar>
+  <!-- <agent-avatar disable-tooltip={true} disable-copy={true} size={40} agent-pub-key="{encodeHashToBase64(criterionComment.author)}"></agent-avatar> -->
+  <Avatar agentPubKey={criterionComment.author} size={24} namePosition="row" />
 
   <div style="width: 100%; margin-right: 20px;">
-    <div>{nickName}</div>
+    <!-- <div>{nickName}</div> -->
+
     <!-- <div class="comment-card" style={criterionComment.objection_reference ? "border: 1px solid red;" : ""}> -->
     <div class="comment-card">
       <!-- {JSON.stringify()} -->
