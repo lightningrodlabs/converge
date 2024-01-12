@@ -15,6 +15,7 @@
   import "@holochain-open-dev/profiles/dist/elements/profiles-context.js";
   import type { Profile } from "@holochain-open-dev/profiles";
   import { encodeHashToBase64 } from "@holochain/client";
+  import Avatar from "./Avatar.svelte";
 
   // import {
   //   ProfilesStore,
@@ -142,7 +143,7 @@
         <svg xmlns="http://www.w3.org/2000/svg" style="margin: 0 10" width="1" height="30" viewBox="0 0 1 30"><defs><style>.a{fill:none;stroke:rgba(0,0,0,0.15);}</style></defs><line class="a" y2="30" transform="translate(0.5)"/></svg>
         <li class="notifications-li">
           <!-- <my-profile></my-profile> -->
-          <agent-avatar disable-tooltip={true} disable-copy={true} size={30} agent-pub-key="{encodeHashToBase64(client.myPubKey)}"></agent-avatar>
+          <Avatar showNickname={true} agentPubKey={client.myPubKey}  size={24} namePosition="row"></Avatar>
           <!-- <profile-detail agent-pub-key="{encodeHashToBase64(client.myPubKey)}"></profile-detail> -->
           <!-- <agent-mention agent-pub-key="{encodeHashToBase64(client.myPubKey)}"></agent-mention> -->
         </li>

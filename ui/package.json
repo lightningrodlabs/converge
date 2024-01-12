@@ -8,7 +8,7 @@
     "package": "npm run build && cd dist && bestzip ../dist.zip *"
   },
   "dependencies": {
-    "@holochain-open-dev/profiles": "^0.15.0",
+    "@holochain-open-dev/profiles": "^0.17.3",
     "@holochain/client": "^0.16.0",
     "@lightningrodlabs/we-applet": "0.12.2",
     "@material/mwc-button": "^0.27.0",

@@ -28,12 +28,14 @@
     {#if $profile.status == "pending"}
     ( ? )
     {:else if $profile.status == "complete"}
+        <!-- {JSON.stringify($profile.value.entry.fields.avatar)} -->
 
         {#if showAvatar}
             {#if placeholder && !$profile.value.entry.fields.avatar}
                 <SvgIcon color="#fff" icon=faUser size="" style="margin-left:5px;margin-right:5px"></SvgIcon>
             {:else}
             <!-- <div title={nickname}> -->
+                <!-- <SvgIcon color="black" icon=faUser size="" style="margin-left:5px;margin-right:5px"></SvgIcon> -->
                 <agent-avatar title={nickname} disable-tooltip={true} disable-copy={true} size={size} agent-pub-key="{agentPubKeyB64}"></agent-avatar>
             <!-- </div> -->
             {/if}
