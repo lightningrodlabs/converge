@@ -16,47 +16,18 @@
   import type { Profile } from "@holochain-open-dev/profiles";
   import { encodeHashToBase64 } from "@holochain/client";
   import Avatar from "./Avatar.svelte";
-
-  // import {
-  //   ProfilesStore,
-  //   ProfilesClient,
-  //   CreateProfile,
-  //   ProfilePrompt,
-  //   profilesStoreContext,
-  //   MyProfile,
-  //   ProfilesContext,
-  //   ProfileDetail,
-  //   ProfileListItemSkeleton,
-  //   AgentAvatar,
-  // } from '@holochain-open-dev/profiles';
+  import { WeClient, isWeContext, initializeHotReload, type HrlWithContext, type Hrl } from '@lightningrodlabs/we-applet';
+    import AttachmentsBind from "../../AttachmentsBind.svelte";
 
   // export let initialized: boolean = false;
 
   let client: AppAgentClient = (getContext(clientContext) as any).getClient();
   let currentView;
+  let bind
   
   view.subscribe(value => {
     currentView = value;
   });
-
-  // let client: AppAgentClient;
-  // let myAgentPubKey: AgentPubKey = (getContext(clientContext) as any).getClient();
-  
-  // if (!customElements.get('my-profile')){
-  //   customElements.define('my-profile', MyProfile)
-  // }
-
-  // if (!customElements.get('profile-detail')){
-  //   customElements.define('profile-detail', ProfileDetail)
-  // }
-
-  // if (!customElements.get('profile-list-item-skeleton')){
-  //   customElements.define('profile-list-item-skeleton', ProfileListItemSkeleton)
-  // }
-
-  // if (!customElements.get('agent-avatar')){
-  //   customElements.define('agent-avatar', AgentAvatar)
-  // }
 
   async function goToCreate() {
     navigate("create-coordination", {});
@@ -74,15 +45,58 @@
     navigate("all-coordinations", {});
   }
 
+  onMount(async () => {
+    console.log("onMount")
+    // bind.refresh()
+  })
+
   </script>
+
+  <style>
+    .converge-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    #converge-title {
+      font-size: 24px;
+      font-weight: 600;
+      color: #9200a1;
+      margin: 0;
+      font-family: 'Montserrat', sans-serif;
+      letter-spacing: 3.15px;
+      font-style: italic;
+    }
+    #subtitle {
+      font-size: 12px;
+      font-weight: 600;
+      color: #3fadab;
+      margin: 0;
+      letter-spacing: 1.15px;
+    }
+  </style>
+
   
-  <header>
+  <header on:click={
+    () => {
+      // bind.refresh()
+    }
+  
+  }>
       <nav class="navbar">
         <div class="container-fluid converge-header">
           <div>
+            {#if !isWeContext()}
             <a id="logo" class="navbar-brand" on:click={() => navigate("instructions")}>
               <img class="logo-image" src={Logo} alt="whos-in logo"/>
-            </a>    
+            </a>  
+            {:else}
+            <a id="logo" class="navbar-brand" on:click={() => navigate("instructions")}>
+
+            <h1 id="converge-title">Converge</h1>
+            <!-- <small id="subtitle">for Moss</small> -->
+            </a>
+            {/if}
           </div>
         <div>
   
@@ -142,10 +156,7 @@
 
         <svg xmlns="http://www.w3.org/2000/svg" style="margin: 0 10" width="1" height="30" viewBox="0 0 1 30"><defs><style>.a{fill:none;stroke:rgba(0,0,0,0.15);}</style></defs><line class="a" y2="30" transform="translate(0.5)"/></svg>
         <li class="notifications-li">
-          <!-- <my-profile></my-profile> -->
           <Avatar showNickname={true} agentPubKey={client.myPubKey}  size={24} namePosition="row"></Avatar>
-          <!-- <profile-detail agent-pub-key="{encodeHashToBase64(client.myPubKey)}"></profile-detail> -->
-          <!-- <agent-mention agent-pub-key="{encodeHashToBase64(client.myPubKey)}"></agent-mention> -->
         </li>
         
       </ul>
@@ -154,4 +165,7 @@
         </div><!-- /.container-fluid -->
       </nav>
     </header>
-  
+    <!-- <AttachmentsBind
+    bind:this = {bind}
+    on:add-binding={(e)=>console.log(e.detail)} 
+    /> -->

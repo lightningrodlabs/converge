@@ -10,16 +10,19 @@ import '@material/mwc-textfield';
 import '@material/mwc-radio';
 import '@material/mwc-formfield';
 import { view, viewHash, navigate } from '../../../store.js';
-
+import SvgIcon from "../../../SvgIcon.svelte";
+import AttachmentsDialog from "../../../AttachmentsDialog.svelte"
 import '@material/mwc-textarea';
+import { WeClient, isWeContext, initializeHotReload, type HrlB64WithContext, type Hrl } from '@lightningrodlabs/we-applet';
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
 const dispatch = createEventDispatcher();
 
-
+let attachmentsDialog : AttachmentsDialog
 let title: string = '';
 let description: string = '';
 let settings: any = {scoring: 'classic'};
+let attachments: Array<HrlB64WithContext> = [];
 
 let errorSnackbar: Snackbar;
 
@@ -82,23 +85,37 @@ async function createDeliberation() {
   </div>
             
   <!-- <div style="margin-bottom: 16px; text-align: left">
-    <mwc-formfield label="Weighted scoring">
+    <mwc-formfield label="Binary support">
       <mwc-radio class="scoring-radio" name="group" value="weighted" on:change={(e) => {console.log(e.target.value)}}></mwc-radio>
     </mwc-formfield>
-    <mwc-formfield label="Classic scoring">
+    <mwc-formfield label="Slider support">
       <mwc-radio name="group" value="classic" on:change={(e) => {console.log(e.target.value)}}></mwc-radio>
-    </mwc-formfield>
-  </div>
-        
-  <div style="margin-bottom: 16px; text-align: left">
-    <mwc-formfield label="Evaluation method">
-      <mwc-radio class="scoring-radio" name="group" value="binary" on:change={(e) => {console.log(e.target.value)}}></mwc-radio>
-    </mwc-formfield>
-    <mwc-formfield label="Classic scoring">
-      <mwc-radio name="group" value="sliding" on:change={(e) => {console.log(e.target.value)}}></mwc-radio>
     </mwc-formfield>
   </div> -->
 
+  {#if isWeContext}
+    <div style="display:flex; flex-wrap:wrap; align-items: center; margin-bottom:10px;">
+      <h2>Attachments:</h2>
+      <!-- <div style="margin-left:10px; margin-right:10px;">
+        <button class="attachment-button" on:click={()=>attachmentsDialog.open()} >          
+          <SvgIcon icon="link" size="16px"/>
+        </button>
+      </div> -->
+      <!-- {#if props.attachments}
+        <AttachmentsList attachments={props.attachments}
+          on:remove-attachment={(e)=>removeAttachment(e.detail)}/>
+      {/if} -->
+    </div>
+    <AttachmentsDialog bind:this={attachmentsDialog} bind:attachments on:add-attachments={
+      (e) => {
+        console.log("add-attachments", e.detail)
+        attachments = e.detail.attachments
+        // props.attachments = e.detail.attachments
+        // bind.refresh()
+      }
+    }></AttachmentsDialog>
+  {/if}
+  
   <mwc-button 
     raised
     label="Create Deliberation"

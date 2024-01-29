@@ -1,26 +1,26 @@
 <script lang="ts">
-  import { encodeHashToBase64, type AgentPubKey } from "@holochain/client";
-  import "@holochain-open-dev/profiles/dist/elements/agent-avatar.js";
-  import { getContext } from "svelte";
-  import type { ProfilesStore } from "@holochain-open-dev/profiles";
-  import SvgIcon from "./SvgIcon.svelte";
-  import { profilesStoreContext } from '../../contexts';
+import { encodeHashToBase64, type AgentPubKey } from "@holochain/client";
+import "@holochain-open-dev/profiles/dist/elements/agent-avatar.js";
+import { getContext } from "svelte";
+import type { ProfilesStore } from "@holochain-open-dev/profiles";
+import SvgIcon from "./SvgIcon.svelte";
+import { profilesStoreContext } from '../../contexts';
 
-  let profilesStore: ProfilesStore = (getContext(profilesStoreContext) as any).getProfileStore();
+let profilesStore: ProfilesStore = (getContext(profilesStoreContext) as any).getProfileStore();
 
-  export let agentPubKey: AgentPubKey
-  export let size = 32
-  export let namePosition = "row"
-  export let nameColor = "rgba(86, 94, 109, 1.0)"
-  export let showAvatar = true
-  export let showNickname = true
-  export let placeholder = false
+export let agentPubKey: AgentPubKey
+export let size = 32
+export let namePosition = "row"
+export let nameColor = "rgba(86, 94, 109, 1.0)"
+export let showAvatar = true
+export let showNickname = true
+export let placeholder = false
 
-  $: agentPubKey
-  $: agentPubKeyB64 = encodeHashToBase64(agentPubKey)
-  $: profile = profilesStore.profiles.get(agentPubKey)
-  $: nickname = $profile.status=="complete" && $profile.value ? $profile.value.entry.nickname : agentPubKeyB64.slice(5,9)+"..."
-  
+$: agentPubKey
+$: agentPubKeyB64 = encodeHashToBase64(agentPubKey)
+$: profile = profilesStore.profiles.get(agentPubKey)
+$: nickname = $profile.status=="complete" && $profile.value ? $profile.value.entry.nickname : agentPubKeyB64.slice(5,9)+"..."
+
 </script>
 
 <div class="avatar-{namePosition}"

@@ -35,6 +35,18 @@
             "instanceName": "Converge Hot Reload",
             "registeringAgent": 1,
             "joiningAgents": [2]
+          },
+          {
+            "name": "gamez",
+            "instanceName": "gamez",
+            "registeringAgent": 1,
+            "joiningAgents": [2]
+          },
+          {
+            "name": "kando",
+            "instanceName": "kando",
+            "registeringAgent": 1,
+            "joiningAgents": [2]
           }
         ]
       }
@@ -46,12 +58,38 @@
         "description": "Let's do it!",
         "icon": {
           "type": "filesystem",
-          "path": "/home/leo/hApps/converge/we_dev/kando_icon.png"
+          "path": "/home/leo/hApps/converge/we_dev/logo.png"
         },
         "source": {
           "type": "localhost",
           "happPath": "/home/leo/hApps/converge/workdir/converge.happ",
           "uiPort": 8888
+        }
+      },
+      {
+        "name": "gamez",
+        "subtitle": "games!",
+        "description": "Real-time games based on syn",
+        "icon": {
+          "type": "filesystem",
+          "path": "/home/leo/hApps/converge/we_dev/gamez_icon.png"
+        },
+        "source": {
+          "type": "https",
+          "url": "https://github.com/holochain-apps/gamez/releases/download/v0.3.2/gamez.webhapp"
+        }
+      },
+      {
+        "name": "kando",
+        "subtitle": "kanban boards",
+        "description": "Real-time kanban boards based on syn",
+        "icon": {
+          "type": "filesystem",
+          "path": "/home/leo/hApps/converge/we_dev/kando_icon.png"
+        },
+        "source": {
+          "type": "https",
+          "url": "https://github.com/holochain-apps/kando/releases/download/v0.8.18/kando.webhapp"
         }
       }
     ]

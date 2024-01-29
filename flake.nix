@@ -1,5 +1,5 @@
 {
-  description = "Template for Holochain app development";
+  description = "Convergent group decision making";
 
   inputs = {
     versions.url  = "github:holochain/holochain?dir=versions/0_2";

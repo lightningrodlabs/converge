@@ -246,3 +246,7 @@ mwc-slider[disabled] .mdc-slider__thumb-knob {
   /* width: 8px;
   height: 20px; */
 }
+
+.icon {
+  height: auto;
+}
