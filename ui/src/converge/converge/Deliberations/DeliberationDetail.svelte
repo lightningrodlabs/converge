@@ -19,6 +19,8 @@ import CreateCriterion from '../Criteria/CreateCriterion.svelte';
 import AllCriteria from '../Criteria/AllCriteria.svelte';
 import CreateProposal from '../Proposals/CreateProposal.svelte';
 import AllProposals from '../Proposals/AllProposals.svelte';
+import AttachmentsList from '../../../AttachmentsList.svelte';
+import { type HrlB64WithContext, isWeContext } from '@lightningrodlabs/we-applet';
 
 const dispatch = createEventDispatcher();
 
@@ -56,6 +58,7 @@ let sortByOptions = [
 ];
 let criteriaSort;
 let proposalSort;
+let attachments: HrlB64WithContext[] = [];
 
 $: editing, error, loading, record, deliberation, activeTab, criterionFormPopup, proposalFormPopup, criteriaCount, proposalCount, criteriaFilter, proposalFilter, criteriaSort, proposalSort;
 
@@ -116,6 +119,12 @@ async function fetchDeliberation() {
     });
     if (record) {
       deliberation = decode((record.entry as any).Present.entry) as Deliberation;
+      attachments = deliberation.attachments?.map((attachment) => {
+        return {
+          hrl: JSON.parse(attachment.hrl),
+          context: attachment.context
+        }
+      })
     }
   } catch (e) {
     error = e;
@@ -288,26 +297,35 @@ async function leaveDeliberation() {
   </div> -->
 
   <div style="display: flex; flex-direction: row; margin-bottom: 0px">
-    <h1 style="margin-top: 4px;">{ deliberation.title }</h1>
+    <h1 style="margin-top: 4px; margin-bottom:4px">{ deliberation.title }</h1>
   </div>
 
-  <div style="display: flex; flex-direction: row; margin-bottom: 16px">
+  {#if isWeContext}
+    <div style="display: flex; flex-direction: row; margin-bottom: 5px">
+      <AttachmentsList {attachments} allowDelete={false}/>
+    </div>
+  {/if}
+
+  <div style="display: flex; flex-direction: row; margin-bottom: 6px">
     <span style="white-space: pre-line">{ deliberation.description }</span>
   </div>
-    <div style="display: flex; flex-direction: row; width: fit-content; margin-bottom: 6px;">
-      
-      {deliberators.length} 
-      {#if deliberators.length == 1} participant{:else} participants{/if}
-      
-      &nbsp;|&nbsp;&nbsp;
 
-      {#if deliberators.includes(client.myPubKey.join(','))}
-        <div style="cursor: pointer; width: fit-content; display:flex; flex-direction: column;" on:click={leaveDeliberation}>Leave</div>
-      {:else}
-        <div on:click={newActivity}>Join</div>
-      {/if}
 
-    </div>
+  
+  <div style="display: flex; flex-direction: row; width: fit-content; margin-bottom: 6px;">
+    
+    {deliberators.length} 
+    {#if deliberators.length == 1} participant{:else} participants{/if}
+    
+    &nbsp;|&nbsp;&nbsp;
+    
+    {#if deliberators.includes(client.myPubKey.join(','))}
+    <div style="cursor: pointer; width: fit-content; display:flex; flex-direction: column;" on:click={leaveDeliberation}>Leave</div>
+    {:else}
+    <div on:click={newActivity}>Join</div>
+    {/if}
+    
+  </div>
 
     
   <!-- </div> -->

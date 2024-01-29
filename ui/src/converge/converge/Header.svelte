@@ -17,13 +17,11 @@
   import { encodeHashToBase64 } from "@holochain/client";
   import Avatar from "./Avatar.svelte";
   import { WeClient, isWeContext, initializeHotReload, type HrlWithContext, type Hrl } from '@lightningrodlabs/we-applet';
-    import AttachmentsBind from "../../AttachmentsBind.svelte";
 
   // export let initialized: boolean = false;
 
   let client: AppAgentClient = (getContext(clientContext) as any).getClient();
   let currentView;
-  let bind
   
   view.subscribe(value => {
     currentView = value;
@@ -77,12 +75,7 @@
   </style>
 
   
-  <header on:click={
-    () => {
-      // bind.refresh()
-    }
-  
-  }>
+  <header >
       <nav class="navbar">
         <div class="container-fluid converge-header">
           <div>
@@ -165,7 +158,3 @@
         </div><!-- /.container-fluid -->
       </nav>
     </header>
-    <!-- <AttachmentsBind
-    bind:this = {bind}
-    on:add-binding={(e)=>console.log(e.detail)} 
-    /> -->

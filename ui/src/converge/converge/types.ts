@@ -12,6 +12,8 @@ import type {
   DeleteLink
 } from '@holochain/client';
 
+import { WeClient, isWeContext, initializeHotReload, type HrlB64WithContext, type Hrl } from '@lightningrodlabs/we-applet';
+
 export type ConvergeSignal = {
   type: 'EntryCreated';
   action: SignedActionHashed<Create>;
@@ -49,6 +51,8 @@ export interface Deliberation {
   description: string;
 
   settings: string;
+
+  attachments?: HrlB64WithContext[];
 }
 
 export interface Objection {

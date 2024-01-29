@@ -26,9 +26,9 @@
   import { WeClient, isWeContext, initializeHotReload, type HrlWithContext, type Hrl } from '@lightningrodlabs/we-applet';  
   import Holochain from "./assets/holochain.png";
   import { appletServices } from './we';
-  import AttachmentsList from './AttachmentsList.svelte';
-  import AttachmentsBind from './AttachmentsBind.svelte';
-  import AttachmentsDialog from './AttachmentsDialog.svelte';
+  // import AttachmentsList from './AttachmentsList.svelte';
+  // import AttachmentsBind from './AttachmentsBind.svelte';
+  // import AttachmentsDialog from './AttachmentsDialog.svelte';
 
   const appId = import.meta.env.VITE_APP_ID ? import.meta.env.VITE_APP_ID : 'converge'
   const roleName = 'converge'
@@ -279,7 +279,7 @@
 
 <!-- <AttachmentsList attachments={[]} /> -->
 <!-- <AttachmentsBind /> -->
-<AttachmentsDialog />
+<!-- <AttachmentsDialog /> -->
 
 <!-- {JSON.stringify(prof)} -->
 <!-- {profile}... -->

@@ -37,7 +37,15 @@ async function createDeliberation() {
     title: title!,
     description: description!,
     settings: JSON.stringify(settings!),
+    attachments: attachments.map(a => {
+      return {
+        hrl: JSON.stringify(a.hrl),
+        context: a.context
+      }
+    }),
   };
+
+  console.log("createDeliberation", deliberationEntry)
   
   try {
     const record: Record = await client.callZome({
