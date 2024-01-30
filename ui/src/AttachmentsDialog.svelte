@@ -101,8 +101,11 @@
   on:add-binding={(e)=>_addAttachment(e.detail)} 
   />
   
-  <AttachmentsList attachments={attachments}
-      on:remove-attachment={(e)=>removeAttachment(e.detail)}/>
+  <div style="display:block; width: 100%">
+    <AttachmentsList attachments={attachments}
+        on:remove-attachment={(e)=>removeAttachment(e.detail)}/>
+  </div>
+
   {/if}
 <!-- </sl-dialog> -->
 

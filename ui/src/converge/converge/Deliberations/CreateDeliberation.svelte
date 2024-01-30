@@ -103,7 +103,9 @@ async function createDeliberation() {
 
   {#if isWeContext}
     <div style="display:flex; flex-wrap:wrap; align-items: center; margin-bottom:10px;">
-      <h2>Attachments:</h2>
+      <h2>Attachments &nbsp;
+
+      </h2>
       <!-- <div style="margin-left:10px; margin-right:10px;">
         <button class="attachment-button" on:click={()=>attachmentsDialog.open()} >          
           <SvgIcon icon="link" size="16px"/>
@@ -113,7 +115,6 @@ async function createDeliberation() {
         <AttachmentsList attachments={props.attachments}
           on:remove-attachment={(e)=>removeAttachment(e.detail)}/>
       {/if} -->
-    </div>
     <AttachmentsDialog bind:this={attachmentsDialog} bind:attachments on:add-attachments={
       (e) => {
         console.log("add-attachments", e.detail)
@@ -122,9 +123,10 @@ async function createDeliberation() {
         // bind.refresh()
       }
     }></AttachmentsDialog>
+    </div>
   {/if}
   
-  <mwc-button 
+  <mwc-button
     raised
     label="Create Deliberation"
     disabled={!isDeliberationValid}

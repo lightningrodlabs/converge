@@ -47,34 +47,10 @@
 
   let connected = false
 
-  enum RenderType {
-    App,
-    Hrl,
-    BlockActiveBoards
-  }
-
-  let renderType = RenderType.App
   let hrlWithContext: HrlWithContext
   let weClient: WeClient
 
   $: client, loading, store, profilesStore, initialized, dna;
-  // $: prof = profilesStore ? profilesStore.myProfile : undefined
-  // $: prof = profilesStore ? profilesStore : undefined
-
-  // let textValue = 'sadfassdaf';
-  
-  // function logSelectionDetails() {
-  //   const textarea = document.getElementById('myTextarea');
-  //   const selectionStart = textarea.selectionStart;
-  //   const selectionEnd = textarea.selectionEnd;
-  //   const selectionLength = selectionEnd - selectionStart;
-
-  //   console.log({
-  //     offset: selectionStart,
-  //     length: selectionLength
-  //   });
-  // }
-
 
   async function initialize() : Promise<void> {
     console.log(import.meta.env)
@@ -130,13 +106,15 @@
               break;
             case "attachable":
               switch (weClient.renderInfo.view.roleName) {
-                case "kando":
+                case "converge":
                   switch (weClient.renderInfo.view.integrityZomeName) {
-                    case "syn_integrity":
+                    case "converge_integrity":
                       switch (weClient.renderInfo.view.entryType) {
-                        case "document":
-                          renderType = RenderType.Hrl
-                          hrlWithContext = weClient.renderInfo.view.hrlWithContext
+                        case "deliberation":
+                          currentView = "deliberation"
+                          currentHash = weClient.renderInfo.view.hrlWithContext.hrl[1]
+                          // console.log("weClient.renderInfo.view", weClient.renderInfo.view)
+                          // hrlWithContext = weClient.renderInfo.view.hrlWithContext
                           break;
                         default:
                           throw new Error("Unknown entry type:"+weClient.renderInfo.view.entryType);
@@ -182,60 +160,6 @@
 
   onMount(async () => {
     await initialize()
-    // // profilesStore = setupProfilesStore();
-    // // We pass '' as url because it will dynamically be replaced in launcher environments
-    // // client = await AppAgentWebsocket.connect('', 'converge');
-    // // profilesStore = new ProfilesStore(new ProfilesClient(client, 'converge'), {
-    // //   avatarMode: "avatar-optional",
-    // // });
-
-    // if ((import.meta as any).env.DEV) {
-    //   try {
-    //     await initializeHotReload();
-    //   } catch (e) {
-    //     console.warn("Could not initialize applet hot-reloading. This is only expected to work in a We context in dev mode.")
-    //   }
-    // }
-
-    // if (!isWeContext()) {
-    //   // We pass '' as url because it will dynamically be replaced in launcher environments
-    //   client = await AppAgentWebsocket.connect('', 'dcan');
-    //   profilesStore = new ProfilesStore(new ProfilesClient(client, 'converge'), {
-    //     avatarMode: "avatar-optional",
-    //     minNicknameLength: 3,
-    //   });
-    // } else {
-    //   const weClient = await WeClient.connect();
-    //   // console.log(weClient.renderInfo)
-
-    //   // if (
-    //   //   !(weClient.renderInfo.type === "applet-view")
-    //   //   && !(weClient.renderInfo.view.type === "main")
-    //   // ) throw new Error("This Applet only implements the applet main view.");
-
-    //   // client = weClient.renderInfo.appletClient;
-    //   // console.log("client... ", client)
-    //   // profilesStore = new ProfilesStore(weClient.renderInfo.profilesClient, {
-    //   //   avatarMode: "avatar-optional",
-    //   //   minNicknameLength: 3,
-    //   // })
-    // }
-
-
-    // await profilesStore;
-
-    // if (profilesStore.profiles && profilesStore.profiles.get(client.myPubKey)) {
-    //   await profilesStore.profiles.get(client.myPubKey).subscribe((profile) => {
-    //     if (profile.status == "complete") {
-    //       console.log(profile.value.nickname)
-    //       initialized = true;
-    //     } else {
-    //       console.log("not complete")
-    //     }
-    //   })
-    // }
-
-    // console.log(profilesStore)
 
     try {
       dna = await client
@@ -293,36 +217,52 @@
     <!-- <search-agent include-myself></search-agent> -->
     
     <profile-prompt>
-    <main class="converge-container">
-    <Header />
-    <div class="white-container">
-      {#if loading}
-      <div style="display: flex; flex: 1; align-items: center; justify-content: center">
-        <mwc-circular-progress indeterminate />
+      {#if weClient.renderInfo.view.type != "attachable"}
+      <main class="converge-container">
+      <Header />
+      <div class="white-container">
+        {#if loading}
+        <div style="display: flex; flex: 1; align-items: center; justify-content: center">
+          <mwc-circular-progress indeterminate />
+        </div>
+        {:else if currentView == "deliberation"}
+        <DeliberationDetail deliberationHash={currentHash} />
+        {:else if currentView == "proposal"}
+        <ProposalDetail proposalHash={currentHash} />
+        {:else if currentView == "create-deliberation"}
+        <CreateDeliberation />
+        {:else if currentView == "dashboard"}
+        <DeliberationsForDeliberator deliberator={client.myPubKey} />
+        {:else}
+        <div id="content" style="display: flex; flex-direction: column; flex: 1;">
+          <AllDeliberations />
+          <!-- <button on:click={() => navigate("create-deliberation")}>Create Deliberation</button> -->
+        </div>
+        {/if}
       </div>
-      {:else if currentView == "deliberation"}
-      <DeliberationDetail deliberationHash={currentHash} />
-      {:else if currentView == "proposal"}
-      <ProposalDetail proposalHash={currentHash} />
-      {:else if currentView == "create-deliberation"}
-      <CreateDeliberation />
-      {:else if currentView == "dashboard"}
-      <DeliberationsForDeliberator deliberator={client.myPubKey} />
+    </main>
+    {:else}
+      <main>
+      {#if weClient.renderInfo.view.integrityZomeName == "converge_integrity"}
+        {#if weClient.renderInfo.view.entryType == "deliberation"}
+          <div class="attachment-container">
+          <DeliberationDetail deliberationHash={currentHash} />
+          </div>
+        {:else}
+          <div>Unknown entry type: {weClient.renderInfo.view.entryType}</div>
+        {/if}
       {:else}
-      <div id="content" style="display: flex; flex-direction: column; flex: 1;">
-        <AllDeliberations />
-        <!-- <button on:click={() => navigate("create-deliberation")}>Create Deliberation</button> -->
-      </div>
+        <div>Unknown zome: {weClient.renderInfo.view.integrityZomeName}</div>
       {/if}
-    </div>
-  </main>
+      </main>
+    {/if}
   </profile-prompt>
   <!-- <create-profile></create-profile> -->
 <!-- {/if} -->
 </profiles-context>
 {/if}
 
-{#if dna && !loading && currentView != "instructions" && currentView != ""}
+{#if dna && !loading && currentView != "instructions" && currentView != "" && weClient.renderInfo.view.type != "attachable"}
 <footer style="margin: 10px;">
 <small>
   <img class="holochain-logo" src={Holochain} alt="holochain logo"/>
@@ -333,10 +273,10 @@
 
 <style>
   main {
-    text-align: center;
-    padding: 1em;
-    max-width: 240px;
-    margin: 0 auto;
+    /* text-align: center; */
+    /* padding: 1em; */
+    /* max-width: 240px; */
+    /* margin: 0 auto; */
   }
 
   @media (min-width: 640px) {

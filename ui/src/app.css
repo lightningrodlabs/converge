@@ -250,3 +250,10 @@ mwc-slider[disabled] .mdc-slider__thumb-knob {
 .icon {
   height: auto;
 }
+
+.attachment-container {
+  background-color: white;
+  padding: 25px;
+  height: 100vh;
+  width: calc(100vw - 65px);
+}

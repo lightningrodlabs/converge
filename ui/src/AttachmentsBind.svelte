@@ -66,10 +66,12 @@
   </script>
   
   {#if false}
+  {JSON.stringify(weClient)}
   <div>
       <h3>Create Bound Item From:</h3>
       {#each Array.from(groups.entries()) as [groupHash, group]}
       <!-- {JSON.stringify(groupHash)} -->
+      <!-- {#if group.name} -->
           <div style="display:flex;flex-direction:column">
               <div style="display:flex;align-items:center;">
                   <img width="16" style="margin-right:4px" src="{group.logo_src}"/> <strong style="font-size:105%;margin-right:4px">{group.name}:</strong>
@@ -85,7 +87,13 @@
                               <div style="display:flex;align-items:center;">
                                   <sl-icon style="margin-right:3px" src={aType.icon_src}></sl-icon>{aType.label}
                                   <sl-button size="small" circle style="margin-left:3px" on:click={async ()=>{
-                                      const hrl = await aType.create({hrl:[store.dnaHash,activeBoard.hash]})
+                                      const hrl = await aType.create({hrl:[
+                                            {
+                                                hash:appletHash,
+                                                entryHash:appletInfo.entryHash,
+                                                entryType:appletInfo.entryType,
+                                            }
+                                        ]})
                                       dispatch("add-binding",hrl)
                                       }} >          
                                       <SvgIcon icon=faPlus size=10/>
