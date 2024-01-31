@@ -26,7 +26,7 @@ let attachments: Array<HrlB64WithContext> = [];
 
 let errorSnackbar: Snackbar;
 
-$: title, description, settings;
+$: title, description, settings, attachments;
 $: isDeliberationValid = true && title !== '' && description !== '' && settings !== '';
 
 onMount(() => {

@@ -13,6 +13,7 @@ import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
 import '@material/mwc-tab';
 import '@material/mwc-tab-bar';
+import '@material/mwc-select';
 import EditDeliberation from './EditDeliberation.svelte';
 import { view, viewHash, navigate } from '../../../store.js';
 import CreateCriterion from '../Criteria/CreateCriterion.svelte';
@@ -21,6 +22,8 @@ import CreateProposal from '../Proposals/CreateProposal.svelte';
 import AllProposals from '../Proposals/AllProposals.svelte';
 import AttachmentsList from '../../../AttachmentsList.svelte';
 import { type HrlB64WithContext, isWeContext } from '@lightningrodlabs/we-applet';
+import Avatar from '../Avatar.svelte';
+import SvgIcon from "../../../SvgIcon.svelte";
 
 const dispatch = createEventDispatcher();
 
@@ -35,6 +38,7 @@ let error: any = undefined;
 let record: Record | undefined;
 let deliberation: Deliberation | undefined;
 let deliberators: String[] | undefined;
+let deliberatorsRaw: AgentPubKey[] | undefined;
 
 let editing = false;
 let criterionFormPopup = false;
@@ -56,7 +60,7 @@ let sortByOptions = [
   "my support",
   "my objections"
 ];
-let criteriaSort;
+let criteriaSort = "support";
 let proposalSort;
 let attachments: HrlB64WithContext[] = [];
 
@@ -152,6 +156,7 @@ async function fetchDeliberation() {
       payload: deliberationHash,
     });
     deliberators = records.map((record: AgentPubKey) => record.join(','));
+    deliberatorsRaw = records;
   } catch (e) {
     error = e;
   }
@@ -213,6 +218,7 @@ async function joinDeliberation() {
       },
     });
     deliberators = [...deliberators, client.myPubKey.join(',')]
+    deliberatorsRaw = [...deliberatorsRaw, client.myPubKey]
     // dispatch('deliberation-joined', { deliberationHash: deliberationHash });
   } catch (e: any) {
     errorSnackbar.labelText = `Error joining the deliberation: ${e.data.data}`;
@@ -233,6 +239,8 @@ async function leaveDeliberation() {
       },
     });
     deliberators = deliberators.filter(item => item !== client.myPubKey.join(','));
+    // remove me from deliberatorsRaw
+    deliberatorsRaw = deliberatorsRaw.filter(item => item.join(',') !== client.myPubKey.join(','));
     // dispatch('deliberation-left', { deliberationHash: deliberationHash });
     // navigate('')
   } catch (e: any) {
@@ -242,7 +250,7 @@ async function leaveDeliberation() {
 }
 
   let isExpanded = false;
-  let isExpanded2 = true;
+  let isExpanded2 = false;
   function expandSearch() {
     if (isExpanded) {
       criteriaFilter = "";
@@ -280,7 +288,7 @@ async function leaveDeliberation() {
 {:else}
 
 {#if outdated}
-<div on:click={fetchDeliberation} style="cursor: pointer; display: flex; flex-direction: row; align-items: center; justify-content: center; background-color: #ffcc00; padding: 4px;">
+<div on:click={fetchDeliberation} class="reload-page">
   <span style="margin-right: 8px">This page is outdated. Click to refresh. ↺</span>
 </div>
 {:else}
@@ -299,34 +307,37 @@ async function leaveDeliberation() {
   <div style="display: flex; flex-direction: row; margin-bottom: 0px">
     <h1 style="margin-top: 4px; margin-bottom:4px">{ deliberation.title }</h1>
   </div>
+  
+  <div style="display: flex; flex-direction: row; margin-bottom: 6px">
+    <span style="white-space: pre-line">{ deliberation.description }</span>
+  </div>
 
   {#if isWeContext}
     <div style="display: flex; flex-direction: row; margin-bottom: 5px">
       <AttachmentsList {attachments} allowDelete={false}/>
     </div>
   {/if}
-
-  <div style="display: flex; flex-direction: row; margin-bottom: 6px">
-    <span style="white-space: pre-line">{ deliberation.description }</span>
-  </div>
-
-
   
   <div style="display: flex; flex-direction: row; width: fit-content; margin-bottom: 6px;">
     
-    {deliberators.length} 
-    {#if deliberators.length == 1} participant{:else} participants{/if}
-    
-    &nbsp;|&nbsp;&nbsp;
+    {#each deliberatorsRaw as deliberator}
+      <div class="avatar-overlap">
+        <Avatar showNickname={false} agentPubKey={deliberator}  size={24} namePosition="row"></Avatar>
+      </div>
+    {/each}
     
     {#if deliberators.includes(client.myPubKey.join(','))}
-    <div style="cursor: pointer; width: fit-content; display:flex; flex-direction: column;" on:click={leaveDeliberation}>Leave</div>
+    <mwc-button style="cursor: pointer; width: fit-content; display:flex; flex-direction: column;" on:click={leaveDeliberation}>Leave</mwc-button>
     {:else}
-    <div on:click={newActivity}>Join</div>
+    <mwc-button on:click={newActivity}>Join</mwc-button>
     {/if}
     
-  </div>
+    <!-- &nbsp;|&nbsp;&nbsp; -->
+    
+    <!-- {deliberators.length} 
+    {#if deliberators.length == 1} participant{:else} participants{/if} -->
 
+  </div>
     
   <!-- </div> -->
 
@@ -343,23 +354,27 @@ async function leaveDeliberation() {
 
 {#if activeTab == "criteria"}
   <!--<FaSort/> -->
-  <p>What criteria would a solution to this problem need to meet?</p>
-  <select bind:value={criteriaSort} style="cursor: pointer; height: 28px;">
-    {#each sortByOptions as option}
-    <option value={option}>  Sort by: {option}</option>
-    {/each}
-  </select>
-  
-  <div class="search-container">
-    <div class="search-button" on:click={expandSearch}><FaSearch/></div>
-    <input bind:value={criteriaFilter} type="text" class="search-input {isExpanded ? 'expanded' : ''}" placeholder="Search criteria...">
-  </div>
+  <p class="instructions">
+    <!-- <SvgIcon icon="questionMark" size="16px"/> -->
+    What should to be true about any solution addressing this issue?</p>
+    {#if criteriaCount > 1}
+      <select class="sort-dropdown" bind:value={criteriaSort}>
+        {#each sortByOptions as option}
+        <option value={option}>  Sort by: {option}</option>
+        {/each}
+      </select>
+      
+      <div class="search-container">
+        <div class="search-button" on:click={expandSearch}><FaSearch/></div>
+        <input bind:value={criteriaFilter} type="text" class="search-input {isExpanded ? 'expanded' : ''}" placeholder="Search criteria...">
+      </div>
+    {/if}
 
   <!-- <div class="search-container"><FaSearch/></div> -->
 
 
   <!-- <div class="search-button"><FaSearch/></div> -->
-  <button on:click={() => {criterionFormPopup = true; console.log(criterionFormPopup)}} class="add-button">Add criterion</button>
+  <mwc-button raised on:click={() => {criterionFormPopup = true; console.log(criterionFormPopup)}} class="add-button">Add a criterion</mwc-button>
   <!-- <mwc-button dense outlined>Add criterion</mwc-button> -->
   <!-- {#if criterionForm} -->
   <CreateCriterion on:criterion-created={newActivity} deliberationHash={deliberationHash} alternativeTo={null} bind:criterionFormPopup />
@@ -372,60 +387,26 @@ async function leaveDeliberation() {
   <AllCriteria deliberationHash={deliberationHash} filter={criteriaFilter} sort="objections" bind:criteriaCount />
   {/if} -->
 {:else if activeTab == "proposals"}
-  <p>What is a solution that would meet our criteria?</p>
+  <p class="instructions">What is a solution that would meet our criteria?</p>
   <!-- <select bind:value={proposalSort}>
     {#each ["score", "respondants"] as option}
     <option value={option}>  Sort by: {option}</option>
     {/each}
   </select> -->
 
-  <div class="search-container">
-    <div class="search-button" on:click={expandSearch2}><FaSearch/></div>
-    <input bind:value={proposalFilter} type="text" class="search-input {isExpanded2 ? 'expanded' : ''}" placeholder="Search proposals...">
-  </div>
-
+  {#if proposalCount > 1}
+    <div class="search-container">
+      <div class="search-button" on:click={expandSearch2}><FaSearch/></div>
+      <input bind:value={proposalFilter} type="text" class="search-input {isExpanded2 ? 'expanded' : ''}" placeholder="Search proposals...">
+    </div>
+  {/if}
   <!-- <div class="search-button"><FaSearch/></div> -->
-  <button on:click={() => {proposalFormPopup = true; console.log(proposalFormPopup)}} class="add-button">Add proposal</button>
+  <mwc-button raised on:click={() => {proposalFormPopup = true; console.log(proposalFormPopup)}} class="add-button">Add proposal</mwc-button>
 
   <CreateProposal on:proposal-created={newActivity} deliberationHash={deliberationHash} bind:proposalFormPopup/>
   <br><br>
+
   
   <AllProposals on:proposal-rated={newActivity} sort={proposalSort} deliberationHash={deliberationHash} filter={proposalFilter} bind:proposalCount/>
 {/if}
 {/if}
-
-<style>
-.search-container {
-  width: fit-content;
-  display: inline-block;
-  border: 1px solid rgb(188, 187, 187);
-  /* padding: 2px; */
-  /* padding: 5px 5px 0px 5px; */
-  position: relative;
-  /* top: 3px; */
-  border-radius: 4px;
-}
-
-  .search-button {
-    width: 1em;
-    padding: 2px 0px 4px 4px;
-    display: inline-block;
-    position: relative;
-    top: 2px;
-  }
-
-  .search-input {
-      border: none;
-      padding: 8px;
-      /* border-radius: 5px; */
-      height: 26px;
-      padding: 0px;
-      width: 0;
-      outline: none;
-      transition: width 0.2s;
-  }
-
-  .search-input.expanded {
-      width: 130px;
-  }
-</style>

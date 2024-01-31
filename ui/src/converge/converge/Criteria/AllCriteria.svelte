@@ -96,12 +96,16 @@ async function joinSignal() {
 {:else if error}
 <span>Error fetching the criteria: {error.data.data}.</span>
 {:else if hashes.length === 0}
-<span>No criteria found.</span>
+<span>Add some criteria.</span>
 {:else}
 <div style="display: flex; flex-direction: column">
   {#if sort == "support"}
     {#each sortedCriteria as hash}
-      <Criterion on:criterion-rated={joinSignal} criterionHash={hash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}></Criterion>
+      <Criterion on:criterion-rated={joinSignal} criterionHash={hash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}  on:transfer={(e) => {
+        console.log("transfer", e.detail)
+        // scroll to e.detail.to
+        
+      }} />
     {/each}
   {:else if sort == "objections"}
     {#each sortedCriteria as hash}

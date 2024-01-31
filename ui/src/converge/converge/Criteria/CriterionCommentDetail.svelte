@@ -25,6 +25,7 @@ export let filter;
 export let mySupport;
 export let criterionHash;
 export let objections;
+export let criterion;
 // export let objections;
 // export let alternatives;
 export let commentReference;
@@ -223,7 +224,10 @@ async function deleteCriterionComment() {
           <ObjectionMini {objections} objectionHash={criterionComment.objection_reference}></ObjectionMini>
         </div>
       {:else if alternative}
-        <AlternativeMini {alternative} {mySupport} {criterionHash}></AlternativeMini>
+        <AlternativeMini {criterion} {alternative} {mySupport} {criterionHash} on:transfer={(e) => {
+          dispatch('transfer', e.detail);
+        }}>
+        </AlternativeMini>
         <!-- <div>{alternative.title}</div> -->
       {:else if respondingTo}
         <div class="comment-bubble">

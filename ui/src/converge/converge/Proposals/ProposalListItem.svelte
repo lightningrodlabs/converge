@@ -269,7 +269,7 @@ async function deleteProposal() {
     
     {#if bestScoreKey == proposalHash.join(',')}
       <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-right: 16px">
-        <mwc-icon-button icon="#1" style="color: red;"></mwc-icon-button>
+        <div style="color: red; font-size: 1.2em">#1</div>
       </div>
     {/if}
 

@@ -12,6 +12,7 @@ import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
 import CriterionPopup from './CriterionPopup.svelte';
     import { navigate } from '../../../store';
+    import SvgIcon from "../SvgIcon.svelte";
 
 const dispatch = createEventDispatcher();
 
@@ -242,8 +243,10 @@ async function deleteCriterion() {
 }
 
 async function scrollToDiv() {
-  await new Promise(res => setTimeout(res, 100));
+  if (!criterionPopupBoolean) return;
+  await new Promise(res => setTimeout(res, 200));
   myDiv.scrollIntoView({ behavior: 'smooth' });
+  console.log(myDiv)
 }
 </script>
 
@@ -251,7 +254,7 @@ async function scrollToDiv() {
 <mwc-snackbar bind:this={errorSnackbar} leading>
 </mwc-snackbar>
 {#if loading}
-<div style="display: flex; flex: 1; align-items: center; justify-content: center">
+<div style="display: flex; flex: 1; align-items: center; justify-content: center;">
   <mwc-circular-progress indeterminate></mwc-circular-progress>
 </div>
 {:else if error}
@@ -290,7 +293,7 @@ async function scrollToDiv() {
     <!-- <span style="white-space: pre-line">{ criterion.objections }</span> -->
     {#if support}
       <div style="display: flex; flex-direction: row; font-size: .8em">
-        support: {Math.round(support / supporters.length * 100)}%
+        Support: {Math.round(support / supporters.length * 100)}%
       </div>
       <!-- <div style="display: flex; flex-direction: row; font-size: .8em">
         {JSON.stringify(support / supporters.length)} average support
@@ -299,13 +302,13 @@ async function scrollToDiv() {
 
     {#if commentsNumber && commentsNumber > 0}
       <div style="display: flex; flex-direction: row; font-size: .8em">
-        comments: {commentsNumber}
+        Comments: {commentsNumber}
       </div>
     {/if}
 
     {#if objections && objections.length > 0}
     <div style="display: flex; flex-direction: row; margin-bottom: 16px; font-size: .8em; color: red;">
-      objections: {objections.length}
+      Objections: {objections.length}
     </div>
     {/if}
 
@@ -403,20 +406,29 @@ async function scrollToDiv() {
       {/if}
   </div>
 
-  <!-- OBJECT BUTTON -->
+
+      <!-- OBJECT BUTTON -->
   <div style="flex-direction: column; font-size: .8em; width: 100%; text-align: right;">
-    <button style="height: 80%;; width: 80px; 
+    <button style="height: 80%; width: 80px; 
     background-color: transparent;
-    border: none;
-    " on:click={() => {criterionPopupBoolean = !criterionPopupBoolean; console.log(criterionPopupBoolean); scrollToDiv()}}>
-      {#if criterionPopupBoolean}
-      <mwc-icon-button style="bottom: 8px;
-      position: relative;" icon="↰"></mwc-icon-button>
-      {:else}
+    border: none;" 
+    on:click={() => {criterionPopupBoolean = !criterionPopupBoolean; console.log(criterionPopupBoolean); scrollToDiv()}}
+    >
+    
+    {#if criterionPopupBoolean}
+      <mwc-icon-button style="bottom: -8px; position: relative; background-color: #f1f1f1; border-radius: 100%;" icon="↰">
+      </mwc-icon-button>
+    {:else}
       <mwc-icon-button style="top: 8px;
-      position: relative;" icon="↲"></mwc-icon-button>
-      <!-- <svg style="width: 20px; hegith: 20px;" viewBox="0 0 156 156"><rect fill="none" height="8px" width="8px"/><polyline fill="none" points="208 96 128 176 48 96" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="16"/></svg> -->
+        position: relative; background-color: #f1f1f1; border-radius: 100%;">
+        <SvgIcon icon=faComments size=20/>
+      </mwc-icon-button>
+      {#if commentsNumber && commentsNumber > 0}
+        <div id="commentsNumber">
+          {commentsNumber}
+        </div>
       {/if}
+    {/if}
     </button>
   </div>
 
@@ -424,7 +436,9 @@ async function scrollToDiv() {
 </div>
 <!-- <div style="display: flex; flex-direction: row;"> -->
   <!-- hi -->
-  <CriterionPopup on:switched-tab={scrollToDiv} {criterionHash} {objections} {deliberationHash} bind:criterionPopupBoolean {criterion} {supporters} {sponsored} {support} {addSupportPercentage} {mySupport}/>
+  <CriterionPopup on:switched-tab={scrollToDiv} {criterionHash} {objections} {deliberationHash} bind:criterionPopupBoolean {criterion} {supporters} {sponsored} {support} {addSupportPercentage} {mySupport} on:transfer={(e) => {
+    dispatch('transfer', e.detail);
+  }} />
 <!-- </div> -->
 </div>
 {/if}

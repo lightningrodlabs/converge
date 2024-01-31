@@ -82,7 +82,6 @@
 
   onMount(async () => {
     bind.refresh()
-    dialog.show()
   })
 </script>
 
@@ -96,11 +95,20 @@
     <SvgIcon icon=link size=16/>
   </button>
   
-  <AttachmentsBind
-  bind:this = {bind}
-  on:add-binding={(e)=>_addAttachment(e.detail)} 
-  />
-  
+  <!-- <button on:click={() => {dialog.show(); bind.refresh()}}>
+    <SvgIcon icon=faPlus size=16/>
+  </button> -->
+
+  <sl-dialog label="Create bound item from:" bind:this={dialog}>
+    <AttachmentsBind
+    bind:this = {bind}
+    on:add-binding={(e)=>{
+      console.log(e.detail);
+      _addAttachment(e.detail);
+    }}
+    />
+  </sl-dialog>
+    
   <div style="display:block; width: 100%">
     <AttachmentsList attachments={attachments}
         on:remove-attachment={(e)=>removeAttachment(e.detail)}/>

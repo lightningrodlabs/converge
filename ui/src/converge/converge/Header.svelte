@@ -59,11 +59,13 @@
     #converge-title {
       font-size: 24px;
       font-weight: 600;
-      color: #9200a1;
+      color: #000000;
       margin: 0;
       font-family: 'Montserrat', sans-serif;
       letter-spacing: 3.15px;
-      font-style: italic;
+      padding: 4px 10px;
+      border-radius: 100px;
+      border: 2px solid black;
     }
     #subtitle {
       font-size: 12px;
@@ -71,6 +73,20 @@
       color: #3fadab;
       margin: 0;
       letter-spacing: 1.15px;
+    }
+    
+    /* show new action on tablet and mobile */
+    @media (max-width: 991px) {
+      #new-action, #subtitle {
+        display: none !important;
+      }
+    }
+
+    /* show only on mobile */
+    @media (max-width: 767px) {
+      #minilogo {
+        display: none !important;
+      }
     }
   </style>
 
@@ -86,8 +102,7 @@
             {:else}
             <a id="logo" class="navbar-brand" on:click={() => navigate("instructions")}>
 
-            <h1 id="converge-title">Converge</h1>
-            <!-- <small id="subtitle">for Moss</small> -->
+            <h1 id="converge-title">Converge<img id="minilogo" class="logo-image small" src={Logo} alt="whos-in logo"/><small id="subtitle">&nbsp;for Moss</small></h1>
             </a>
             {/if}
           </div>
@@ -143,6 +158,7 @@
             </div>
             <!-- <i class="fas fa-plus white-circle-plus"></i> -->
             <!-- <img class="nav-image" src="/assets/add_circle_black_24dp-b42cee553b2665d6f62bd5d9ffc02837cf3c5a3084fc6a5674f5edf83776f565.svg" alt="Add circle black 24dp" border="0"> -->
+            <!-- show if not mobile or tablet -->
             <span id="new-action">New deliberation</span>
           </div>
         </li>

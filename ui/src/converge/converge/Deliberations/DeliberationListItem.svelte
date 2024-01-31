@@ -16,6 +16,7 @@ import AllCriteria from '../Criteria/AllCriteria.svelte';
 import CreateProposal from '../Proposals/CreateProposal.svelte';
 import AllProposals from '../Proposals/AllProposals.svelte';
 import type { ConvergeSignal } from '../types';
+    import SvgIcon from '../SvgIcon.svelte';
 
 const dispatch = createEventDispatcher();
 
@@ -159,8 +160,36 @@ async function deleteDeliberation() {
     <!-- <div class="dashboard-item-details">  
       Created | Last updated | Closes
     </div> -->
+
+    <div class="issue-info">
+      <!-- <div id="open-collaborators">
+        Collaborators<br>
+        <div><i class="fas fa-users"></i>
+        <strong>1</strong></div>
+      </div> -->
+      <div>
+        Proposals<br>
+        <!-- <div><i class="fas fa-file"></i> -->
+        <SvgIcon color="#6fcae8" icon="faBars"></SvgIcon>
+        <strong>0</strong>
+      </div>
+      <div>
+        Criteria<br>
+        <SvgIcon color="#6fcae8" icon="faCheck"></SvgIcon>
+        <strong>1</strong>
+      </div>
+
+      <!-- <div class="post-signature">
+        <i class="fas fa-clock"></i>
+        3 months ago
+        by
+        <em>admin</em>
+      </div> -->
+
+    </div>
+
     <div class="dashboard-item-details">  
-    {#if participants}
+    <!-- {#if participants}
       {#if participants.length == 1}
         <span>{participants.length} criterion</span>
       {:else}
@@ -173,7 +202,7 @@ async function deleteDeliberation() {
       {:else}
         <span>| {proposals.length} proposals</span>
       {/if}
-    {/if}
+    {/if} -->
     </div>
   </div>
 

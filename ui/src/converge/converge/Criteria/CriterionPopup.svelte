@@ -275,7 +275,10 @@
   
   
   <!-- COMMENTS STARTS -->
-  <CriterionCommentsForCriterion {criterionHash} {objections} {alternatives} {deliberationHash} {mySupport}></CriterionCommentsForCriterion>
+  <CriterionCommentsForCriterion {criterion} {criterionHash} {objections} {alternatives} {deliberationHash} {mySupport} on:transfer={(e) => {
+    dispatch('transfer', e.detail);
+  }}>
+  </CriterionCommentsForCriterion>
 
 
 

@@ -61,16 +61,14 @@
       }
       groups = groups
       attachmentTypes = attachmentTypes
-    }  
+    }
   
   </script>
   
-  {#if false}
-  {JSON.stringify(weClient)}
+  {#if true}
   <div>
-      <h3>Create Bound Item From:</h3>
+      <!-- <h3>Create Bound Item From:</h3> -->
       {#each Array.from(groups.entries()) as [groupHash, group]}
-      <!-- {JSON.stringify(groupHash)} -->
       <!-- {#if group.name} -->
           <div style="display:flex;flex-direction:column">
               <div style="display:flex;align-items:center;">

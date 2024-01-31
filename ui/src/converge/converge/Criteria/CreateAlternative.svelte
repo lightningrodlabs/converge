@@ -235,3 +235,9 @@
   {:else}
   No
   {/if}
+
+  <style>
+    mwc-tab {
+      border: 1px solid #7b1fa2;
+    }
+  </style>

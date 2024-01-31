@@ -47,14 +47,14 @@ onMount(() => {
 });
 
 function checkKey(e) {
-  if (e.key === "Enter" && !e.shiftKey) {
-    e.preventDefault();
-    if (commentIsAnObjection) {
-      addObjection()
-    } else {
-      createCriterionComment();
-    }
-  }
+  // if (e.key === "Enter" && !e.shiftKey) {
+  //   e.preventDefault();
+  //   if (commentIsAnObjection) {
+  //     addObjection()
+  //   } else {
+  //     createCriterionComment();
+  //   }
+  // }
 }
 
 async function createCriterionComment() {
@@ -183,6 +183,8 @@ async function createCriterionCommentCustom(inputComment, comment_reference, obj
     align-items: center;
     border: 1px solid #ccc;
     padding: 8px;
+    margin-bottom: 8px;
+    border-radius: 4px;
   }
 
   .chat-input {
@@ -191,6 +193,7 @@ async function createCriterionCommentCustom(inputComment, comment_reference, obj
     margin-right: 8px;
     border: none;
     outline: none;
+    height: 40px;
   }
 
   .send-button {

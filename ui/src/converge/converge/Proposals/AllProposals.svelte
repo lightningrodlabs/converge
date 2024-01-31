@@ -133,7 +133,7 @@ async function rateAlert() {
 {:else if error}
 <span>Error fetching the proposals: {error.data.data}.</span>
 {:else if hashes.length === 0}
-<span>No proposals found.</span>
+<span>Add a proposal.</span>
 {:else}
 <div style="display: flex; flex-direction: column">
   {#each sortedProposals as hash}

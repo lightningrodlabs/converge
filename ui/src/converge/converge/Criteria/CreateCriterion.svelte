@@ -186,16 +186,27 @@ async function createCriterion() {
         <div><span class="green-alert">↯ </span><strong>Alternative to {alternativeToFull.title}</strong></div><br>
         {/if}
         
+        <small class="instructions" style="max-width: 400px;">
+          TIP: Does the criterion have these helpful characteristics?
+
+          Is noncontroversial
+          Can be evaluated (subjectively)
+          Uses positive language (what is wanted rather than what is not wanted)
+          Is relevant to the context
+          Is operational (can in principle be made to happen)
+          Applies to everyone (this is a need that everyone can recognize, not just one person’s need)
+          Doesn’t have a specific outcome (as long as it’s noncontroversial, this is the least important characteristic) 
+        </small>
 
         <div style="margin-bottom: 16px">
-          <mwc-textarea style="width: 35vw; height: 20vh" outlined label="Title" value={ title } on:input={e => { title = e.target.value; } } required></mwc-textarea>          
+          <mwc-textarea style="max-width: 400px; height: 60px; width: calc(100vw - 84px);" outlined label="Title" value={ title } on:input={e => { title = e.target.value; } } required></mwc-textarea>          
         </div>
                   
-        <div style="display: flex; flex-direction: column; width: 35vw; margin-bottom: 16px">
-          <div style="text-align: center; flex-direction: row; font-size: 1em">
+        <div style="display: flex; flex-direction: column; max-width: 400px; margin-bottom: 16px">
+          <div style="text-align: center; flex-direction: row; font-size: 1em; width: calc(100vw - 84px); max-width: 400px;">
             <span style="white-space: pre-line;">How important is this criterion to you?</span>
           </div>
-          <div style="display: flex; flex-direction: row;  font-size: .8em">
+          <div style="display: flex; flex-direction: row;  font-size: .8em; width: calc(100vw - 84px); max-width: 400px;">
           <!-- <input type="number" bind:value={support} /> -->
             <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative;">NOT
             IMPORTANT</span>

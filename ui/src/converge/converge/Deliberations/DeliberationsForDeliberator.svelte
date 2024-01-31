@@ -50,6 +50,7 @@ onMount(async () => {
 
 </script>
 
+<br>
 <h2>Deliberations I've joined</h2>
 
 {#if loading }

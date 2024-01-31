@@ -22,6 +22,7 @@
 <style>
     .icon {
         display: inline-block;
+        height: auto;
     }
     .icon img {
         vertical-align: middle;

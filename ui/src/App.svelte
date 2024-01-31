@@ -200,24 +200,9 @@
 </script>
 
 {#if profilesStore}
-
-<!-- <AttachmentsList attachments={[]} /> -->
-<!-- <AttachmentsBind /> -->
-<!-- <AttachmentsDialog /> -->
-
-<!-- {JSON.stringify(prof)} -->
-<!-- {profile}... -->
-<!-- <profiles-context store={profilesStore}> -->
   <profiles-context store="{profilesStore}">
-    <!-- {#if !initialized} -->
-
-    <!-- <create-profile></create-profile> -->
-    <!-- {:else} -->
-    <!-- <list-profiles on:agent-selected={e => alert(e.detail.agentPubKey)}></list-profiles> -->
-    <!-- <search-agent include-myself></search-agent> -->
-    
     <profile-prompt>
-      {#if weClient.renderInfo.view.type != "attachable"}
+      {#if !weClient || weClient.renderInfo.view.type != "attachable"}
       <main class="converge-container">
       <Header />
       <div class="white-container">
@@ -243,7 +228,7 @@
     </main>
     {:else}
       <main>
-      {#if weClient.renderInfo.view.integrityZomeName == "converge_integrity"}
+      {#if weClient && weClient.renderInfo.view.integrityZomeName == "converge_integrity"}
         {#if weClient.renderInfo.view.entryType == "deliberation"}
           <div class="attachment-container">
           <DeliberationDetail deliberationHash={currentHash} />
@@ -252,7 +237,8 @@
           <div>Unknown entry type: {weClient.renderInfo.view.entryType}</div>
         {/if}
       {:else}
-        <div>Unknown zome: {weClient.renderInfo.view.integrityZomeName}</div>
+      Unknown zome
+        <!-- <div>Unknown zome: {weClient.renderInfo.view.integrityZomeName}</div> -->
       {/if}
       </main>
     {/if}
@@ -262,7 +248,7 @@
 </profiles-context>
 {/if}
 
-{#if dna && !loading && currentView != "instructions" && currentView != "" && weClient.renderInfo.view.type != "attachable"}
+{#if dna && !loading && currentView != "instructions" && currentView != "" && (!weClient || weClient.renderInfo.view.type != "attachable")}
 <footer style="margin: 10px;">
 <small>
   <img class="holochain-logo" src={Holochain} alt="holochain logo"/>

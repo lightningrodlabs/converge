@@ -1,5 +1,5 @@
 <script lang="ts">
-import { onMount, afterUpdate, getContext } from 'svelte';
+import { onMount, afterUpdate, getContext, createEventDispatcher } from 'svelte';
 import '@material/mwc-circular-progress';
 import '@material/mwc-checkbox';
 import type { Record, EntryHash, ActionHash, AgentPubKey, AppAgentClient, NewEntryAction } from '@holochain/client';
@@ -9,11 +9,14 @@ import CreateCriterionComment from './CreateCriterionComment.svelte';
 import CreateAlternative from './CreateAlternative.svelte';
 import type { ConvergeSignal } from '../types';
 
+export let criterion;
 export let criterionHash: ActionHash;
 export let objections;
 export let alternatives;
 export let deliberationHash;
 export let mySupport;
+
+const dispatch = createEventDispatcher();
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
@@ -102,7 +105,7 @@ async function removeObjection() {
     /* background-color: black; */
     border-top: 1px solid gray;
     border-bottom: 1px solid rgb(213, 213, 213);
-    background-color: rgb(247, 247, 247);
+    /* background-color: rgb(247, 247, 247); */
   }
 
   .underline {
@@ -158,7 +161,10 @@ async function removeObjection() {
 <div bind:this={chatWindow} style="display: flex; flex-direction: column; max-height: 60vh; min-height: 10px; overflow-y: scroll; overflow-x: hidden;">
   {#each hashes as hash}
   <!-- <div style="margin-bottom: 8px;"> -->
-    <CriterionCommentDetail {objections} {filter} criterionCommentHash={hash} {mySupport} {criterionHash} bind:commentReference></CriterionCommentDetail>
+    <CriterionCommentDetail {criterion} {objections} {filter} criterionCommentHash={hash} {mySupport} {criterionHash} bind:commentReference on:transfer={(e) => {
+      dispatch('transfer', e.detail);
+    }}>
+    </CriterionCommentDetail>
     <!-- </div> -->
     {/each}
   </div>

@@ -47,6 +47,7 @@ main {
 .white-container {
   background-color: white;
   padding: 25px;
+  padding-top: 0;
   min-height: 70vh;
   /* min-width: 68%; */
   /* width: 94% !important; */
@@ -178,6 +179,12 @@ nav logo {
   border-radius: 100%;
   box-shadow: 0px 6px 4px -3px #0000001a;
   float: left;
+}
+
+.logo-image.small {
+  width: 22px;
+  margin: 1px 6px 0 -4px;
+  padding: 1px;
 }
 
 .icon {
@@ -384,4 +391,18 @@ footer {
   height: 1.2em;
   top: 0.3em;
   position: relative;
+}
+
+#commentsNumber {
+  position: relative;
+  top: -42px;
+  right: -48px;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  background-color: #00ff7e;
+  padding: 4px;
+  border-radius: 100%;
+  width: 17px;
+  height: 17px;
 }
