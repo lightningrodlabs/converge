@@ -38,6 +38,11 @@ async function sortCriteria() {
       return b.myObjections - a.myObjections;
     }
   });
+  sortedCriteriaJoined = sortedCriteriaJoined.filter((c) => {
+    if (c.supporters > 0) {
+      return true;
+    }
+  });
   sortedCriteria = sortedCriteriaJoined.map((c) => c.hash);
   console.log(sort, sortedCriteriaJoined)
   // }, 4000)
@@ -60,6 +65,7 @@ onMount(async () => {
     // hashes = [...hashes, payload.action.hashed.hash];
     // sortedCriteria = [...sortedCriteria, payload.action.hashed.hash];
     fetchCriteria()
+    sortCriteria()
   });
 });
 

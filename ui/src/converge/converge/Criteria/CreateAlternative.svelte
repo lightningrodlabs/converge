@@ -216,7 +216,7 @@
     {/if}
     {/each} -->
 
-    <select bind:value={selectedCriterion} on:change={()=>{addAlternative(selectedCriterion)}} style="width: fit-content; margin: 6px">
+    <select bind:value={selectedCriterion} on:change={()=>{addAlternative(selectedCriterion)}} style="width: fit-content; margin: 6px; max-width: 40%;">
       <option value="" disabled selected>Suggest existing alternative</option>
       
       {#each allCriteria as c (c.hash.join(','))}

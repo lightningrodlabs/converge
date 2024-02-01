@@ -102,7 +102,9 @@
             {:else}
             <a id="logo" class="navbar-brand" on:click={() => navigate("instructions")}>
 
-            <h1 id="converge-title">Converge<img id="minilogo" class="logo-image small" src={Logo} alt="whos-in logo"/><small id="subtitle">&nbsp;for Moss</small></h1>
+            <h1 id="converge-title">Converge<img id="minilogo" class="logo-image small" src={Logo} alt="whos-in logo"/>
+              <!-- <small id="subtitle">&nbsp;for Moss</small> -->
+            </h1>
             </a>
             {/if}
           </div>

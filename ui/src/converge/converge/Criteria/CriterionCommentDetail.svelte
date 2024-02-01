@@ -301,7 +301,7 @@ async function deleteCriterionComment() {
     padding: 10px;
     position: relative;
     margin: 6px;
-    width: 100%;
+    width: fit-content;
     margin-left: 0;
   }
 
@@ -321,8 +321,8 @@ async function deleteCriterionComment() {
   }
 
   .comment-text {
-    /* white-space: pre-line; */
-    /* flex: 1; */
+    white-space: pre-line;
+    flex: 1;
     display: block;
   }
 

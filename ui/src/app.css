@@ -235,6 +235,20 @@ body {
   justify-content: space-between;
 }
 
+/* for mobile and tablet */
+@media (max-width: 768px) {
+  .two-sides {
+    flex-direction: column;
+  }
+
+  .two-sides > div {
+    width: 100%;
+    display: flex;
+    /* center content */
+    align-items: center;
+  }
+}
+
 .vertical-progress-bar-container {
   width: 24px;
   height: 100%;

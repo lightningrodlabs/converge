@@ -59,6 +59,7 @@ onMount(async () => {
     hash: criterionHash,
     comments: commentsNumber,
     weight: support / supporters.length,
+    supporters: supporters.length,
     mySupport: mySupport,
     myObjections: objections.filter(item => item.agent.join(",") === client.myPubKey.join(",")).length,
   };
@@ -293,18 +294,23 @@ async function scrollToDiv() {
     <!-- <span style="white-space: pre-line">{ criterion.objections }</span> -->
     {#if support}
       <div style="display: flex; flex-direction: row; font-size: .8em">
-        Support: {Math.round(support / supporters.length * 100)}%
+        <!-- <SvgIcon color="black" icon=faUser size=10/> -->
+        Supporters: {supporters.length}
+      </div>
+      <div style="display: flex; flex-direction: row; font-size: .8em">
+        <!-- <SvgIcon color="black" icon=faCog size=10/> -->
+        Importance: {Math.round(support / supporters.length * 100)}%
       </div>
       <!-- <div style="display: flex; flex-direction: row; font-size: .8em">
         {JSON.stringify(support / supporters.length)} average support
       </div> -->
     {/if}
 
-    {#if commentsNumber && commentsNumber > 0}
+    <!-- {#if commentsNumber && commentsNumber > 0}
       <div style="display: flex; flex-direction: row; font-size: .8em">
         Comments: {commentsNumber}
       </div>
-    {/if}
+    {/if} -->
 
     {#if objections && objections.length > 0}
     <div style="display: flex; flex-direction: row; margin-bottom: 16px; font-size: .8em; color: red;">

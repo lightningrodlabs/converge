@@ -183,23 +183,25 @@ async function createCriterion() {
       <div style="display: flex; flex-direction: column">
         <h2>Add a new criterion</h2>
         {#if alternativeToFull}
-        <div><span class="green-alert">↯ </span><strong>Alternative to {alternativeToFull.title}</strong></div><br>
+        <div><span class="green-alert">↯ </span><strong>Alternative to {alternativeToFull.title}</strong></div>
+        <br>
         {/if}
-        
-        <small class="instructions" style="max-width: 400px;">
+        <small class="instructions" style="white-space: pre-line; font-size: 10px; margin: 0; width: calc(100vw - 111px); max-width: 388px;">
           TIP: Does the criterion have these helpful characteristics?
 
-          Is noncontroversial
-          Can be evaluated (subjectively)
-          Uses positive language (what is wanted rather than what is not wanted)
-          Is relevant to the context
-          Is operational (can in principle be made to happen)
-          Applies to everyone (this is a need that everyone can recognize, not just one person’s need)
-          Doesn’t have a specific outcome (as long as it’s noncontroversial, this is the least important characteristic) 
+          • Is noncontroversial
+          • Can be evaluated (subjectively)
+          • Uses positive language (what is wanted rather than what is not wanted)
+          • Is relevant to the context
+          • Is operational (can in principle be made to happen)
+          • Applies to everyone (not just one person’s need)
+          • Doesn’t have a specific outcome
         </small>
 
+        <br>
+
         <div style="margin-bottom: 16px">
-          <mwc-textarea style="max-width: 400px; height: 60px; width: calc(100vw - 84px);" outlined label="Title" value={ title } on:input={e => { title = e.target.value; } } required></mwc-textarea>          
+          <mwc-textarea style="max-width: 400px; height: 90px; width: calc(100vw - 84px);" outlined label="Description" value={ title } on:input={e => { title = e.target.value; } } required></mwc-textarea>          
         </div>
                   
         <div style="display: flex; flex-direction: column; max-width: 400px; margin-bottom: 16px">
