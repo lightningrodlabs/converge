@@ -37,8 +37,8 @@
             "joiningAgents": [2]
           },
           {
-            "name": "gamez",
-            "instanceName": "gamez",
+            "name": "threads",
+            "instanceName": "threads",
             "registeringAgent": 1,
             "joiningAgents": [2]
           },
@@ -67,8 +67,8 @@
         }
       },
       {
-        "name": "gamez",
-        "subtitle": "games!",
+        "name": "threads",
+        "subtitle": "threads!",
         "description": "Real-time games based on syn",
         "icon": {
           "type": "filesystem",
@@ -76,7 +76,7 @@
         },
         "source": {
           "type": "https",
-          "url": "https://github.com/holochain-apps/gamez/releases/download/v0.3.2/gamez.webhapp"
+          "url": "https://github.com/lightningrodlabs/threads/releases/download/we-applet-rc/threads-we_applet-refactor.webhapp"
         }
       },
       {

@@ -3,18 +3,22 @@ import { createEventDispatcher, getContext, onMount } from 'svelte';
 import type { AppAgentClient, Record, EntryHash, AgentPubKey, ActionHash, DnaHash } from '@holochain/client';
 import { clientContext } from '../../../contexts';
 import type { Deliberation } from '../types';
+import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-button';
 import '@material/mwc-snackbar';
-import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-textfield';
 import '@material/mwc-radio';
 import '@material/mwc-formfield';
-import { view, viewHash, navigate } from '../../../store.js';
-import SvgIcon from "../../../SvgIcon.svelte";
-import AttachmentsDialog from "../../../AttachmentsDialog.svelte"
 import '@material/mwc-textarea';
+import { view, viewHash, navigate } from '../../../store.js';
+import AttachmentsDialog from "../../../AttachmentsDialog.svelte"
+import SvgIcon from "../../../SvgIcon.svelte";
 import { WeClient, isWeContext, initializeHotReload, type HrlB64WithContext, type Hrl } from '@lightningrodlabs/we-applet';
+import type { AppletInfo, AttachmentType } from "@lightningrodlabs/we-applet";
+import AttachmentsBind from '../../../AttachmentsBind.svelte';
+import { HoloHashMap, type EntryHashMap } from "@holochain-open-dev/utils";
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
+import { weClientStored } from '../../../store.js';
 
 const dispatch = createEventDispatcher();
 
@@ -23,13 +27,51 @@ let title: string = '';
 let description: string = '';
 let settings: any = {scoring: 'classic'};
 let attachments: Array<HrlB64WithContext> = [];
-
 let errorSnackbar: Snackbar;
+// let threadsInfos: HoloHashMap<EntryHash, AppletInfo> = new HoloHashMap
+let discussionApps = [];
+let selectedDiscussionApp: AppletInfo;
+let attachmentTypes = [];
 
-$: title, description, settings, attachments;
+$: title, description, settings, attachments, discussionApps;
 $: isDeliberationValid = true && title !== '' && description !== '' && settings !== '';
 
-onMount(() => {
+let weClient;
+weClientStored.subscribe(value => {
+    weClient = value;
+});
+
+onMount(async() => {
+    // console.log("refresh")
+    // console.log(weClient.attachmentTypes)
+    attachmentTypes = Array.from(weClient.attachmentTypes.entries())
+    console.log(attachmentTypes)
+    // groups = new HoloHashMap<EntryHash, Groups>
+    // appletInfos = new HoloHashMap\
+    console.log(discussionApps)
+    for (const [hash, aType] of attachmentTypes) {
+      console.log(aType)
+      let appletInfo = await weClient.appletInfo(hash)
+      if (!appletInfo.appletName.includes(aType.appletName)) {
+        console.log(appletInfo.appletName)
+        if (appletInfo.appletName.includes("threads")) {
+          console.log("appletInfo", appletInfo)
+          discussionApps.unshift(appletInfo)
+          selectedDiscussionApp = appletInfo;
+        } else {
+          discussionApps.push(appletInfo)
+        }
+      }
+    }
+    discussionApps = [...discussionApps]
+
+    // const hrl = await aType.create({hrl:[
+    //   {
+    //       hash:appletHash,
+    //       entryHash:appletInfo.entryHash,
+    //       entryType:appletInfo.entryType,
+    //   }
+    // ]})
 });
 
 async function createDeliberation() {  
@@ -103,9 +145,22 @@ async function createDeliberation() {
 
   {#if isWeContext}
     <div style="display:flex; flex-wrap:wrap; align-items: center; margin-bottom:10px;">
-      <h2>Attachments &nbsp;
+      <!-- {JSON.stringify(discussionApps[0])} -->
+      <!-- dropdown selector for discussion apps -->
+      <label>Discussion app:&nbsp;</label>
+      <select value={selectedDiscussionApp} on:change={(e)=>{
+        selectedDiscussionApp = e.target.value
+        console.log("selectedDiscussionApp", selectedDiscussionApp)
+      }} style="margin-right:10px;">
+        {#each discussionApps as appletInfo}
+          <option value={appletInfo}>{appletInfo.appletName}</option>
+        {/each}
+      </select>
+    </div>
+    <div style="display:flex; flex-wrap:wrap; align-items: center; margin-bottom:10px;">
+      <label>Attachments &nbsp;
 
-      </h2>
+      </label>
       <!-- <div style="margin-left:10px; margin-right:10px;">
         <button class="attachment-button" on:click={()=>attachmentsDialog.open()} >          
           <SvgIcon icon="link" size="16px"/>
@@ -115,6 +170,11 @@ async function createDeliberation() {
         <AttachmentsList attachments={props.attachments}
           on:remove-attachment={(e)=>removeAttachment(e.detail)}/>
       {/if} -->
+    <AttachmentsBind on:add-binding={
+      (e) => {
+        console.log("add-attachments", e.detail)
+      }
+    }></AttachmentsBind>
     <AttachmentsDialog bind:this={attachmentsDialog} bind:attachments on:add-attachments={
       (e) => {
         console.log("add-attachments", e.detail)

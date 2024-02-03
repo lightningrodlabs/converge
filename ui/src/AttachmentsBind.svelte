@@ -35,8 +35,8 @@
     $: groups
   
     export const refresh = async () => {
-      console.log("refresh")
-      console.log(weClient.attachmentTypes)
+    //   console.log("refresh")
+    //   console.log(weClient.attachmentTypes)
       attachmentTypes = Array.from(weClient.attachmentTypes.entries())
       console.log(attachmentTypes)
       groups = new HoloHashMap<EntryHash, Groups>
@@ -46,8 +46,11 @@
           if (!appletInfo) {
               appletInfo = await weClient.appletInfo(hash)
               appletInfos.set(hash, appletInfo)
-            } 
-          console.log(appletInfo)
+            //   if (appletInfo.appletName === "threads") {
+            //     threadsInfos.set(hash, appletInfo)
+            //   }
+            }
+        //   console.log("88888",appletInfo)
           for (const groupHash of appletInfo.groupsIds) {
               let groupTypes = weClient.attachmentTypes.get(groupHash)
               if (!groupTypes) {

@@ -14,6 +14,7 @@ pub struct Deliberation {
     pub description: String,
     pub settings: String,
     pub attachments: Option<Vec<HrlB64WithContext>>,
+    pub discussion: Option<HrlB64WithContext>,
 }
 pub fn validate_create_deliberation(
     _action: EntryCreationAction,

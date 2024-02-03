@@ -1,9 +1,18 @@
 use hdi::prelude::*;
+
+#[hdk_entry_helper]
+#[derive(Clone, PartialEq)]
+pub struct HrlB64WithContext {
+    pub hrl: String,
+    pub context: Option<String>,
+}
+
 #[hdk_entry_helper]
 #[derive(Clone, PartialEq)]
 pub struct Proposal {
     pub title: String,
     pub description: String,
+    pub attachments: Option<Vec<HrlB64WithContext>>,
 }
 pub fn validate_create_proposal(
     _action: EntryCreationAction,
