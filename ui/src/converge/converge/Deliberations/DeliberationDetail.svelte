@@ -84,6 +84,14 @@ onMount(async () => {
     if (payload.message == 'live_update' && payload.deliberation_hash.join(',') == deliberationHash.join(',')) {
       console.log("activity received")
       outdated = true;
+      weClient.notifyWe([{
+          title: `updated`,
+          body: "body",
+          notification_type: "change",
+          icon_src: undefined,
+          urgency: "low",
+          timestamp: Date.now()
+      }])
     }
     // console.log(payload)
   });
