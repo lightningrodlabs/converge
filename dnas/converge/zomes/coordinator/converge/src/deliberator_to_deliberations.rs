@@ -31,7 +31,12 @@ pub fn get_deliberations_for_deliberator(
     let get_input: Vec<GetInput> = links
         .into_iter()
         .map(|link| GetInput::new(
-            ActionHash::try_from(link.target).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap().into(),
+            ActionHash::try_from(link.target)
+                .map_err(|_| {
+                    wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))
+                })
+                .unwrap()
+                .into(),
             GetOptions::default(),
         ))
         .collect();
@@ -53,7 +58,13 @@ pub fn get_deliberators_for_deliberation(
     )?;
     let agents: Vec<AgentPubKey> = links
         .into_iter()
-        .map(|link| AgentPubKey::from(EntryHash::try_from(link.target).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected entryhash".into()))).unwrap()))
+        .map(|link| AgentPubKey::from(
+            EntryHash::try_from(link.target)
+                .map_err(|_| {
+                    wasm_error!(WasmErrorInner::Guest("Expected entryhash".into()))
+                })
+                .unwrap(),
+        ))
         .collect();
     Ok(agents)
 }
@@ -72,7 +83,13 @@ pub fn remove_deliberation_for_deliberator(
         None,
     )?;
     for link in links {
-        if ActionHash::try_from(link.target.clone()).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap().eq(&input.target_deliberation_hash) {
+        if ActionHash::try_from(link.target.clone())
+            .map_err(|_| {
+                wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))
+            })
+            .unwrap()
+            .eq(&input.target_deliberation_hash)
+        {
             delete_link(link.create_link_hash)?;
         }
     }
@@ -82,7 +99,13 @@ pub fn remove_deliberation_for_deliberator(
         None,
     )?;
     for link in links {
-        if AgentPubKey::from(EntryHash::try_from(link.target.clone()).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected entryhash".into()))).unwrap())
+        if AgentPubKey::from(
+                EntryHash::try_from(link.target.clone())
+                    .map_err(|_| {
+                        wasm_error!(WasmErrorInner::Guest("Expected entryhash".into()))
+                    })
+                    .unwrap(),
+            )
             .eq(&input.base_deliberator)
         {
             delete_link(link.create_link_hash)?;

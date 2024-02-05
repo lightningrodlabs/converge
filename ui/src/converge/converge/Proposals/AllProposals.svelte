@@ -112,6 +112,7 @@ async function fetchProposals() {
     });
     // proposalCount = 1;
     hashes = records.map(r => r.signed_action.hashed.hash)
+    proposalCount = hashes.length
     sortedProposals = hashes
   } catch (e) {
     error = e;

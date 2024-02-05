@@ -38,6 +38,7 @@ export type ConvergeSignal = {
 };
 
 export type EntryTypes =
+ | ({ type: 'Settings'; } & Settings)
  | ({ type: 'CriterionComment'; } & CriterionComment)
  | ({ type: 'Proposal'; } & Proposal)
  | ({ type: 'Criterion'; } & Criterion)
@@ -109,5 +110,12 @@ export interface CriterionComment {
   author: AgentPubKey;
 
   created: number;
+}
+
+
+
+
+export interface Settings { 
+  discussion_app: string;
 }
 

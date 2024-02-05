@@ -1,12 +1,10 @@
 use hdi::prelude::{holo_hash::HoloHashB64, *};
-
 #[hdk_entry_helper]
 #[derive(Clone, PartialEq)]
 pub struct HrlB64WithContext {
     pub hrl: String,
     pub context: Option<String>,
 }
-
 #[hdk_entry_helper]
 #[derive(Clone, PartialEq)]
 pub struct Deliberation {
@@ -43,7 +41,9 @@ pub fn validate_create_link_deliberation_updates(
     target_address: AnyLinkableHash,
     _tag: LinkTag,
 ) -> ExternResult<ValidateCallbackResult> {
-    let action_hash = ActionHash::try_from(base_address).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap();
+    let action_hash = ActionHash::try_from(base_address)
+        .map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into())))
+        .unwrap();
     let record = must_get_valid_record(action_hash)?;
     let _deliberation: crate::Deliberation = record
         .entry()
@@ -54,7 +54,9 @@ pub fn validate_create_link_deliberation_updates(
                 WasmErrorInner::Guest(String::from("Linked action must reference an entry"))
             ),
         )?;
-    let action_hash = ActionHash::try_from(target_address).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap();
+    let action_hash = ActionHash::try_from(target_address)
+        .map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into())))
+        .unwrap();
     let record = must_get_valid_record(action_hash)?;
     let _deliberation: crate::Deliberation = record
         .entry()
@@ -86,7 +88,9 @@ pub fn validate_create_link_all_deliberations(
     target_address: AnyLinkableHash,
     _tag: LinkTag,
 ) -> ExternResult<ValidateCallbackResult> {
-    let action_hash = ActionHash::try_from(target_address).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap();
+    let action_hash = ActionHash::try_from(target_address)
+        .map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into())))
+        .unwrap();
     let record = must_get_valid_record(action_hash)?;
     let _deliberation: crate::Deliberation = record
         .entry()

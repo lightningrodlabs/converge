@@ -7,7 +7,12 @@ pub fn get_all_proposals(_: ()) -> ExternResult<Vec<Record>> {
     let get_input: Vec<GetInput> = links
         .into_iter()
         .map(|link| GetInput::new(
-            ActionHash::try_from(link.target).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap().into(),
+            ActionHash::try_from(link.target)
+                .map_err(|_| {
+                    wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))
+                })
+                .unwrap()
+                .into(),
             GetOptions::default(),
         ))
         .collect();

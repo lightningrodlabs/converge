@@ -19,6 +19,8 @@ import AttachmentsBind from '../../../AttachmentsBind.svelte';
 import { HoloHashMap, type EntryHashMap } from "@holochain-open-dev/utils";
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 import { weClientStored } from '../../../store.js';
+import app from '../../../main';
+import { hrlB64WithContextToRaw, hrlWithContextToB64, getMyDna } from '../../../util';
 
 const dispatch = createEventDispatcher();
 
@@ -29,49 +31,51 @@ let settings: any = {scoring: 'classic'};
 let attachments: Array<HrlB64WithContext> = [];
 let errorSnackbar: Snackbar;
 // let threadsInfos: HoloHashMap<EntryHash, AppletInfo> = new HoloHashMap
-let discussionApps = [];
-let selectedDiscussionApp: AppletInfo;
+let discussionApps = {};
+let selectedDiscussionApp: string;
 let attachmentTypes = [];
+let dna;
 
 $: title, description, settings, attachments, discussionApps;
-$: isDeliberationValid = true && title !== '' && description !== '' && settings !== '';
+$: isDeliberationValid = true && title !== '' && settings !== '';
 
 let weClient;
 weClientStored.subscribe(value => {
-    weClient = value;
+  weClient = value;
 });
 
 onMount(async() => {
-    // console.log("refresh")
-    // console.log(weClient.attachmentTypes)
+    dna = await getMyDna("converge", client)
+
     attachmentTypes = Array.from(weClient.attachmentTypes.entries())
     console.log(attachmentTypes)
-    // groups = new HoloHashMap<EntryHash, Groups>
-    // appletInfos = new HoloHashMap\
     console.log(discussionApps)
-    for (const [hash, aType] of attachmentTypes) {
-      console.log(aType)
-      let appletInfo = await weClient.appletInfo(hash)
-      if (!appletInfo.appletName.includes(aType.appletName)) {
-        console.log(appletInfo.appletName)
-        if (appletInfo.appletName.includes("threads")) {
-          console.log("appletInfo", appletInfo)
-          discussionApps.unshift(appletInfo)
-          selectedDiscussionApp = appletInfo;
-        } else {
-          discussionApps.push(appletInfo)
-        }
+    for (const [appletHash, record] of attachmentTypes) {
+      console.log(record)
+      let appletInfo = await weClient.appletInfo(appletHash)
+      if (!discussionApps[appletInfo.appletName]) {
+        console.log(record)
+        const recordTypeNames = Object.keys(record).map((key) => JSON.stringify({
+          app: appletInfo.appletName,
+          type: key
+        }))
+        recordTypeNames.forEach((recordTypeName) => {
+          const recordType = JSON.parse(recordTypeName).type
+          console.log(recordTypeName)
+          if (appletInfo.appletName.includes("threads")) {
+            console.log("appletInfo", appletInfo)
+            console.log("record", record)
+            discussionApps[recordTypeName] = [appletHash, record[recordType]]
+            selectedDiscussionApp = recordTypeName;
+          } else {
+            discussionApps[recordTypeName] = [appletHash, record[recordType]]
+          }
+        })
       }
     }
-    discussionApps = [...discussionApps]
-
-    // const hrl = await aType.create({hrl:[
-    //   {
-    //       hash:appletHash,
-    //       entryHash:appletInfo.entryHash,
-    //       entryType:appletInfo.entryType,
-    //   }
-    // ]})
+    discussionApps = {...discussionApps}
+    console.log("discussionApps", discussionApps)
+    console.log(selectedDiscussionApp)
 });
 
 async function createDeliberation() {  
@@ -85,6 +89,7 @@ async function createDeliberation() {
         context: a.context
       }
     }),
+    // discussionApp: selectedDiscussionApp.appletName
   };
 
   console.log("createDeliberation", deliberationEntry)
@@ -110,11 +115,50 @@ async function createDeliberation() {
         target_deliberation_hash: record.signed_action.hashed.hash
       },
     });
+
+    if (selectedDiscussionApp != "none") {
+      // add discussion
+      const appletHash = discussionApps[selectedDiscussionApp][0]
+      const appletInfo = await weClient.appletInfo(appletHash)
+      console.log("appletInfo2", appletInfo)
+      const aType = discussionApps[selectedDiscussionApp][1]
+      console.log("aType", aType)
+      const threadsCreate = {hrl:[dna, record.signed_action.hashed.hash], attachmentType:"{}"}
+      console.log("threadsCreate", threadsCreate)
+      const hrlWithContext = await aType.create(threadsCreate)
+      console.log("hrl", hrlWithContext)
+      console.log("b64", hrlWithContextToB64(hrlWithContext))
+      
+      const hrlB64 = hrlWithContextToB64(hrlWithContext)
+      const deliberationUpdate = {
+        original_deliberation_hash: record.signed_action.hashed.hash,
+        previous_deliberation_hash: record.signed_action.hashed.hash,
+        updated_deliberation: {
+          ...deliberationEntry,
+          discussion: {
+            hrl: JSON.stringify(hrlB64.hrl),
+            context: hrlB64.context,
+          }
+        }
+      }
+      
+      console.log("deliberationUpdate", deliberationUpdate)
+      
+      // update deliberation to include newly created discussion
+      await client.callZome({
+        cap_secret: null,
+        role_name: 'converge',
+        zome_name: 'converge',
+        fn_name: 'update_deliberation',
+        payload: deliberationUpdate,
+      });
+    }
     
     navigate("deliberation", record.signed_action.hashed.hash)
   } catch (e) {
-    errorSnackbar.labelText = `Error creating the deliberation: ${e.data.data}`;
-    errorSnackbar.show();
+    console.log(e)
+    // errorSnackbar.labelText = `Error creating the deliberation: ${e}`;
+    // errorSnackbar.show();
   }
 }
 
@@ -123,7 +167,8 @@ async function createDeliberation() {
 </mwc-snackbar>
 <div style="display: flex; flex-direction: column">
   <h1>New Deliberation</h1>
-  <h2>Deliberation Details</h2>
+  
+  <!-- <h2>Deliberation Details</h2> -->
   
 
   <div style="margin-bottom: 16px; text-align: left;">
@@ -131,7 +176,7 @@ async function createDeliberation() {
   </div>
             
   <div style="margin-bottom: 16px; text-align: left;">
-    <mwc-textarea style="width: 100%; height: 30vh" outlined label="Description" value={ description } on:input={e => { description = e.target.value; } } required></mwc-textarea>          
+    <mwc-textarea style="width: 100%; height: 30vh" outlined label="Description" value={ description } on:input={e => { description = e.target.value; } }></mwc-textarea>          
   </div>
             
   <!-- <div style="margin-bottom: 16px; text-align: left">
@@ -147,19 +192,22 @@ async function createDeliberation() {
     <div style="display:flex; flex-wrap:wrap; align-items: center; margin-bottom:10px;">
       <!-- {JSON.stringify(discussionApps[0])} -->
       <!-- dropdown selector for discussion apps -->
-      <label>Discussion app:&nbsp;</label>
+      <label>Discussion type:&nbsp;</label>
       <select value={selectedDiscussionApp} on:change={(e)=>{
         selectedDiscussionApp = e.target.value
         console.log("selectedDiscussionApp", selectedDiscussionApp)
       }} style="margin-right:10px;">
-        {#each discussionApps as appletInfo}
-          <option value={appletInfo}>{appletInfo.appletName}</option>
+        {#each Object.keys(discussionApps) as appletName}
+          {@const [aType, appletInfo] = discussionApps[appletName]}
+          {@const formattedName = JSON.parse(appletName).app + ": " + JSON.parse(appletName).type}
+          <!-- <option>hi</option> -->
+          <option value={appletName}>{formattedName}</option>
         {/each}
+        <option value="none">No discussion</option>
       </select>
     </div>
     <div style="display:flex; flex-wrap:wrap; align-items: center; margin-bottom:10px;">
       <label>Attachments &nbsp;
-
       </label>
       <!-- <div style="margin-left:10px; margin-right:10px;">
         <button class="attachment-button" on:click={()=>attachmentsDialog.open()} >          
@@ -170,11 +218,11 @@ async function createDeliberation() {
         <AttachmentsList attachments={props.attachments}
           on:remove-attachment={(e)=>removeAttachment(e.detail)}/>
       {/if} -->
-    <AttachmentsBind on:add-binding={
+    <!-- <AttachmentsBind on:add-binding={
       (e) => {
         console.log("add-attachments", e.detail)
       }
-    }></AttachmentsBind>
+    }></AttachmentsBind> -->
     <AttachmentsDialog bind:this={attachmentsDialog} bind:attachments on:add-attachments={
       (e) => {
         console.log("add-attachments", e.detail)
@@ -186,6 +234,8 @@ async function createDeliberation() {
     </div>
   {/if}
   
+  <label class="instructions">Warning: you will not be able to edit the above details after creating.</label>
+
   <mwc-button
     raised
     label="Create Deliberation"

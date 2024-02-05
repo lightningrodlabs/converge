@@ -5,7 +5,9 @@ pub fn validate_create_link_proposal_to_criteria(
     target_address: AnyLinkableHash,
     _tag: LinkTag,
 ) -> ExternResult<ValidateCallbackResult> {
-    let action_hash = ActionHash::try_from(base_address).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap();
+    let action_hash = ActionHash::try_from(base_address)
+        .map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into())))
+        .unwrap();
     let record = must_get_valid_record(action_hash)?;
     let _proposal: crate::Proposal = record
         .entry()
@@ -16,7 +18,9 @@ pub fn validate_create_link_proposal_to_criteria(
                 WasmErrorInner::Guest(String::from("Linked action must reference an entry"))
             ),
         )?;
-    let action_hash = ActionHash::try_from(target_address).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap();
+    let action_hash = ActionHash::try_from(target_address)
+        .map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into())))
+        .unwrap();
     let record = must_get_valid_record(action_hash)?;
     let _criterion: crate::Criterion = record
         .entry()

@@ -85,3 +85,22 @@ export async function createCriterionComment(cell: CallableCell, criterionCommen
     });
 }
 
+
+
+export async function sampleSettings(cell: CallableCell, partialSettings = {}) {
+    return {
+        ...{
+	  discussion_app: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+        },
+        ...partialSettings
+    };
+}
+
+export async function createSettings(cell: CallableCell, settings = undefined): Promise<Record> {
+    return cell.callZome({
+      zome_name: "converge",
+      fn_name: "create_settings",
+      payload: settings || await sampleSettings(cell),
+    });
+}
+

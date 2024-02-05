@@ -10,7 +10,7 @@
   "dependencies": {
     "@holochain-open-dev/profiles": "^0.17.3",
     "@holochain/client": "^0.16.7",
-    "@lightningrodlabs/we-applet": "^0.14.0",
+    "@lightningrodlabs/we-applet": "^0.14.2",
     "@material/mwc-button": "^0.27.0",
     "@material/mwc-checkbox": "^0.27.0",
     "@material/mwc-circular-progress": "^0.27.0",

@@ -1,3 +1,5 @@
+pub mod settings;
+pub use settings::*;
 pub mod criterion_to_criterion_comments;
 pub use criterion_to_criterion_comments::*;
 pub mod criterion_comment;
@@ -32,6 +34,8 @@ pub enum EntryTypes {
     Criterion(Criterion),
     Proposal(Proposal),
     CriterionComment(CriterionComment),
+    #[entry_def(name = "Settings", visibility = "private")]
+    Settings(Settings),
 }
 #[derive(Serialize, Deserialize)]
 #[hdk_link_types]
@@ -55,7 +59,9 @@ pub enum LinkTypes {
     CriterionCommentUpdates,
     AllCriterionComments,
     CriterionToCriterionComments,
+    SettingsUpdates,
 }
+
 #[hdk_extern]
 pub fn genesis_self_check(
     _data: GenesisSelfCheckData,
@@ -99,6 +105,12 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 criterion_comment,
                             )
                         }
+                        EntryTypes::Settings(settings) => {
+                            validate_create_settings(
+                                EntryCreationAction::Create(action),
+                                settings,
+                            )
+                        }
                     }
                 }
                 OpEntry::UpdateEntry { app_entry, action, .. } => {
@@ -127,6 +139,12 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 criterion_comment,
                             )
                         }
+                        EntryTypes::Settings(settings) => {
+                            validate_create_settings(
+                                EntryCreationAction::Update(action),
+                                settings,
+                            )
+                        }
                     }
                 }
                 _ => Ok(ValidateCallbackResult::Valid),
@@ -141,6 +159,17 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     action,
                 } => {
                     match (app_entry, original_app_entry) {
+                        (
+                            EntryTypes::Settings(settings),
+                            EntryTypes::Settings(original_settings),
+                        ) => {
+                            validate_update_settings(
+                                action,
+                                settings,
+                                original_action,
+                                original_settings,
+                            )
+                        }
                         (
                             EntryTypes::CriterionComment(criterion_comment),
                             EntryTypes::CriterionComment(original_criterion_comment),
@@ -221,6 +250,9 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 original_action,
                                 criterion_comment,
                             )
+                        }
+                        EntryTypes::Settings(settings) => {
+                            validate_delete_settings(action, original_action, settings)
                         }
                     }
                 }
@@ -381,6 +413,14 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 }
                 LinkTypes::CriterionToCriterionComments => {
                     validate_create_link_criterion_to_criterion_comments(
+                        action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::SettingsUpdates => {
+                    validate_create_link_settings_updates(
                         action,
                         base_address,
                         target_address,
@@ -569,6 +609,15 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         tag,
                     )
                 }
+                LinkTypes::SettingsUpdates => {
+                    validate_delete_link_settings_updates(
+                        action,
+                        original_action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
             }
         }
         FlatOp::StoreRecord(store_record) => {
@@ -597,6 +646,12 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                             validate_create_criterion_comment(
                                 EntryCreationAction::Create(action),
                                 criterion_comment,
+                            )
+                        }
+                        EntryTypes::Settings(settings) => {
+                            validate_create_settings(
+                                EntryCreationAction::Create(action),
+                                settings,
                             )
                         }
                     }
@@ -746,6 +801,37 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 Ok(result)
                             }
                         }
+                        EntryTypes::Settings(settings) => {
+                            let result = validate_create_settings(
+                                EntryCreationAction::Update(action.clone()),
+                                settings.clone(),
+                            )?;
+                            if let ValidateCallbackResult::Valid = result {
+                                let original_settings: Option<Settings> = original_record
+                                    .entry()
+                                    .to_app_option()
+                                    .map_err(|e| wasm_error!(e))?;
+                                let original_settings = match original_settings {
+                                    Some(settings) => settings,
+                                    None => {
+                                        return Ok(
+                                            ValidateCallbackResult::Invalid(
+                                                "The updated entry type must be the same as the original entry type"
+                                                    .to_string(),
+                                            ),
+                                        );
+                                    }
+                                };
+                                validate_update_settings(
+                                    action,
+                                    settings,
+                                    original_action,
+                                    original_settings,
+                                )
+                            } else {
+                                Ok(result)
+                            }
+                        }
                     }
                 }
                 OpRecord::DeleteEntry { original_action_hash, action, .. } => {
@@ -826,6 +912,13 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 original_action,
                                 original_criterion_comment,
+                            )
+                        }
+                        EntryTypes::Settings(original_settings) => {
+                            validate_delete_settings(
+                                action,
+                                original_action,
+                                original_settings,
                             )
                         }
                     }
@@ -984,6 +1077,14 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         LinkTypes::CriterionToCriterionComments => {
                             validate_create_link_criterion_to_criterion_comments(
+                                action,
+                                base_address,
+                                target_address,
+                                tag,
+                            )
+                        }
+                        LinkTypes::SettingsUpdates => {
+                            validate_create_link_settings_updates(
                                 action,
                                 base_address,
                                 target_address,
@@ -1179,6 +1280,15 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         LinkTypes::CriterionToCriterionComments => {
                             validate_delete_link_criterion_to_criterion_comments(
+                                action,
+                                create_link.clone(),
+                                base_address,
+                                create_link.target_address,
+                                create_link.tag,
+                            )
+                        }
+                        LinkTypes::SettingsUpdates => {
+                            validate_delete_link_settings_updates(
                                 action,
                                 create_link.clone(),
                                 base_address,

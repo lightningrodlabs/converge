@@ -1,3 +1,4 @@
+pub mod settings;
 pub mod criterion_to_criterion_comments;
 pub mod criterion_comment;
 pub mod criterion_to_criteria;
@@ -16,20 +17,23 @@ pub mod deliberation;
 use hdk::prelude::{*, tracing::field::debug};
 use converge_integrity::*;
 use serde::de;
-// use hc_zome_profiles_integrity::LinkTypes as ProfileLinkTypes;
 #[hdk_extern]
 pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
-    #[cfg(any(
-        target_os = "linux",
-        target_os = "freebsd",
-        target_os = "dragonfly",
-        target_os = "openbsd",
-        target_os = "netbsd"
-    ))]
-    std::env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
-
+    #[cfg(
+        any(
+            target_os = "linux",
+            target_os = "freebsd",
+            target_os = "dragonfly",
+            target_os = "openbsd",
+            target_os = "netbsd"
+        )
+    )] std::env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
     let mut functions: BTreeSet<(ZomeName, FunctionName)> = BTreeSet::new();
-    functions.insert((zome_info()?.name, FunctionName(String::from("new_activity_receiver"))));
+    functions
+        .insert((
+            zome_info()?.name,
+            FunctionName(String::from("new_activity_receiver")),
+        ));
     let functions = GrantedFunctions::Listed(functions);
     let access = CapAccess::Unrestricted;
     let capability_grant = CapGrantEntry {
@@ -38,20 +42,15 @@ pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
         tag: String::from("unrestricted"),
     };
     create_cap_grant(capability_grant)?;
-
     Ok(InitCallbackResult::Pass)
 }
-
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ActivityPayload {
     deliberation_hash: ActionHash,
     message: String,
 }
-
 #[hdk_extern]
 pub fn new_activity_sender(data: ActivityPayload) -> ExternResult<InitCallbackResult> {
-    // let all_agents: Vec<AgentPubKey> = vec![];
-
     let zome_call_response = call(
         CallTargetCell::Local,
         ZomeName::from(String::from("converge")),
@@ -60,15 +59,13 @@ pub fn new_activity_sender(data: ActivityPayload) -> ExternResult<InitCallbackRe
         data.clone().deliberation_hash,
     )?;
     debug!("zome_call_response: {:?}", zome_call_response);
-
-
     match zome_call_response {
         ZomeCallResponse::Ok(result) => {
             debug!("result: {:?}", result);
             let all_agents: Vec<AgentPubKey> = result.decode().ok().unwrap();
             debug!("all_agents: {:?}", all_agents);
             for agent in all_agents {
-                if (agent != agent_info()?.agent_latest_pubkey.into()) {
+                if agent != agent_info()?.agent_latest_pubkey.into() {
                     let zome_call_response = call_remote(
                         agent.clone(),
                         "converge",
@@ -83,29 +80,26 @@ pub fn new_activity_sender(data: ActivityPayload) -> ExternResult<InitCallbackRe
         ZomeCallResponse::NetworkError(err) => {
             debug!("network error: {:?}", err);
         }
-        ZomeCallResponse::Unauthorized(a,b,c,d,e) => {
+        ZomeCallResponse::Unauthorized(a, b, c, d, e) => {
             debug!("unauthorized: {:?}", a);
         }
         _ => {
             debug!("error: {:?}", zome_call_response);
-        },
+        }
     }
     Ok(InitCallbackResult::Pass)
 }
-
 #[hdk_extern]
 pub fn new_activity_receiver(data: ActivityPayload) -> ExternResult<()> {
     emit_signal(data.clone())?;
     debug!("data: {:?}", data);
     Ok(())
 }
-
 #[hdk_extern]
-pub fn get_dna_hash(_:()) -> ExternResult<String> {
+pub fn get_dna_hash(_: ()) -> ExternResult<String> {
     let x = hdk::info::dna_info()?;
     Ok(x.hash.to_string())
 }
-
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "type")]
 pub enum Signal {

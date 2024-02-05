@@ -1,12 +1,10 @@
 use hdi::prelude::*;
-
 #[hdk_entry_helper]
 #[derive(Clone, PartialEq)]
 pub struct HrlB64WithContext {
     pub hrl: String,
     pub context: Option<String>,
 }
-
 #[hdk_entry_helper]
 #[derive(Clone, PartialEq)]
 pub struct Proposal {
@@ -41,7 +39,9 @@ pub fn validate_create_link_all_proposals(
     target_address: AnyLinkableHash,
     _tag: LinkTag,
 ) -> ExternResult<ValidateCallbackResult> {
-    let action_hash = ActionHash::try_from(target_address).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap();
+    let action_hash = ActionHash::try_from(target_address)
+        .map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into())))
+        .unwrap();
     let record = must_get_valid_record(action_hash)?;
     let _proposal: crate::Proposal = record
         .entry()

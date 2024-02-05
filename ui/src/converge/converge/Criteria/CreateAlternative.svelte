@@ -18,7 +18,7 @@
   
   let hashes: Array<ActionHash> | undefined;
   let allCriteria: Array<any> | undefined;
-  
+  let dialog;
   let criterionFormPopup = false;
   let loading = true;
   let error: any = undefined;
@@ -216,18 +216,27 @@
     {/if}
     {/each} -->
 
-    <select bind:value={selectedCriterion} on:change={()=>{addAlternative(selectedCriterion)}} style="width: fit-content; margin: 6px; max-width: 40%;">
+    <select bind:value={selectedCriterion} on:change={()=>{dialog.show()}} style="width: fit-content; margin: 6px; max-width: 40%;">
       <option value="" disabled selected>Suggest existing alternative</option>
       
       {#each allCriteria as c (c.hash.join(','))}
         {#if c.hash.join(',') != criterionHash.join(',') && !alternatives.map(a => a.hash.join(',')).includes(c.hash.join(','))}
-          <option value={c.hash}>
-            {c.title} (click to suggest)
+          <option value={c.hash} on:click={dialog.show()}>
+            {c.title}
           </option>
         {/if}
       {/each}
     </select>
-    
+
+    {#if allCriteria && selectedCriterion}
+    {@const selectedCriterionName = allCriteria.filter(a => a.hash.join(',') === selectedCriterion.join(','))[0].title}
+    <sl-dialog label="Suggest {selectedCriterionName} as an alternative?" bind:this={dialog}>
+      <mwc-button outlined>Cancel</mwc-button>
+      <mwc-button raised style="color: white" on:click={(e)=>{
+        addAlternative(selectedCriterion)
+      }}>Suggest</mwc-button>
+    </sl-dialog>
+    {/if}
     <!-- <button on:click={() => addAlternative(selectedCriterion)} style="width: fit-content">Suggest</button> -->
     
     <button on:click={(e)=>{criterionFormPopup = true}} style="width: fit-content; margin: 6px;">Create alternative</button>
@@ -240,4 +249,14 @@
     mwc-tab {
       border: 1px solid #7b1fa2;
     }
+
+    sl-dialog::part(panel) {
+      text-align: center;
+      background: #FFFFFF;
+      border: 2px solid rgb(166 115 55 / 26%);
+      border-bottom: 2px solid rgb(84 54 19 / 50%);
+      border-top: 2px solid rgb(166 115 55 / 5%);
+      box-shadow: 0px 15px 40px rgb(130 107 58 / 35%);
+      border-radius: 10px;
+  }
   </style>

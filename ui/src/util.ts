@@ -23,8 +23,9 @@ export function hrlB64WithContextToRaw(hrlB64: HrlB64WithContext): HrlWithContex
   try {
     context = JSON.parse(hrlB64.context)
   } catch (e) {
-
+    console.log("error", e)
   }
+
   return {
     hrl: [decodeHashFromBase64(hrlB64.hrl[0]), decodeHashFromBase64(hrlB64.hrl[1])],
     context,

@@ -1,16 +1,19 @@
 <script lang="ts">
 import { createEventDispatcher, getContext, onMount } from 'svelte';
 import type { AppAgentClient, Record, EntryHash, AgentPubKey, ActionHash, DnaHash } from '@holochain/client';
+import { WeClient, isWeContext, initializeHotReload, type HrlB64WithContext, type Hrl } from '@lightningrodlabs/we-applet';
 import { clientContext } from '../../../contexts';
 import type { Proposal, CreateProposalInput } from '../types';
 import '@material/mwc-button';
 import '@material/mwc-snackbar';
 import type { Snackbar } from '@material/mwc-snackbar';
-
 import '@material/mwc-textarea';
 import '@material/mwc-textfield';
-let client: AppAgentClient = (getContext(clientContext) as any).getClient();
+import AttachmentsDialog from "../../../AttachmentsDialog.svelte"
 
+let client: AppAgentClient = (getContext(clientContext) as any).getClient();
+let attachmentsDialog : AttachmentsDialog
+let attachments: Array<HrlB64WithContext> = [];
 const dispatch = createEventDispatcher();
 
 export let deliberationHash: ActionHash;
@@ -45,6 +48,12 @@ async function createProposal() {
   const proposalEntry: Proposal = { 
     title: title!,
     description: description!,
+    attachments: attachments.map(a => {
+      return {
+        hrl: JSON.stringify(a.hrl),
+        context: a.context
+      }
+    }),
   };
 
   const createProposalInput: CreateProposalInput = {
@@ -89,7 +98,18 @@ async function createProposal() {
           <div style="margin-bottom: 16px">
             <mwc-textarea style="width: 50vw; height: 50vh" outlined label="Description" value={ description } on:input={e => { description = e.target.value; } } required></mwc-textarea>          
           </div>
+
+          <AttachmentsDialog bind:this={attachmentsDialog} bind:attachments on:add-attachments={
+            (e) => {
+              console.log("add-attachments", e.detail)
+              attachments = e.detail.attachments
+              // props.attachments = e.detail.attachments
+              // bind.refresh()
+            }
+          }></AttachmentsDialog>
                     
+          <label class="instructions">Warning: you will not be able to edit the above details after creating.</label>
+
           <div style="display: flex; flex-direction: row">
             <mwc-button
               outlined

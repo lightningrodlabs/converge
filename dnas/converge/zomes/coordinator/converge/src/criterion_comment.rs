@@ -1,12 +1,10 @@
 use hdk::prelude::*;
 use converge_integrity::*;
-
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CreateCriterionCommentInput {
     pub criterion_comment: CriterionComment,
     pub criterion_hash: ActionHash,
 }
-
 #[hdk_extern]
 pub fn create_criterion_comment(
     input: CreateCriterionCommentInput,
@@ -20,20 +18,12 @@ pub fn create_criterion_comment(
                 WasmErrorInner::Guest(String::from("Could not find the newly created CriterionComment"))
             ),
         )?;
-    // let path = Path::from("all_criterion_comments");
-    // create_link(
-    //     path.path_entry_hash()?,
-    //     criterion_comment_hash.clone(),
-    //     LinkTypes::AllCriterionComments,
-    //     (),
-    // )?;
     create_link(
         input.criterion_hash,
         criterion_comment_hash,
-        LinkTypes::CriterionToCriterionComments, 
-        ()
+        LinkTypes::CriterionToCriterionComments,
+        (),
     )?;
-
     Ok(record)
 }
 #[hdk_extern]
@@ -49,7 +39,13 @@ pub fn get_criterion_comment(
         .into_iter()
         .max_by(|link_a, link_b| link_a.timestamp.cmp(&link_b.timestamp));
     let latest_criterion_comment_hash = match latest_link {
-        Some(link) => ActionHash::try_from(link.target.clone()).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap(),
+        Some(link) => {
+            ActionHash::try_from(link.target.clone())
+                .map_err(|_| {
+                    wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))
+                })
+                .unwrap()
+        }
         None => original_criterion_comment_hash.clone(),
     };
     get(latest_criterion_comment_hash, GetOptions::default())

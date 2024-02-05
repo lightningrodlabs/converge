@@ -38,7 +38,11 @@ pub fn get_ratings_for_proposal(proposal_hash: ActionHash) -> ExternResult<Vec<R
             let agent = AgentPubKey::from(EntryHash::from(link.author));
             let agent_with_tag = Rating {
                 agent: agent.clone(),
-                criterion: ActionHash::try_from(link.target).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap(),
+                criterion: ActionHash::try_from(link.target)
+                    .map_err(|_| {
+                        wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))
+                    })
+                    .unwrap(),
                 tag: tag_str,
             };
             agent_with_tag
@@ -54,7 +58,12 @@ pub fn get_criteria_for_proposal(
     let get_input: Vec<GetInput> = links
         .into_iter()
         .map(|link| GetInput::new(
-            ActionHash::try_from(link.target).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap().into(),
+            ActionHash::try_from(link.target)
+                .map_err(|_| {
+                    wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))
+                })
+                .unwrap()
+                .into(),
             GetOptions::default(),
         ))
         .collect();
@@ -82,7 +91,13 @@ pub fn remove_criterion_for_proposal(
     for link in links {
         let me: AgentPubKey = agent_info()?.agent_latest_pubkey.into();
         if link.author == me {
-            if ActionHash::try_from(link.target.clone()).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap().eq(&input.target_criterion_hash) {
+            if ActionHash::try_from(link.target.clone())
+                .map_err(|_| {
+                    wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))
+                })
+                .unwrap()
+                .eq(&input.target_criterion_hash)
+            {
                 delete_link(link.create_link_hash)?;
             }
         }

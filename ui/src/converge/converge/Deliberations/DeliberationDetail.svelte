@@ -24,6 +24,8 @@ import AttachmentsList from '../../../AttachmentsList.svelte';
 import { type HrlB64WithContext, isWeContext } from '@lightningrodlabs/we-applet';
 import Avatar from '../Avatar.svelte';
 import SvgIcon from "../../../SvgIcon.svelte";
+import { weClientStored } from '../../../store.js';
+    import { hrlB64WithContextToRaw, hrlWithContextToB64 } from '../../../util';
 
 const dispatch = createEventDispatcher();
 
@@ -63,6 +65,10 @@ let sortByOptions = [
 let criteriaSort = "support";
 let proposalSort;
 let attachments: HrlB64WithContext[] = [];
+let weClient;
+weClientStored.subscribe(value => {
+  weClient = value;
+});
 
 $: editing, error, loading, record, deliberation, activeTab, criterionFormPopup, proposalFormPopup, criteriaCount, proposalCount, criteriaFilter, proposalFilter, criteriaSort, proposalSort;
 
@@ -297,49 +303,76 @@ async function leaveDeliberation() {
 </div>
 {/if}
 
-<div style="display: flex; flex-direction: column">
+<div style="display: flex; flex-direction: column;">
   <!-- <div style="display: flex; flex-direction: row">
     <span style="flex: 1"></span>
     <mwc-icon-button style="margin-left: 8px" icon="edit" on:click={() => { editing = true; } }></mwc-icon-button>
     <mwc-icon-button style="margin-left: 8px" icon="delete" on:click={() => deleteDeliberation()}></mwc-icon-button>
   </div> -->
-
-  <div style="display: flex; flex-direction: row; margin-bottom: 0px">
-    <h1 style="margin-top: 4px; margin-bottom:4px">{ deliberation.title }</h1>
-  </div>
-  
-  <div style="display: flex; flex-direction: row; margin-bottom: 6px">
-    <span style="white-space: pre-line">{ deliberation.description }</span>
-  </div>
-
-  {#if isWeContext}
-    <div style="display: flex; flex-direction: row; margin-bottom: 5px">
-      <AttachmentsList {attachments} allowDelete={false}/>
-    </div>
-  {/if}
-  
-  <div style="display: flex; flex-direction: row; width: fit-content; margin-bottom: 6px;">
-    
-    {#each deliberatorsRaw as deliberator}
-      <div class="avatar-overlap">
-        <Avatar showNickname={false} agentPubKey={deliberator}  size={24} namePosition="row"></Avatar>
+  <div style="display: flex; flex-direction: row; justify-content: space-between;">
+    <div style="display: flex; flex-direction: column">
+      <div style="display: flex; flex-direction: row; margin-bottom: 0px">
+        <h1 style="margin-top: 4px; margin-bottom:4px">{ deliberation.title }</h1>
       </div>
-    {/each}
-    
-    {#if deliberators.includes(client.myPubKey.join(','))}
-    <mwc-button style="cursor: pointer; width: fit-content; display:flex; flex-direction: column;" on:click={leaveDeliberation}>Leave</mwc-button>
-    {:else}
-    <mwc-button on:click={newActivity}>Join</mwc-button>
-    {/if}
-    
-    <!-- &nbsp;|&nbsp;&nbsp; -->
-    
-    <!-- {deliberators.length} 
-    {#if deliberators.length == 1} participant{:else} participants{/if} -->
+      
+      <div style="display: flex; flex-direction: row; margin-bottom: 6px">
+        <span style="white-space: pre-line">{ deliberation.description }</span>
+      </div>
 
+      {#if isWeContext}
+        <div style="display: flex; flex-direction: row; margin-bottom: 5px">
+          <AttachmentsList {attachments} allowDelete={false}/>
+        </div>
+      {/if}
+      
+      <div style="display: flex; flex-direction: row; width: fit-content; margin-bottom: 6px;">
+        
+        {#each deliberatorsRaw as deliberator}
+          <div class="avatar-overlap">
+            <Avatar showNickname={false} agentPubKey={deliberator}  size={24} namePosition="row"></Avatar>
+          </div>
+        {/each}
+        
+        {#if deliberators.includes(client.myPubKey.join(','))}
+        <mwc-button style="cursor: pointer; width: fit-content; display:flex; flex-direction: column;" on:click={leaveDeliberation}>Leave</mwc-button>
+        {:else}
+        <mwc-button on:click={newActivity}>Join</mwc-button>
+        {/if}
+        
+        <!-- &nbsp;|&nbsp;&nbsp; -->
+        
+        <!-- {deliberators.length} 
+        {#if deliberators.length == 1} participant{:else} participants{/if} -->
+
+      </div>
+    </div>
+      
+    <div style="display: flex; flex-direction: row; float: right; width: min-content; flex-shrink:0; align-self:start">
+      {#if isWeContext && deliberation.discussion}
+        {@const conversation = {
+          hrl: JSON.parse(deliberation.discussion.hrl),
+          context: deliberation.discussion.context
+        }}
+        {#await weClient.attachableInfo(hrlB64WithContextToRaw(conversation))}
+          <sl-button size="small" loading></sl-button>
+        {:then { attachableInfo }}
+        <button style="display: flex; flex-direction: row; float: right; width: min-content; flex-shrink:0; align-self:start; padding: 8px 10px; margin: 6px; cursor: pointer;"
+          on:click={(e)=>{
+            e.stopPropagation()
+            activeTab = "discussion"
+            const hrlWithContext = hrlB64WithContextToRaw(conversation)
+            weClient.openHrl(hrlWithContext)
+            // weClient.openAppletBlock(hrlWithContext.hrl[0], "active_boards", hrlWithContext.context)
+          }} >
+            <SvgIcon icon="faComments" size="21px"/>
+            <!-- Discussion -->
+          </button>
+        {:catch error}
+          Oops. something's wrong.
+        {/await}
+      {/if}
+      </div>
   </div>
-    
-  <!-- </div> -->
 
   <div class="deliberation-section">
     <mwc-tab-bar>

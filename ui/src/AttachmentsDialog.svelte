@@ -97,7 +97,7 @@
   
   <!-- <button on:click={() => {dialog.show(); bind.refresh()}}>
     <SvgIcon icon=faPlus size=16/>
-  </button> -->
+  </button>
 
   <sl-dialog label="Create bound item from:" bind:this={dialog}>
     <AttachmentsBind
@@ -107,7 +107,7 @@
       _addAttachment(e.detail);
     }}
     />
-  </sl-dialog>
+  </sl-dialog> -->
     
   <div style="display:block; width: 100%">
     <AttachmentsList attachments={attachments}

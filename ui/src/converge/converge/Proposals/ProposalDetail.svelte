@@ -11,11 +11,14 @@ import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
 import { view, viewHash, navigate } from '../../../store.js';
 import RateCriteria from './RateCriteria.svelte';
+import { type HrlB64WithContext, isWeContext } from '@lightningrodlabs/we-applet';
+import AttachmentsList from '../../../AttachmentsList.svelte';
 
 const dispatch = createEventDispatcher();
 
 export let proposalHash: ActionHash;
 let deliberationHash: ActionHash | undefined;
+let attachments = [];
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
@@ -63,6 +66,12 @@ async function fetchProposal() {
     });
     if (record) {
       proposal = decode((record.entry as any).Present.entry) as Proposal;
+      attachments = proposal.attachments?.map((attachment) => {
+        return {
+          hrl: JSON.parse(attachment.hrl),
+          context: attachment.context
+        }
+      })
     }
   } catch (e) {
     error = e;
@@ -161,6 +170,13 @@ flex: 1;"> -->
   <!-- <div class="deliberation-section" style="display: flex; flex-direction: row; margin-bottom: 16px"> -->
     <!-- <span style="margin-right: 4px"><strong>Evaluate criteria</strong></span> -->
   <!-- </div> -->
+
+  {#if isWeContext}
+    <div style="display: flex; flex-direction: row; margin-bottom: 5px">
+      <AttachmentsList {attachments} allowDelete={false}/>
+    </div>
+  {/if}
+
   <div style="flex-direction: row; margin-bottom: 16px">
     <h2 style="margin-bottom: 0; margin-top: 30px;">Evaluate</h2>
     <span style="white-space: pre-line">

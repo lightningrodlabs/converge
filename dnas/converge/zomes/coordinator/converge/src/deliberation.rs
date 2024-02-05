@@ -34,7 +34,13 @@ pub fn get_deliberation(
         .into_iter()
         .max_by(|link_a, link_b| link_a.timestamp.cmp(&link_b.timestamp));
     let latest_deliberation_hash = match latest_link {
-        Some(link) => ActionHash::try_from(link.target.clone()).map_err(|_| wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))).unwrap(),
+        Some(link) => {
+            ActionHash::try_from(link.target.clone())
+                .map_err(|_| {
+                    wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))
+                })
+                .unwrap()
+        }
         None => original_deliberation_hash.clone(),
     };
     get(latest_deliberation_hash, GetOptions::default())
