@@ -356,7 +356,7 @@ async function leaveDeliberation() {
         {#await weClient.attachableInfo(hrlB64WithContextToRaw(conversation))}
           <sl-button size="small" loading></sl-button>
         {:then { attachableInfo }}
-        <button style="display: flex; flex-direction: row; float: right; width: min-content; flex-shrink:0; align-self:start; padding: 8px 10px; margin: 6px; cursor: pointer;"
+        <button class="discussion-button"
           on:click={(e)=>{
             e.stopPropagation()
             activeTab = "discussion"
@@ -364,7 +364,7 @@ async function leaveDeliberation() {
             weClient.openHrl(hrlWithContext)
             // weClient.openAppletBlock(hrlWithContext.hrl[0], "active_boards", hrlWithContext.context)
           }} >
-            <SvgIcon icon="faComments" size="21px"/>
+            <SvgIcon icon="faComments" size="22px"/>
             <!-- Discussion -->
           </button>
         {:catch error}
@@ -443,3 +443,20 @@ async function leaveDeliberation() {
   <AllProposals on:proposal-rated={newActivity} sort={proposalSort} deliberationHash={deliberationHash} filter={proposalFilter} bind:proposalCount/>
 {/if}
 {/if}
+
+<style lang="css">
+  .discussion-button {
+    display: flex;
+    flex-direction: row;
+    float: right;
+    width: min-content;
+    flex-shrink: 0;
+    align-self: start;
+    padding: 14px 18px;
+    margin-left: 6px;
+    cursor: pointer;
+    border: 0px;
+    border-radius: 10px;
+    /* background-color: #925ace; */
+  }
+</style>
