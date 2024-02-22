@@ -37,12 +37,6 @@
             "joiningAgents": [2]
           },
           {
-            "name": "threads",
-            "instanceName": "threads",
-            "registeringAgent": 1,
-            "joiningAgents": [2]
-          },
-          {
             "name": "kando",
             "instanceName": "kando",
             "registeringAgent": 1,
