@@ -32,7 +32,7 @@ let attachments: Array<HrlB64WithContext> = [];
 let errorSnackbar: Snackbar;
 // let threadsInfos: HoloHashMap<EntryHash, AppletInfo> = new HoloHashMap
 let discussionApps = {};
-let selectedDiscussionApp: string;
+let selectedDiscussionApp: string = "none";
 let attachmentTypes = [];
 let dna;
 
@@ -189,6 +189,7 @@ async function createDeliberation() {
   </div> -->
 
   {#if isWeContext}
+    {#if false}
     <div style="display:flex; flex-wrap:wrap; align-items: center; margin-bottom:10px;">
       <!-- {JSON.stringify(discussionApps[0])} -->
       <!-- dropdown selector for discussion apps -->
@@ -206,6 +207,7 @@ async function createDeliberation() {
         <option value="none">No discussion</option>
       </select>
     </div>
+    {/if}
     <div style="display:flex; flex-wrap:wrap; align-items: center; margin-bottom:10px;">
       <label>Attachments &nbsp;
       </label>
