@@ -21,6 +21,7 @@
   export let criterionHash: ActionHash;
   export let criterionPopupBoolean: boolean;
   export let deliberationHash: ActionHash;
+  export let showSlider: boolean;
   
   let client: AppAgentClient = (getContext(clientContext) as any).getClient();
   
@@ -186,6 +187,10 @@
     }
     loading = false;
   }
+
+  function reference(e) {
+    console.log(e)
+  }
   </script>
   
   {#if false}
@@ -275,7 +280,7 @@
   
   
   <!-- COMMENTS STARTS -->
-  <CriterionCommentsForCriterion {criterion} {criterionHash} {objections} {alternatives} {deliberationHash} {mySupport} on:transfer={(e) => {
+  <CriterionCommentsForCriterion {showSlider} {criterion} {criterionHash} {objections} {alternatives} {deliberationHash} {mySupport} on:transfer={(e) => {
     dispatch('transfer', e.detail);
   }}>
   </CriterionCommentsForCriterion>

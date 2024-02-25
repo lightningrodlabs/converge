@@ -228,6 +228,11 @@ async function createCriterionCommentCustom(inputComment, comment_reference, obj
     <div style="cursor: pointer; display:flex; flex-direction: column; align-items:end;" on:click={()=>{commentReference = undefined}}>✖</div>
   </div>
   {/if}
+  {#if commentIsAnObjection}
+    <span class="instructions">
+      This comment will appear as an objection, and the criterion score will be reduced until your objection is removed.
+    </span>
+  {/if}
   <div class="chat-input-container" style={commentIsAnObjection ? "border: 2px solid red;" : ""}>
     <textarea
       class="chat-input"

@@ -177,6 +177,8 @@ body {
   padding: 20px;
   border-radius: 4px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  max-height: calc(100vh - 4em);
+  overflow: auto;
 }
 
 .star-slider {
@@ -380,4 +382,11 @@ mwc-slider[disabled] .mdc-slider__thumb-knob {
   position: relative;
   top: 4px;
   color: #757575;
+}
+
+.criterion-side-list {
+  margin: 1em;
+  max-height: calc(100vh - 4em);
+  overflow: auto;
+  /* max-width: 32vw; */
 }

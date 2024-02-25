@@ -10,13 +10,16 @@ import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-textarea';
 import '@material/mwc-textfield';
 import AttachmentsDialog from "../../../AttachmentsDialog.svelte"
+    import Criterion from '../Criteria/Criterion.svelte';
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 let attachmentsDialog : AttachmentsDialog
 let attachments: Array<HrlB64WithContext> = [];
-const dispatch = createEventDispatcher();
-
+  let showCriteria = true;
+  const dispatch = createEventDispatcher();
+  
 export let deliberationHash: ActionHash;
+export let sortedCriteria = [];
 
 export let proposalFormPopup; // Prop to control popup visibility
 function dismissPopup() {
@@ -30,7 +33,7 @@ let description: string = '';
 
 let errorSnackbar: Snackbar;
 
-$: title, description, proposalFormPopup;
+$: title, description, proposalFormPopup, sortedCriteria;
 $: isProposalValid = true && title !== '' && description !== '';
 
 function checkKey(e) {
@@ -38,6 +41,11 @@ function checkKey(e) {
     e.preventDefault();
     dismissPopup();
   }
+}
+
+function reference(r) {
+  // add r to description
+  description += "\n" + r + ":\n";
 }
 
 onMount(() => {
@@ -80,7 +88,27 @@ async function createProposal() {
 </script>
 {#if proposalFormPopup}
 <div class="backdrop">
-  <div class="popup-container">
+  {#if sortedCriteria.length > 0 && showCriteria}
+    <div class="popup-container criterion-side-list">
+      <button
+      style="
+        display: inline-block;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        border: none;
+        padding: 2px 8px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        
+        width: fit-content;"
+      on:click={() => showCriteria = false}>&times; hide criteria</button>
+      {#each sortedCriteria as c}
+        <Criterion criterionHash={c} {reference} showSlider={false} />
+      {/each}
+    </div>
+  {/if}
+  <div class="popup-container" style="min-width: fit-content;">
 
       <mwc-snackbar bind:this={errorSnackbar} leading>
       </mwc-snackbar>
@@ -89,7 +117,6 @@ async function createProposal() {
         </mwc-snackbar>
         <div style="display: flex; flex-direction: column">
           <h2 style="font-size: 18px">Create Proposal</h2>
-          
 
           <div style="margin-bottom: 16px">
             <mwc-textfield style="width: 50vw" outlined label="Title" value={ title } on:input={e => { title = e.target.value;} } required></mwc-textfield>          
@@ -108,6 +135,23 @@ async function createProposal() {
             }
           }></AttachmentsDialog>
                     
+          {#if sortedCriteria.length > 0 && !showCriteria}
+            <button
+              style="
+              display: inline-block;
+              margin-top: 10px;
+              border: none;
+              padding: 2px 8px;
+              border-radius: 4px;
+              cursor: pointer;
+              font-size: 16px;
+              
+              width: fit-content;"
+              on:click={() => showCriteria = true}>
+              + show criteria
+            </button>
+          {/if}
+
           <label class="instructions">Warning: you will not be able to edit the above details after creating.</label>
 
           <div style="display: flex; flex-direction: row">

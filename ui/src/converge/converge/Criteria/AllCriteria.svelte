@@ -9,6 +9,7 @@ import type { ConvergeSignal } from '../types';
 export let deliberationHash: ActionHash;
 export let criteriaCount = 0;
 export let filter;
+export let sortedCriteria = [];
 export let sort;
 
 const dispatch = createEventDispatcher();
@@ -19,7 +20,6 @@ let hashes: Array<ActionHash> | undefined;
 let loading = true;
 let error: any = undefined;
 let sortableCriteria = {};
-let sortedCriteria = [];
 
 async function sortCriteria() {
 // setTimeout(() => {

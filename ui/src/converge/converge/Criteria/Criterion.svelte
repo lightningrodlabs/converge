@@ -16,10 +16,12 @@ import CriterionPopup from './CriterionPopup.svelte';
 
 const dispatch = createEventDispatcher();
 
+export let showSlider: boolean = true;
 export let deliberationHash: ActionHash;
 export let criterionHash: ActionHash;
 export let sortableCriteria;
 export let filter;
+export let reference;
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
@@ -53,17 +55,19 @@ onMount(async () => {
   await fetchObjections();
   console.log(objections)
   let criterionHashKey = criterionHash.join(',')
-  sortableCriteria[criterionHashKey] = {
-    objections: objections.length,
-    support: support,
-    hash: criterionHash,
-    comments: commentsNumber,
-    weight: support / supporters.length,
-    supporters: supporters.length,
-    mySupport: mySupport,
-    myObjections: objections.filter(item => item.agent.join(",") === client.myPubKey.join(",")).length,
-  };
-  // console.log(sortableCriteria)
+  if (showSlider) {
+    sortableCriteria[criterionHashKey] = {
+      objections: objections.length,
+      support: support,
+      hash: criterionHash,
+      comments: commentsNumber,
+      weight: support / supporters.length,
+      supporters: supporters.length,
+      mySupport: mySupport,
+      myObjections: objections.filter(item => item.agent.join(",") === client.myPubKey.join(",")).length,
+    };
+  }
+    // console.log(sortableCriteria)
 
   client.on('signal', signal => {
     if (signal.zome_name !== 'converge') return;
@@ -320,100 +324,102 @@ async function scrollToDiv() {
 
   </div>
 
-  <div style="display: flex; flex-direction: column; margin-bottom: 16px; font-size: .8em"
-  on:mouseenter={e => {
-    openSupport = true
-  }}
-  on:mouseleave={e => {
-    openSupport = false
-  }}>
-      {#if openSupport}
-        <div style="text-align: center; flex-direction: row; font-size: 1em">
-          <span style="white-space: pre-line;">How important is this criterion to you?</span>
-        </div>
-        <div style="display: flex; flex-direction: row;  font-size: .8em">
-        <!-- <input type="number" bind:value={support} /> -->
-          <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative;">NOT
-          IMPORTANT</span>
-          <mwc-slider
+  {#if showSlider}
+    <div style="display: flex; flex-direction: column; margin-bottom: 16px; font-size: .8em"
+    on:mouseenter={e => {
+      openSupport = true
+    }}
+    on:mouseleave={e => {
+      openSupport = false
+    }}>
+        {#if openSupport}
+          <div style="text-align: center; flex-direction: row; font-size: 1em">
+            <span style="white-space: pre-line;">How important is this criterion to you?</span>
+          </div>
+          <div style="display: flex; flex-direction: row;  font-size: .8em">
+          <!-- <input type="number" bind:value={support} /> -->
+            <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative;">NOT
+            IMPORTANT</span>
+            <mwc-slider
+              style="--mdc-theme-primary: blue;"
+              on:change={e => {
+                addSupportPercentage = e.detail.value
+                mySupport = addSupportPercentage / scoringLevel;
+                console.log(addSupportPercentage, mySupport)
+                if (addSupportPercentage == 0) {
+                  removeSupport()
+                } else {
+                  addSupport()
+                }
+              }}
+              value={addSupportPercentage}
+              withTickMarks
+              discrete
+              class="star-slider"
+              step="1"
+              max="4"
+              >
+            </mwc-slider>
+            <span style="white-space: pre-line; text-align: center; top: 12px; position: relative;">VERY
+              IMPORTANT</span>
+          </div>
+          <!-- <div style="text-align: center; flex-direction: row; mfont-size: .8em"> -->
+            <!-- <button on:click={() => openSupport = false}>Cancel</button> -->
+            <!-- <mwc-button dense outlined on:click={() => openSupport = false}>Cancel</mwc-button> -->
+            
+            <!-- <button on:click={() => addSupport()}>Save</button> -->
+            <!-- <mwc-button class="custom-button" dense raised on:click={() => addSupport()}>Save</mwc-button> -->
+          <!-- </div> -->
+        {:else if sponsored}
+          <!-- <div style="display: flex; flex-direction: row; margin-bottom: 16px; font-size: .8em">
+            <mwc-button dense outlined on:click={() => removeSupport()}>Remove Support</mwc-button>
+          </div> -->
+          <div style="text-align: center; flex-direction: row; font-size: 1em;">
+            <span style="white-space: pre-line; opacity: 0;">Importance to you:</span>
+          </div>
+          <div style="display: flex; flex-direction: row; font-size: .8em">
+            <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative; opacity: 0">NOT
+              IMPORTANT</span>
+            <mwc-slider
             style="--mdc-theme-primary: blue;"
-            on:change={e => {
-              addSupportPercentage = e.detail.value
-              mySupport = addSupportPercentage / scoringLevel;
-              console.log(addSupportPercentage, mySupport)
-              if (addSupportPercentage == 0) {
-                removeSupport()
-              } else {
-                addSupport()
-              }
-            }}
-            value={addSupportPercentage}
-            withTickMarks
-            discrete
+            value={mySupport * scoringLevel}
             class="star-slider"
             step="1"
             max="4"
             >
           </mwc-slider>
-          <span style="white-space: pre-line; text-align: center; top: 12px; position: relative;">VERY
+          <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative; opacity: 0;">VERY
             IMPORTANT</span>
-        </div>
-        <!-- <div style="text-align: center; flex-direction: row; mfont-size: .8em"> -->
-          <!-- <button on:click={() => openSupport = false}>Cancel</button> -->
-          <!-- <mwc-button dense outlined on:click={() => openSupport = false}>Cancel</mwc-button> -->
-          
-          <!-- <button on:click={() => addSupport()}>Save</button> -->
-          <!-- <mwc-button class="custom-button" dense raised on:click={() => addSupport()}>Save</mwc-button> -->
-        <!-- </div> -->
-      {:else if sponsored}
-        <!-- <div style="display: flex; flex-direction: row; margin-bottom: 16px; font-size: .8em">
-          <mwc-button dense outlined on:click={() => removeSupport()}>Remove Support</mwc-button>
-        </div> -->
-        <div style="text-align: center; flex-direction: row; font-size: 1em;">
-          <span style="white-space: pre-line; opacity: 0;">Importance to you:</span>
-        </div>
-        <div style="display: flex; flex-direction: row; font-size: .8em">
-          <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative; opacity: 0">NOT
+          </div>
+        {:else}
+          <div style="text-align: center; flex-direction: row; font-size: 1em; opacity: 0;">
+            <span style="white-space: pre-line;">How important is this criterion to you?</span>
+          </div>
+          <div style="display: flex; flex-direction: row; font-size: .8em">
+            <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative; opacity: 0">NOT
+              IMPORTANT</span>
+            <mwc-slider
+            style="--mdc-theme-primary: blue;"
+            disabled=true
+            value={addSupportPercentage}
+            class="star-slider"
+            step="1"
+            max="4"
+            >
+          </mwc-slider>
+          <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative; opacity: 0;">VERY
             IMPORTANT</span>
-          <mwc-slider
-          style="--mdc-theme-primary: blue;"
-          value={mySupport * scoringLevel}
-          class="star-slider"
-          step="1"
-          max="4"
-          >
-        </mwc-slider>
-        <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative; opacity: 0;">VERY
-          IMPORTANT</span>
-        </div>
-      {:else}
-        <div style="text-align: center; flex-direction: row; font-size: 1em; opacity: 0;">
-          <span style="white-space: pre-line;">How important is this criterion to you?</span>
-        </div>
-        <div style="display: flex; flex-direction: row; font-size: .8em">
-          <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative; opacity: 0">NOT
-            IMPORTANT</span>
-          <mwc-slider
-          style="--mdc-theme-primary: blue;"
-          disabled=true
-          value={addSupportPercentage}
-          class="star-slider"
-          step="1"
-          max="4"
-          >
-        </mwc-slider>
-        <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative; opacity: 0;">VERY
-          IMPORTANT</span>
-          <!-- <button on:click={() => openSupport = true}>Add Support</button> -->
-          <!-- <mwc-button class="custom-button" dense outlined on:click={() => openSupport = true}>Add support</mwc-button> -->
+            <!-- <button on:click={() => openSupport = true}>Add Support</button> -->
+            <!-- <mwc-button class="custom-button" dense outlined on:click={() => openSupport = true}>Add support</mwc-button> -->
 
-        <!-- <button on:click={() => addSupport()}>Add Support</button> -->
-        </div>
-      {/if}
-  </div>
+          <!-- <button on:click={() => addSupport()}>Add Support</button> -->
+          </div>
+        {/if}
+    </div>
+  {/if} 
+  <!-- SLIDER END -->
 
-
-      <!-- OBJECT BUTTON -->
+  <!-- COMMENTS BUTTON -->
   <div style="flex-direction: column; font-size: .8em; width: 100%; text-align: right;">
     <button style="height: 80%; width: 80px; 
     background-color: transparent;
@@ -436,16 +442,29 @@ async function scrollToDiv() {
       {/if}
     {/if}
     </button>
+
+    {#if !showSlider}
+      <button style="height: 80%;
+      background-color: transparent;
+      border: none;"
+      on:click={() => reference(criterion.title)}
+      >
+      <mwc-icon-button style="top: 8px; position: relative; background-color: #f1f1f1; border-radius: 100%; --mdc-icon-size: 10px;">
+          <span style="font-size: 12px; top: -2px; left: -9px; position: relative;">Insert</span>
+      </mwc-icon-button>
+      </button>
+    {/if}
   </div>
 
 </div>
 </div>
-<!-- <div style="display: flex; flex-direction: row;"> -->
-  <!-- hi -->
-  <CriterionPopup on:switched-tab={scrollToDiv} {criterionHash} {objections} {deliberationHash} bind:criterionPopupBoolean {criterion} {supporters} {sponsored} {support} {addSupportPercentage} {mySupport} on:transfer={(e) => {
-    dispatch('transfer', e.detail);
-  }} />
-<!-- </div> -->
+  <!-- {#if showSlider} -->
+  <!-- <div style="display: flex; flex-direction: row;"> -->
+    <CriterionPopup on:switched-tab={scrollToDiv} {criterionHash} {objections} {deliberationHash} {showSlider} bind:criterionPopupBoolean {criterion} {supporters} {sponsored} {support} {addSupportPercentage} {mySupport} on:transfer={(e) => {
+      dispatch('transfer', e.detail);
+    }} />
+  <!-- </div> -->
+  <!-- {/if} -->
 </div>
 {/if}
 {/if}

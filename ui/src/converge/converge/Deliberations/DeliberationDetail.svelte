@@ -52,6 +52,7 @@ let criteriaCount = 0;
 let criteriaFilter;
 let proposalFilter;
 let proposalCount = 0;
+let sortedCriteria;
 let detectSort;
 
 let sortByOptions = [
@@ -70,7 +71,7 @@ weClientStored.subscribe(value => {
   weClient = value;
 });
 
-$: editing, error, loading, record, deliberation, activeTab, criterionFormPopup, proposalFormPopup, criteriaCount, proposalCount, criteriaFilter, proposalFilter, criteriaSort, proposalSort;
+$: editing, error, loading, record, deliberation, activeTab, criterionFormPopup, proposalFormPopup, criteriaCount, proposalCount, criteriaFilter, proposalFilter, criteriaSort, proposalSort, sortedCriteria;
 
 onMount(async () => {
   if (deliberationHash === undefined) {
@@ -423,7 +424,7 @@ async function leaveDeliberation() {
   <br><br>
   <!-- {#if criteriaSort == "support"} -->
   
-  <AllCriteria on:criterion-rated={newActivity} deliberationHash={deliberationHash} filter={criteriaFilter} sort={criteriaSort} bind:criteriaCount />
+  <AllCriteria on:criterion-rated={newActivity} deliberationHash={deliberationHash} filter={criteriaFilter} sort={criteriaSort} bind:sortedCriteria bind:criteriaCount />
   <!-- {:else if criteriaSort == "objections"}
   <AllCriteria deliberationHash={deliberationHash} filter={criteriaFilter} sort="objections" bind:criteriaCount />
   {/if} -->
@@ -444,7 +445,7 @@ async function leaveDeliberation() {
   <!-- <div class="search-button"><FaSearch/></div> -->
   <mwc-button raised on:click={() => {proposalFormPopup = true; console.log(proposalFormPopup)}} class="add-button">Add proposal</mwc-button>
 
-  <CreateProposal on:proposal-created={newActivity} deliberationHash={deliberationHash} bind:proposalFormPopup/>
+  <CreateProposal on:proposal-created={newActivity} {deliberationHash} {sortedCriteria} bind:proposalFormPopup/>
   <br><br>
 
   

@@ -14,6 +14,7 @@ export let criterionHash: ActionHash;
 export let objections;
 export let alternatives;
 export let deliberationHash;
+export let showSlider;
 export let mySupport;
 
 const dispatch = createEventDispatcher();
@@ -32,13 +33,13 @@ let commentIsAnObjection: boolean = false;
 $: hashes, loading, error, chatWindow;
 
 async function scrollToBottom() {
-  // if (chatWindow) {
+  if (chatWindow) {
     await new Promise(res => setTimeout(res, 100));
     chatWindow.scrollTop = chatWindow.scrollHeight;
     await new Promise(res => setTimeout(res, 500));
     chatWindow.scrollTop = chatWindow.scrollHeight;
     console.log(chatWindow.scrollTop, chatWindow.scrollHeight, chatWindow)
-  // }
+  }
 }
 
 onMount(async () => {
@@ -172,21 +173,26 @@ async function removeObjection() {
 
   <div style="display: flex; flex-direction: row">
 
-<CreateAlternative {criterionHash} {deliberationHash} {mySupport} {alternatives}></CreateAlternative>
+  {#if showSlider}
+    <CreateAlternative {criterionHash} {deliberationHash} {mySupport} {alternatives}></CreateAlternative>
 
-<!-- <div style="flex-align: center; position: relative;
-bottom: -7px;
-left: 6px;"> -->
-<div>
-  <!-- <mwc-switch on:click={(e) => {console.log(e.target)}} name="choice"></mwc-switch>  -->
-  <mwc-formfield style="padding: 10px;" label="Submit comment as objection to the criterion">
-    <input type="checkbox" bind:checked={commentIsAnObjection} />
-    </mwc-formfield>
-</div>
+    <!-- <div style="flex-align: center; position: relative;
+    bottom: -7px;
+    left: 6px;"> -->
+    <div>
+      <!-- <mwc-switch on:click={(e) => {console.log(e.target)}} name="choice"></mwc-switch>  -->
+      <mwc-formfield style="padding: 10px;" label="Submit comment as objection to the criterion">
+        <input type="checkbox" bind:checked={commentIsAnObjection} />
+        </mwc-formfield>
+    </div>
+  {/if}
+
 </div>
 
-<CreateCriterionComment on:criterion-comment-created={commentReference=undefined} {criterionHash} {commentReference} bind:commentIsAnObjection></CreateCriterionComment>
-<!-- <div style="margin-bottom: 16px">
-  <mwc-textarea style="width: 35vw; height: 100px" outlined label="Comment" on:input={e => { objection = e.target.value; console.log(objection)}} required></mwc-textarea>          
-</div> -->
-<!-- <mwc-button on:click = {() => {addObjection()}}>Submit</mwc-button> -->
+<!-- {#if showSlider} -->
+  <CreateCriterionComment on:criterion-comment-created={commentReference=undefined} {criterionHash} {commentReference} bind:commentIsAnObjection></CreateCriterionComment>
+  <!-- <div style="margin-bottom: 16px">
+    <mwc-textarea style="width: 35vw; height: 100px" outlined label="Comment" on:input={e => { objection = e.target.value; console.log(objection)}} required></mwc-textarea>          
+  </div> -->
+  <!-- <mwc-button on:click = {() => {addObjection()}}>Submit</mwc-button> -->
+<!-- {/if} -->

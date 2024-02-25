@@ -66,6 +66,7 @@
         return {}
       }
     } catch (e) {
+      console.log(e)
       error = e;
     }
   }
@@ -86,6 +87,7 @@
         return {title: a.title, hash: record.signed_action.hashed.hash}
       })
     } catch (e) {
+      console.log(e)
       error = e;
     }
     loading = false;
@@ -184,7 +186,7 @@
     <mwc-circular-progress indeterminate></mwc-circular-progress>
   </div>
   {:else if error}
-  <span>Error fetching criteria: {error.data.data}.</span>
+  <span>Error fetching criteria: {error}.</span>
   {:else if allCriteria && allCriteria.length === 0}
   <span>No criteria found for this criterion.</span>
   {:else if alternatives && allCriteria}
