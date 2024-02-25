@@ -182,9 +182,10 @@ nav logo {
 }
 
 .logo-image.small {
-  width: 22px;
+  width: 1.7em;
   margin: 1px 6px 0 -4px;
   padding: 1px;
+  box-shadow: none;
 }
 
 .icon {

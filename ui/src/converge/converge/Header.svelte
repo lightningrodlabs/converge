@@ -1,5 +1,6 @@
 <script lang="ts">
-  import Logo from "../../assets/logo.png";
+  // import Logo from "../../assets/logo.png";
+  import Logo from "../../assets/logo.svg";
   import FaPlusCircle from 'svelte-icons/fa/FaPlusCircle.svelte';
   import FaBell from 'svelte-icons/fa/FaBell.svelte';
   import FaBullhorn from 'svelte-icons/fa/FaBullhorn.svelte';
@@ -65,8 +66,9 @@
       letter-spacing: 3.15px;
       padding: 4px 10px;
       border-radius: 100px;
-      border: 2px solid black;
+      /* border: 2px solid black; */
     }
+
     #subtitle {
       font-size: 12px;
       font-weight: 600;
@@ -102,7 +104,11 @@
             {:else}
             <a id="logo" class="navbar-brand" on:click={() => navigate("instructions")}>
 
-            <h1 id="converge-title">Converge<img id="minilogo" class="logo-image small" src={Logo} alt="whos-in logo"/>
+            <h1 id="converge-title" style="display: flex;
+            align-items: center;
+            ">
+              <img id="minilogo" class="logo-image small" src={Logo} alt="whos-in logo"/>
+              <span>Converge</span>
               <!-- <small id="subtitle">&nbsp;for Moss</small> -->
             </h1>
             </a>
