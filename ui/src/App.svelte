@@ -65,15 +65,18 @@
     if (!isWeContext()) {
       console.log("adminPort is", adminPort)
       if (adminPort) {
-        const adminWebsocket = await AdminWebsocket.connect(new URL(`ws://localhost:${adminPort}`))
+        const url = `ws://localhost:${adminPort}`
+        console.log("connecting to admin port at:", url)
+        const adminWebsocket = await AdminWebsocket.connect({url: new URL(url)})
         const x = await adminWebsocket.listApps({})
         console.log("apps", x)
         const cellIds = await adminWebsocket.listCellIds()
         console.log("CELL IDS",cellIds)
         await adminWebsocket.authorizeSigningCredentials(cellIds[0])
+
       }
       console.log("appPort and Id is", appPort, appId)
-      client = await AppAgentWebsocket.connect(new URL(url), appId)
+      client = await AppAgentWebsocket.connect(appId,{url: new URL(url)})
       profilesClient = new ProfilesClient(client, appId);
     
       // client = await AppAgentWebsocket.connect('', 'dcan');

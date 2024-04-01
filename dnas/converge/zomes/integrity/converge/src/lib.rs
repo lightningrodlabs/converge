@@ -27,14 +27,14 @@ pub use deliberation::*;
 use hdi::prelude::*;
 #[derive(Serialize, Deserialize)]
 #[serde(tag = "type")]
-#[hdk_entry_defs]
+#[hdk_entry_types]
 #[unit_enum(UnitEntryTypes)]
 pub enum EntryTypes {
     Deliberation(Deliberation),
     Criterion(Criterion),
     Proposal(Proposal),
     CriterionComment(CriterionComment),
-    #[entry_def(name = "Settings", visibility = "private")]
+    #[entry_type(name = "Settings", visibility = "private")]
     Settings(Settings),
 }
 #[derive(Serialize, Deserialize)]

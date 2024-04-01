@@ -1,9 +1,11 @@
 use hdk::prelude::*;
 use converge_integrity::*;
+use zome_utils::*;
+
 #[hdk_extern]
 pub fn get_all_criteria(_: ()) -> ExternResult<Vec<Record>> {
     let path = Path::from("all_criteria");
-    let links = get_links(path.path_entry_hash()?, LinkTypes::AllCriteria, None)?;
+    let links = get_links(link_input(path.path_entry_hash()?, LinkTypes::AllCriteria, None))?;
     let get_input: Vec<GetInput> = links
         .into_iter()
         .map(|link| GetInput::new(

@@ -1,5 +1,7 @@
 use hdk::prelude::*;
 use converge_integrity::*;
+use zome_utils::*;
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CreateCriterionCommentInput {
     pub criterion_comment: CriterionComment,
@@ -30,11 +32,11 @@ pub fn create_criterion_comment(
 pub fn get_criterion_comment(
     original_criterion_comment_hash: ActionHash,
 ) -> ExternResult<Option<Record>> {
-    let links = get_links(
+    let links = get_links(link_input(
         original_criterion_comment_hash.clone(),
         LinkTypes::CriterionCommentUpdates,
         None,
-    )?;
+    ))?;
     let latest_link = links
         .into_iter()
         .max_by(|link_a, link_b| link_a.timestamp.cmp(&link_b.timestamp));

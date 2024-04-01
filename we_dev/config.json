@@ -52,7 +52,7 @@
         "description": "Let's do it!",
         "icon": {
           "type": "filesystem",
-          "path": "/home/leo/hApps/converge/we_dev/logo.png"
+          "path": "/home/leo/hApps/converge/we_dev/converge.svg"
         },
         "source": {
           "type": "localhost",

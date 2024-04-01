@@ -1,5 +1,7 @@
 use hdk::prelude::*;
 use converge_integrity::*;
+use zome_utils::*;
+
 use std::collections::HashSet;
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AddCriterionForCriterionInput {
@@ -22,7 +24,7 @@ pub fn add_criterion_for_criterion(
 pub fn get_criteria_for_criterion(
     criterion_hash: ActionHash,
 ) -> ExternResult<Vec<Record>> {
-    let links = get_links(criterion_hash, LinkTypes::CriterionToCriteria, None)?;
+    let links = get_links(link_input(criterion_hash, LinkTypes::CriterionToCriteria, None))?;
     let mut seen_targets = HashSet::new();
     let get_input: Vec<GetInput> = links
         .into_iter()

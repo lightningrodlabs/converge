@@ -1,5 +1,7 @@
 use hdk::prelude::*;
 use converge_integrity::*;
+use zome_utils::*;
+
 #[hdk_extern]
 pub fn create_settings(settings: Settings) -> ExternResult<Record> {
     let settings_hash = create_entry(&EntryTypes::Settings(settings.clone()))?;
@@ -13,11 +15,11 @@ pub fn create_settings(settings: Settings) -> ExternResult<Record> {
 }
 #[hdk_extern]
 pub fn get_settings(original_settings_hash: ActionHash) -> ExternResult<Option<Record>> {
-    let links = get_links(
+    let links = get_links(link_input(
         original_settings_hash.clone(),
         LinkTypes::SettingsUpdates,
         None,
-    )?;
+    ))?;
     let latest_link = links
         .into_iter()
         .max_by(|link_a, link_b| link_a.timestamp.cmp(&link_b.timestamp));

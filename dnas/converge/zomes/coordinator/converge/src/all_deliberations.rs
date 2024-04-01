@@ -1,9 +1,11 @@
 use hdk::prelude::*;
 use converge_integrity::*;
+use zome_utils::*;
+
 #[hdk_extern]
 pub fn get_all_deliberations(_: ()) -> ExternResult<Vec<Record>> {
     let path = Path::from("all_deliberations");
-    let links = get_links(path.path_entry_hash()?, LinkTypes::AllDeliberations, None)?;
+    let links = get_links(link_input(path.path_entry_hash()?, LinkTypes::AllDeliberations, None))?;
     let get_input: Vec<GetInput> = links
         .into_iter()
         .map(|link| GetInput::new(
@@ -23,7 +25,7 @@ pub fn get_all_deliberations(_: ()) -> ExternResult<Vec<Record>> {
 #[hdk_extern]
 pub fn search_all_deliberations(query: String) -> ExternResult<Vec<ActionHash>> {
     let path = Path::from("all_deliberations");
-    let links = get_links(path.path_entry_hash()?, LinkTypes::AllDeliberations, None)?;
+    let links = get_links(link_input(path.path_entry_hash()?, LinkTypes::AllDeliberations, None))?;
     let get_input: Vec<GetInput> = links
         .into_iter()
         .map(|link| GetInput::new(
