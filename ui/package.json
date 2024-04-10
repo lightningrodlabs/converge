@@ -8,9 +8,10 @@
     "package": "npm run build && cd dist && bestzip ../dist.zip *"
   },
   "dependencies": {
+    "@holochain-open-dev/elements": "^0.300.0-dev.0",
     "@holochain-open-dev/profiles": "^0.300.0-dev.0",
     "@holochain/client": "^0.17.0-dev.7",
-    "@lightningrodlabs/we-applet": "^0.14.2",
+    "@lightningrodlabs/we-applet": "^0.16.2",
     "@material/mwc-button": "^0.27.0",
     "@material/mwc-checkbox": "^0.27.0",
     "@material/mwc-circular-progress": "^0.27.0",
@@ -29,6 +30,7 @@
     "@vaadin/date-time-picker": "^23.2.8"
   },
   "devDependencies": {
+    "@lightningrodlabs/we-dev-cli": "^0.11.0",
     "@sveltejs/vite-plugin-svelte": "^2.0.2",
     "@tsconfig/svelte": "^3.0.0",
     "bestzip": "^2.2.0",

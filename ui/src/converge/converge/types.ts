@@ -87,8 +87,8 @@ export interface CreateCriterionInput {
 
 export interface Proposal { 
   title: string;
-
   description: string;
+  attachments: string[]
 }
 
 export interface CreateProposalInput { 

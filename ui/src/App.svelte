@@ -23,8 +23,9 @@
   import Header from './converge/converge/Header.svelte';
   import DeliberationsForDeliberator from './converge/converge/Deliberations/DeliberationsForDeliberator.svelte';
   import { MyProfile } from '@holochain-open-dev/profiles/dist/elements/my-profile.js';
-  import { WeClient, isWeContext, initializeHotReload, type HrlWithContext, type Hrl } from '@lightningrodlabs/we-applet';  
+  import { WeClient, isWeContext, initializeHotReload, type WAL, type Hrl } from '@lightningrodlabs/we-applet';  
   import Holochain from "./assets/holochain.png";
+import type { Deliberation, ConvergeSignal } from './converge/converge/types';
   import { appletServices } from './we';
   // import AttachmentsList from './AttachmentsList.svelte';
   // import AttachmentsBind from './AttachmentsBind.svelte';
@@ -101,23 +102,33 @@
             case "block":
               switch(weClient.renderInfo.view.block) {
                 case "active_boards":
-                  renderType = RenderType.BlockActiveBoards
+                  currentView = "dashboard"
                   break;
                 default:
                   throw new Error("Unknown applet-view block type:"+weClient.renderInfo.view.block);
               }
               break;
-            case "attachable":
+              case "creatable":
+                switch (weClient.renderInfo.view.name) {
+                  case "Deliberation":
+                  currentView = "create-deliberation-mini"
+                }
+                break;  
+            case "asset":
               switch (weClient.renderInfo.view.roleName) {
                 case "converge":
                   switch (weClient.renderInfo.view.integrityZomeName) {
                     case "converge_integrity":
                       switch (weClient.renderInfo.view.entryType) {
                         case "deliberation":
-                          currentView = "deliberation"
-                          currentHash = weClient.renderInfo.view.hrlWithContext.hrl[1]
+                          currentView = "deliberation-asset"
+                          currentHash = weClient.renderInfo.view.wal.hrl[1]
                           // console.log("weClient.renderInfo.view", weClient.renderInfo.view)
                           // hrlWithContext = weClient.renderInfo.view.hrlWithContext
+                          break;
+                        case "proposal":
+                          currentView = "proposal-asset"
+                          currentHash = weClient.renderInfo.view.wal.hrl[1]
                           break;
                         default:
                           throw new Error("Unknown entry type:"+weClient.renderInfo.view.entryType);
@@ -183,6 +194,35 @@
 
 
     loading = false;
+
+    client.on('signal', signal => {
+      console.log("signalll", signal)
+      if (signal.zome_name !== 'converge') return;
+      const payload = signal.payload as ConvergeSignal;
+      const urgentMessages = ['criterion-created', 'proposal-created', 'deliberation-created']
+      const messagesFull = {
+        'criterion-created': "A new criterion has been added to the deliberation " + payload.title,
+        'proposal-created': "A new proposal has been added to the deliberation " + payload.title,
+        'deliberation-created': "A new deliberation has been created: " + payload.title,
+      }
+      const messagesShort = {
+        'criterion-created': "New criterion in " + payload.title,
+        'proposal-created': "New proposal in " + payload.title,
+        'deliberation-created': "New deliberation"
+      }
+      if (urgentMessages.includes(payload.message)) {
+        console.log("activity received", payload)
+        
+        weClient.notifyFrame([{
+          title: messagesShort[payload.message],
+          body: messagesFull[payload.message],
+          notification_type: "change",
+          icon_src: undefined,
+          urgency: "high",
+          timestamp: Date.now()
+        }])
+      }
+    });
   });
 
   setContext(clientContext, {
@@ -205,46 +245,46 @@
 {#if profilesStore}
   <profiles-context store="{profilesStore}">
     <profile-prompt>
-      {#if !weClient || weClient.renderInfo.view.type != "attachable"}
-      <main class="converge-container">
-      <Header />
-      <div class="white-container">
-        {#if loading}
-        <div style="display: flex; flex: 1; align-items: center; justify-content: center">
-          <mwc-circular-progress indeterminate />
-        </div>
-        {:else if currentView == "deliberation"}
-        <DeliberationDetail deliberationHash={currentHash} />
-        {:else if currentView == "proposal"}
-        <ProposalDetail proposalHash={currentHash} />
-        {:else if currentView == "create-deliberation"}
+      {#if currentView == "create-deliberation-mini"}
+      <!-- style CreateDeliberation to display half its size in every way -->
         <CreateDeliberation />
-        {:else if currentView == "dashboard"}
-        <DeliberationsForDeliberator deliberator={client.myPubKey} />
-        {:else}
-        <div id="content" style="display: flex; flex-direction: column; flex: 1;">
-          <AllDeliberations />
-          <!-- <button on:click={() => navigate("create-deliberation")}>Create Deliberation</button> -->
-        </div>
-        {/if}
-      </div>
-    </main>
-    {:else}
-      <main>
-      {#if weClient && weClient.renderInfo.view.integrityZomeName == "converge_integrity"}
-        {#if weClient.renderInfo.view.entryType == "deliberation"}
+      {:else if currentView == "deliberation-asset"}
+        <main>
           <div class="attachment-container">
-          <DeliberationDetail deliberationHash={currentHash} />
+            <DeliberationDetail deliberationHash={currentHash} />
           </div>
-        {:else}
-          <div>Unknown entry type: {weClient.renderInfo.view.entryType}</div>
-        {/if}
+        </main>
+      {:else if currentView == "proposal-asset"}
+        <main>
+          <div style="padding-top: 10px !important;" class="attachment-container">
+            <ProposalDetail proposalHash={currentHash} />
+          </div>
+        </main>
       {:else}
-      Unknown zome
-        <!-- <div>Unknown zome: {weClient.renderInfo.view.integrityZomeName}</div> -->
+        <main class="converge-container">
+          <Header />
+          <div class="white-container">
+            {#if loading}
+            <div style="display: flex; flex: 1; align-items: center; justify-content: center">
+              <mwc-circular-progress indeterminate />
+            </div>
+            {:else if currentView == "deliberation"}
+            <DeliberationDetail deliberationHash={currentHash} />
+            {:else if currentView == "proposal"}
+            <ProposalDetail proposalHash={currentHash} />
+            {:else if currentView == "create-deliberation"}
+            <CreateDeliberation />
+            {:else if currentView == "dashboard"}
+            <DeliberationsForDeliberator deliberator={client.myPubKey} />
+            {:else}
+            <div id="content" style="display: flex; flex-direction: column; flex: 1;">
+              <AllDeliberations />
+              <!-- <button on:click={() => navigate("create-deliberation")}>Create Deliberation</button> -->
+            </div>
+            {/if}
+          </div>
+        </main>
       {/if}
-      </main>
-    {/if}
   </profile-prompt>
   <!-- <create-profile></create-profile> -->
 <!-- {/if} -->

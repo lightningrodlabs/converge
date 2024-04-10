@@ -13,14 +13,13 @@ import '@material/mwc-textarea';
 import { view, viewHash, navigate } from '../../../store.js';
 import AttachmentsDialog from "../../../AttachmentsDialog.svelte"
 import SvgIcon from "../../../SvgIcon.svelte";
-import { WeClient, isWeContext, initializeHotReload, type HrlB64WithContext, type Hrl } from '@lightningrodlabs/we-applet';
-import type { AppletInfo, AttachmentType } from "@lightningrodlabs/we-applet";
+import { WeClient, isWeContext, initializeHotReload, type WAL, type Hrl } from '@lightningrodlabs/we-applet';
 import AttachmentsBind from '../../../AttachmentsBind.svelte';
 import { HoloHashMap, type EntryHashMap } from "@holochain-open-dev/utils";
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 import { weClientStored } from '../../../store.js';
 import app from '../../../main';
-import { hrlB64WithContextToRaw, hrlWithContextToB64, getMyDna } from '../../../util';
+import { hrlB64WithContextToRaw, hrlWithContextToB64, getMyDna, type WALUrl } from '../../../util';
 
 const dispatch = createEventDispatcher();
 
@@ -28,13 +27,12 @@ let attachmentsDialog : AttachmentsDialog
 let title: string = '';
 let description: string = '';
 let settings: any = {scoring: 'classic'};
-let attachments: Array<HrlB64WithContext> = [];
+let attachments: Array<WALUrl> = [];
 let errorSnackbar: Snackbar;
 // let threadsInfos: HoloHashMap<EntryHash, AppletInfo> = new HoloHashMap
 let discussionApps = {};
 let selectedDiscussionApp: string = "none";
 let attachmentTypes = [];
-let dna;
 
 $: title, description, settings, attachments, discussionApps;
 $: isDeliberationValid = true && title !== '' && settings !== '';
@@ -45,34 +43,33 @@ weClientStored.subscribe(value => {
 });
 
 onMount(async() => {
-    dna = await getMyDna("converge", client)
 
-    attachmentTypes = Array.from(weClient.attachmentTypes.entries())
-    console.log(attachmentTypes)
-    console.log(discussionApps)
-    for (const [appletHash, record] of attachmentTypes) {
-      console.log(record)
-      let appletInfo = await weClient.appletInfo(appletHash)
-      if (!discussionApps[appletInfo.appletName]) {
-        console.log(record)
-        const recordTypeNames = Object.keys(record).map((key) => JSON.stringify({
-          app: appletInfo.appletName,
-          type: key
-        }))
-        recordTypeNames.forEach((recordTypeName) => {
-          const recordType = JSON.parse(recordTypeName).type
-          console.log(recordTypeName)
-          if (appletInfo.appletName.includes("threads")) {
-            console.log("appletInfo", appletInfo)
-            console.log("record", record)
-            discussionApps[recordTypeName] = [appletHash, record[recordType]]
-            selectedDiscussionApp = recordTypeName;
-          } else {
-            discussionApps[recordTypeName] = [appletHash, record[recordType]]
-          }
-        })
-      }
-    }
+    // attachmentTypes = Array.from(weClient.attachmentTypes.entries())
+    // console.log(attachmentTypes)
+    // console.log(discussionApps)
+    // for (const [appletHash, record] of attachmentTypes) {
+    //   console.log(record)
+    //   let appletInfo = await weClient.appletInfo(appletHash)
+    //   if (!discussionApps[appletInfo.appletName]) {
+    //     console.log(record)
+    //     const recordTypeNames = Object.keys(record).map((key) => JSON.stringify({
+    //       app: appletInfo.appletName,
+    //       type: key
+    //     }))
+    //     recordTypeNames.forEach((recordTypeName) => {
+    //       const recordType = JSON.parse(recordTypeName).type
+    //       console.log(recordTypeName)
+    //       if (appletInfo.appletName.includes("threads")) {
+    //         console.log("appletInfo", appletInfo)
+    //         console.log("record", record)
+    //         discussionApps[recordTypeName] = [appletHash, record[recordType]]
+    //         selectedDiscussionApp = recordTypeName;
+    //       } else {
+    //         discussionApps[recordTypeName] = [appletHash, record[recordType]]
+    //       }
+    //     })
+    //   }
+    // }
     discussionApps = {...discussionApps}
     console.log("discussionApps", discussionApps)
     console.log(selectedDiscussionApp)
@@ -83,12 +80,7 @@ async function createDeliberation() {
     title: title!,
     description: description!,
     settings: JSON.stringify(settings!),
-    attachments: attachments.map(a => {
-      return {
-        hrl: JSON.stringify(a.hrl),
-        context: a.context
-      }
-    }),
+    attachments: attachments
     // discussionApp: selectedDiscussionApp.appletName
   };
 
@@ -153,7 +145,19 @@ async function createDeliberation() {
         payload: deliberationUpdate,
       });
     }
-    
+
+    // await client.callZome({
+    //   cap_secret: null,
+    //   role_name: 'converge',
+    //   zome_name: 'converge',
+    //   fn_name: 'new_activity_sender',
+    //   payload: {
+    //     deliberation_hash: record.signed_action.hashed.hash,
+    //     message: "deliberation-created",
+    //     title: title,
+    //   },
+    // });
+
     navigate("deliberation", record.signed_action.hashed.hash)
   } catch (e) {
     console.log(e)

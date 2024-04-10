@@ -48,6 +48,7 @@ pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
 pub struct ActivityPayload {
     deliberation_hash: ActionHash,
     message: String,
+    title: String,
 }
 #[hdk_extern]
 pub fn new_activity_sender(data: ActivityPayload) -> ExternResult<InitCallbackResult> {
@@ -66,16 +67,17 @@ pub fn new_activity_sender(data: ActivityPayload) -> ExternResult<InitCallbackRe
             debug!("all_agents: {:?}", all_agents);
             for agent in all_agents {
                 if agent != agent_info()?.agent_latest_pubkey.into() {
-                    // let zome_call_response = call_remote(
-                    //     agent.clone(),
-                    //     "converge",
-                    //     FunctionName(String::from("new_activity_receiver")),
-                    //     None,
-                    //     data.clone(),
-                    // )?;
-                    let zome_call_response = send_remote_signal(
-                        ExternIO::encode(data.clone()).unwrap(), vec![agent.clone()]
+                    let zome_call_response = call_remote(
+                        agent.clone(),
+                        "converge",
+                        FunctionName(String::from("new_activity_receiver")),
+                        None,
+                        data.clone(),
                     )?;
+                    // let zome_call_response = send_remote_signal(
+                    //     ExternIO::encode(data.clone()).unwrap(), 
+                    //     vec![agent.clone()]
+                    // )?;
                     debug!("zome_call_response: {:?}", zome_call_response);
                 }
             }

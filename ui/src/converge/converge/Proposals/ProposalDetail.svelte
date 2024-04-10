@@ -11,8 +11,11 @@ import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
 import { view, viewHash, navigate } from '../../../store.js';
 import RateCriteria from './RateCriteria.svelte';
-import { type HrlB64WithContext, isWeContext } from '@lightningrodlabs/we-applet';
+import { type WAL, isWeContext } from '@lightningrodlabs/we-applet';
 import AttachmentsList from '../../../AttachmentsList.svelte';
+import SvgIcon from "../../../SvgIcon.svelte";
+import { getMyDna } from '../../../util';
+import { weClientStored } from '../../../store.js';
 
 const dispatch = createEventDispatcher();
 
@@ -33,6 +36,11 @@ let allRatings;
 let convergence;
 let maxWeight;
 
+let weClient;
+let dnaHash: DnaHash;
+weClientStored.subscribe(value => {
+  weClient = value;
+});
 
 let errorSnackbar: Snackbar;
   
@@ -43,6 +51,8 @@ $: if (proposalHash) {
 }
 
 onMount(async () => {
+  dnaHash = await getMyDna("converge", client)
+
   if (proposalHash === undefined) {
     throw new Error(`The proposalHash input is required for the ProposalDetail element`);
   }
@@ -66,18 +76,18 @@ async function fetchProposal() {
     });
     if (record) {
       proposal = decode((record.entry as any).Present.entry) as Proposal;
-      attachments = proposal.attachments?.map((attachment) => {
-        return {
-          hrl: JSON.parse(attachment.hrl),
-          context: attachment.context
-        }
-      })
+      attachments = proposal.attachments
     }
   } catch (e) {
     error = e;
   }
 
   loading = false;
+}
+
+const copyWalToPocket = () => {
+  const attachment: WAL = { hrl: [dnaHash, proposalHash], context: "" }
+  weClient?.walToPocket(attachment)
 }
 
 async function rateAlert() {
@@ -132,7 +142,7 @@ async function fetchDeliberation() {
   <mwc-circular-progress indeterminate></mwc-circular-progress>
 </div>
 {:else if error}
-<span>Error fetching the proposal: {error.data.data}</span>
+<span>Error fetching the proposal: {JSON.stringify(error)}</span>
 {:else}
 
 <!-- <button on:click={()=>{navigate('deliberation', deliberationHash)}}>back</button> -->
@@ -151,12 +161,15 @@ flex: 1;"> -->
   </div>
   </div>
   {/if}
-  <div class="two-sides">
+  <div class="two-sides two-sides-proposal">
 
   <div style="display: flex; flex: 1; flex-direction: column; width:inherit">
-  <div style="display: flex; flex-direction: row; margin-bottom: 16px; width:inherit">
+  <div style="display: flex; flex-direction: row; margin-bottom: 16px; width:inherit; justify-content: space-between;  ">
     <span style="margin-right: 4px"><strong>{ proposal.title }</strong></span>
     <!-- <span style="white-space: pre-line">{ proposal.title }</span> -->
+    <button title="Add Board to Pocket" class="attachment-button" style="height: 30px; margin-right:10px; cursor: pointer;" on:click={()=>copyWalToPocket()} >          
+      <SvgIcon icon="addToPocket" size="20px"/>
+    </button>
   </div>
 
   <div class="deliberation-section" style="display: flex; flex-direction: row; margin-bottom: 16px; width:inherit">

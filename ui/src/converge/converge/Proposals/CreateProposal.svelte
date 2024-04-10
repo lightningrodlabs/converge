@@ -10,11 +10,12 @@ import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-textarea';
 import '@material/mwc-textfield';
 import AttachmentsDialog from "../../../AttachmentsDialog.svelte"
-    import Criterion from '../Criteria/Criterion.svelte';
+import Criterion from '../Criteria/Criterion.svelte';
+import type { WALUrl } from '../../../util';
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 let attachmentsDialog : AttachmentsDialog
-let attachments: Array<HrlB64WithContext> = [];
+let attachments: Array<WALUrl> = [];
   let showCriteria = true;
   const dispatch = createEventDispatcher();
   
@@ -56,12 +57,7 @@ async function createProposal() {
   const proposalEntry: Proposal = { 
     title: title!,
     description: description!,
-    attachments: attachments.map(a => {
-      return {
-        hrl: JSON.stringify(a.hrl),
-        context: a.context
-      }
-    }),
+    attachments: attachments
   };
 
   const createProposalInput: CreateProposalInput = {
@@ -118,12 +114,12 @@ async function createProposal() {
         <div style="display: flex; flex-direction: column">
           <h2 style="font-size: 18px">Create Proposal</h2>
 
-          <div style="margin-bottom: 16px">
-            <mwc-textfield style="width: 50vw" outlined label="Title" value={ title } on:input={e => { title = e.target.value;} } required></mwc-textfield>          
+          <div style="margin-bottom: 16px; margin-right: 10px;">
+            <mwc-textfield style="width: 100%;" outlined label="Title" value={ title } on:input={e => { title = e.target.value;} } required></mwc-textfield>          
           </div>
                     
-          <div style="margin-bottom: 16px">
-            <mwc-textarea style="width: 50vw; height: 50vh" outlined label="Description" value={ description } on:input={e => { description = e.target.value; } } required></mwc-textarea>          
+          <div style="margin-bottom: 16px; margin-right: 10px;">
+            <mwc-textarea style="width: 100%; height: 50vh" outlined label="Description" value={ description } on:input={e => { description = e.target.value; } } required></mwc-textarea>          
           </div>
 
           <AttachmentsDialog bind:this={attachmentsDialog} bind:attachments on:add-attachments={

@@ -82,12 +82,17 @@ body {
   color: #525252;
 }
 
-/* .add-button {
-  height: 28px;
+.add-button {
   position: relative;
-  top: -1px;
-  border: 1px solid #9200a1;
-} */
+  width: fit-content;
+  border-radius: 4px;
+  color: white;
+  display: inline-block;
+  padding: 8.5px 12px;
+  top: 1px;
+  background-color: #7b1fa2;
+  cursor: pointer;
+}
 
 .sort-dropdown {
   cursor: pointer;
@@ -212,7 +217,7 @@ body {
   border: 1px solid gray;
   border-radius: 5px;
 
-  margin: 6px 6px 6px 0px;
+  margin: 0px 6px 6px 0px;
   box-shadow: 0px 0px 6px #00000019;
   border: 1px solid #efefef;
   border-radius: 12px;
@@ -244,10 +249,28 @@ body {
   }
 
   .two-sides > div {
+    margin-top: 4px;
     width: 100%;
     display: flex;
     /* center content */
     align-items: center;
+  }
+
+  .two-sides-proposal> div {
+    align-items: initial;
+  }
+
+  .star-slider {
+    width: 40vw;
+  }
+
+  .vertical-progress-bar-container {
+    height: 200px !important;
+  }
+
+  .progress-line {
+    height: 3px !important;
+    margin-top: 3px !important;
   }
 }
 
@@ -345,7 +368,7 @@ mwc-slider[disabled] .mdc-slider__thumb-knob {
   background-color: white;
   padding: 25px;
   padding-top: 0px;
-  height: 100%;
+  min-height: 100vh;
   width: calc(100vw - 65px);
 }
 

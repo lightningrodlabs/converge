@@ -1,18 +1,12 @@
 use hdi::prelude::{holo_hash::HoloHashB64, *};
 #[hdk_entry_helper]
 #[derive(Clone, PartialEq)]
-pub struct HrlB64WithContext {
-    pub hrl: String,
-    pub context: Option<String>,
-}
-#[hdk_entry_helper]
-#[derive(Clone, PartialEq)]
 pub struct Deliberation {
     pub title: String,
     pub description: String,
     pub settings: String,
-    pub attachments: Option<Vec<HrlB64WithContext>>,
-    pub discussion: Option<HrlB64WithContext>,
+    pub attachments: Option<Vec<String>>,
+    pub discussion: Option<String>,
 }
 pub fn validate_create_deliberation(
     _action: EntryCreationAction,

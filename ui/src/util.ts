@@ -32,6 +32,8 @@ export function hrlB64WithContextToRaw(hrlB64: HrlB64WithContext): HrlWithContex
   };
 }
 
+export type WALUrl = string
+
 export const hashEqual = (a:EntryHash, b:EntryHash) : boolean => {
   if (!a || !b) {
     return !a && !b

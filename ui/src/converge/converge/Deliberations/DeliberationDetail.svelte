@@ -21,11 +21,13 @@ import AllCriteria from '../Criteria/AllCriteria.svelte';
 import CreateProposal from '../Proposals/CreateProposal.svelte';
 import AllProposals from '../Proposals/AllProposals.svelte';
 import AttachmentsList from '../../../AttachmentsList.svelte';
-import { type HrlB64WithContext, isWeContext } from '@lightningrodlabs/we-applet';
+import { isWeContext, type WAL } from '@lightningrodlabs/we-applet';
 import Avatar from '../Avatar.svelte';
 import SvgIcon from "../../../SvgIcon.svelte";
 import { weClientStored } from '../../../store.js';
-    import { hrlB64WithContextToRaw, hrlWithContextToB64 } from '../../../util';
+import { getMyDna } from '../../../util';
+import type { WALUrl } from '../../../util';
+    // import { hrlB64WithContextToRaw, hrlWithContextToB64 } from '../../../util';
 
 const dispatch = createEventDispatcher();
 
@@ -53,6 +55,7 @@ let criteriaFilter;
 let proposalFilter;
 let proposalCount = 0;
 let sortedCriteria;
+let lastMessage;
 let detectSort;
 
 let sortByOptions = [
@@ -65,8 +68,9 @@ let sortByOptions = [
 ];
 let criteriaSort = "support";
 let proposalSort;
-let attachments: HrlB64WithContext[] = [];
+let attachments: WALUrl[] = [];
 let weClient;
+let dnaHash;
 weClientStored.subscribe(value => {
   weClient = value;
 });
@@ -74,25 +78,40 @@ weClientStored.subscribe(value => {
 $: editing, error, loading, record, deliberation, activeTab, criterionFormPopup, proposalFormPopup, criteriaCount, proposalCount, criteriaFilter, proposalFilter, criteriaSort, proposalSort, sortedCriteria;
 
 onMount(async () => {
+  dnaHash = await getMyDna("converge", client)
+
   if (deliberationHash === undefined) {
     throw new Error(`The deliberationHash input is required for the DeliberationDetail element`);
   }
   await fetchDeliberation();
 
   client.on('signal', signal => {
+    console.log("signalll", signal)
     if (signal.zome_name !== 'converge') return;
     const payload = signal.payload as ConvergeSignal;
-    if (payload.message == 'live_update' && payload.deliberation_hash.join(',') == deliberationHash.join(',')) {
-      console.log("activity received")
+    const updateMessages = ['new-join', 'criterion-created', 'proposal-rated', 'proposal-created', 'criterion-rated']
+    const urgentMessages = ['criterion-created', 'proposal-created']
+    const messagesFull = {
+      'new-join': "A new participant has joined the deliberation",
+      'criterion-created': "A new criterion has been added to the deliberation " + deliberation.title,
+      'proposal-rated': "A proposal has been rated",
+      'proposal-created': "A new proposal has been added to the deliberation " + deliberation.title,
+      'criterion-rated': "A criterion has been rated"
+    }
+    if (updateMessages.includes(payload.message) && (payload.deliberation_hash.join(',') == deliberationHash.join(','))) {
+      console.log("activity received", payload)
       outdated = true;
-      weClient.notifyWe([{
-          title: `updated`,
-          body: "body",
-          notification_type: "change",
-          icon_src: undefined,
-          urgency: "low",
-          timestamp: Date.now()
+
+      weClient.notifyFrame([{
+        title: `New activity in ${deliberation.title}`,
+        body: messagesFull[payload.message],
+        notification_type: "change",
+        icon_src: undefined,
+        urgency: "low",
+        timestamp: Date.now()
       }])
+
+      lastMessage = messagesFull[payload.message];
     }
     // console.log(payload)
   });
@@ -121,6 +140,11 @@ onMount(async () => {
   // });
 });
 
+const copyWalToPocket = () => {
+  const attachment: WAL = { hrl: [dnaHash, deliberationHash], context: "" }
+  weClient?.walToPocket(attachment)
+}
+
 async function fetchDeliberation() {
   outdated = false;
   loading = true;
@@ -138,12 +162,7 @@ async function fetchDeliberation() {
     });
     if (record) {
       deliberation = decode((record.entry as any).Present.entry) as Deliberation;
-      attachments = deliberation.attachments?.map((attachment) => {
-        return {
-          hrl: JSON.parse(attachment.hrl),
-          context: attachment.context
-        }
-      })
+      attachments = deliberation.attachments
     }
   } catch (e) {
     error = e;
@@ -199,7 +218,7 @@ async function newActivity(event) {
   console.log("new activity")
   console.log(event)
   joinDeliberation()
-  sendActivityNotice({})
+  sendActivityNotice(event)
 }
 
 async function sendActivityNotice(event) {
@@ -211,7 +230,8 @@ async function sendActivityNotice(event) {
       fn_name: 'new_activity_sender',
       payload: {
         deliberation_hash: deliberationHash,
-        message: 'live_update'
+        message: event,
+        title: deliberation.title
       },
     });
   } catch (e: any) {
@@ -289,7 +309,7 @@ async function leaveDeliberation() {
   <mwc-circular-progress indeterminate></mwc-circular-progress>
 </div>
 {:else if error}
-<span>Error fetching the deliberation: {error.data.data}</span>
+<span>Error fetching the deliberation: {JSON.stringify(error)}</span>
 {:else if editing}
 <EditDeliberation
   originalDeliberationHash={ deliberationHash}
@@ -302,9 +322,9 @@ async function leaveDeliberation() {
 ></EditDeliberation>
 {:else}
 
-{#if outdated}
+{#if outdated && lastMessage}
 <div on:click={fetchDeliberation} class="reload-page">
-  <span style="margin-right: 8px">This page is outdated. Click to refresh. ↺</span>
+  <span style="margin-right: 8px">This page is outdated because {lastMessage.toLowerCase()}. Click to refresh. ↺</span>
 </div>
 {:else}
 <div style="cursor: pointer; display: flex; flex-direction: row; align-items: center; justify-content: center; background: transparent; padding: 4px;">
@@ -345,7 +365,7 @@ async function leaveDeliberation() {
         {#if deliberators.includes(client.myPubKey.join(','))}
         <mwc-button style="cursor: pointer; width: fit-content; display:flex; flex-direction: column;" on:click={leaveDeliberation}>Leave</mwc-button>
         {:else}
-        <mwc-button on:click={newActivity}>Join</mwc-button>
+        <mwc-button on:click={() => {newActivity("new-join")}}>Join</mwc-button>
         {/if}
         
         <!-- &nbsp;|&nbsp;&nbsp; -->
@@ -357,6 +377,9 @@ async function leaveDeliberation() {
     </div>
       
     <div style="display: flex; flex-direction: row; float: right; width: min-content; flex-shrink:0; align-self:start">
+      <button title="Add Board to Pocket" class="attachment-button" style="margin-right:10px; cursor: pointer;" on:click={()=>copyWalToPocket()} >          
+        <SvgIcon icon="addToPocket" size="20px"/>
+      </button>
       {#if isWeContext && deliberation.discussion}
         {@const conversation = {
           hrl: JSON.parse(deliberation.discussion.hrl),
@@ -416,15 +439,15 @@ async function leaveDeliberation() {
 
 
   <!-- <div class="search-button"><FaSearch/></div> -->
-  <mwc-button raised on:click={() => {criterionFormPopup = true; console.log(criterionFormPopup)}} class="add-button">Add a criterion</mwc-button>
+  <div raised on:click={() => {criterionFormPopup = true; console.log(criterionFormPopup)}} class="add-button">{window.innerWidth < 768 ? "+" : "Add a criterion"}</div>
   <!-- <mwc-button dense outlined>Add criterion</mwc-button> -->
   <!-- {#if criterionForm} -->
-  <CreateCriterion on:criterion-created={newActivity} deliberationHash={deliberationHash} alternativeTo={null} bind:criterionFormPopup />
+  <CreateCriterion on:criterion-created={() => {newActivity("criterion-created")}} deliberationHash={deliberationHash} alternativeTo={null} bind:criterionFormPopup />
   <!-- {/if} -->
   <br><br>
   <!-- {#if criteriaSort == "support"} -->
   
-  <AllCriteria on:criterion-rated={newActivity} deliberationHash={deliberationHash} filter={criteriaFilter} sort={criteriaSort} bind:sortedCriteria bind:criteriaCount />
+  <AllCriteria on:criterion-rated={() => {newActivity("criterion-rated")}} deliberationHash={deliberationHash} filter={criteriaFilter} sort={criteriaSort} bind:sortedCriteria bind:criteriaCount />
   <!-- {:else if criteriaSort == "objections"}
   <AllCriteria deliberationHash={deliberationHash} filter={criteriaFilter} sort="objections" bind:criteriaCount />
   {/if} -->
@@ -443,13 +466,13 @@ async function leaveDeliberation() {
     </div>
   {/if}
   <!-- <div class="search-button"><FaSearch/></div> -->
-  <mwc-button raised on:click={() => {proposalFormPopup = true; console.log(proposalFormPopup)}} class="add-button">Add proposal</mwc-button>
+  <div raised on:click={() => {proposalFormPopup = true; console.log(proposalFormPopup)}} class="add-button">{window.innerWidth < 768 ? "+" : "Add a proposal"}</div>
 
-  <CreateProposal on:proposal-created={newActivity} {deliberationHash} {sortedCriteria} bind:proposalFormPopup/>
+  <CreateProposal on:proposal-created={() => {newActivity("proposal-created")}} {deliberationHash} {sortedCriteria} bind:proposalFormPopup/>
   <br><br>
 
   
-  <AllProposals on:proposal-rated={newActivity} sort={proposalSort} deliberationHash={deliberationHash} filter={proposalFilter} bind:proposalCount/>
+  <AllProposals on:proposal-rated={() => {newActivity("proposal-rated")}} sort={proposalSort} deliberationHash={deliberationHash} filter={proposalFilter} bind:proposalCount/>
 {/if}
 {/if}
 

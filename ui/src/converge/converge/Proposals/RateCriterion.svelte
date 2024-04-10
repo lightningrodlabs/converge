@@ -157,7 +157,7 @@ async function fetchSupport() {
         sponsored = supporters.some(item => item["agent"] === client.myPubKey.join(","));
       }
       allSupport[criterionHash.join(',')] = averageSupport;
-      console.log("all support" + JSON.stringify(allSupport))
+      // console.log("all support" + JSON.stringify(allSupport))
     }
   } catch (e) {
     console.log(e)

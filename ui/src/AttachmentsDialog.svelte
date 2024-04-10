@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { type HrlB64WithContext, isWeContext, type HrlWithContext } from "@lightningrodlabs/we-applet";
+  import { isWeContext, type WAL, weaveUrlFromWal } from "@lightningrodlabs/we-applet";
   import { cloneDeep } from "lodash";
   // import type { Board, Piece } from "./board";
   import { getContext, onMount } from "svelte";
@@ -12,11 +12,12 @@
   import AttachmentsBind from "./AttachmentsBind.svelte";
   import { weClientStored } from './store.js';
   import { createEventDispatcher } from 'svelte';
+  import type { WALUrl } from "./util";
 
   // const { getStore } :any = getContext("gzStore");
   // let store: GamezStore = getStore();
   // let piece: Piece | undefined
-  export let attachments: Array<HrlB64WithContext> = []
+  export let attachments: Array<WALUrl>
   const dispatch = createEventDispatcher();
  
   let weClient;
@@ -53,14 +54,14 @@
   }
 
   const addAttachment = async () => {
-    const hrl = await weClient.userSelectHrl()
+    const hrl = await weClient.userSelectWal()
     if (hrl) {
       _addAttachment(hrl)
     }
   }
 
-  const _addAttachment = (hrl: HrlWithContext) => {
-    attachments.push(hrlWithContextToB64(hrl))
+  const _addAttachment = (hrl: WAL) => {
+    attachments.push(weaveUrlFromWal(hrl))
     attachments = attachments
     // handleSave()
   }
@@ -80,9 +81,9 @@
     // }
   // }
 
-  onMount(async () => {
-    bind.refresh()
-  })
+  // onMount(async () => {
+  //   bind.refresh()
+  // })
 </script>
 
 <!-- <sl-dialog label="Add links" bind:this={dialog}> -->
