@@ -16,6 +16,7 @@ import AttachmentsList from '../../../AttachmentsList.svelte';
 import SvgIcon from "../../../SvgIcon.svelte";
 import { getMyDna } from '../../../util';
 import { weClientStored } from '../../../store.js';
+  import CreateOutcome from '../Outcomes/CreateOutcome.svelte';
 
 const dispatch = createEventDispatcher();
 
@@ -35,6 +36,8 @@ let allRatings;
 
 let convergence;
 let maxWeight;
+
+let outcomeFormPopup;
 
 let weClient;
 let dnaHash: DnaHash;
@@ -176,6 +179,15 @@ flex: 1;"> -->
     <!-- <span style="margin-right: 4px"><strong>Description:</strong></span> -->
     <span style="white-space: pre-line; width:inherit">{ proposal.description }</span>
   </div>
+
+  <button on:click={()=>{
+    // dismiss
+    outcomeFormPopup = !outcomeFormPopup
+    // if (outcomeFormPopup) {
+    //   dispatch('dismiss', {});
+    // }
+  }}>Create outcome</button>
+  <CreateOutcome proposalHash={proposalHash} {deliberationHash} {outcomeFormPopup} />
 </div>
 </div>
 </div>

@@ -209,3 +209,17 @@ async function deleteDeliberation() {
 </div>
 {/if}
 
+<style>
+  @media (max-width: 300px) {
+    .dashboard-item {
+      box-shadow: none;
+      border: none;
+      flex-direction: column;
+    }
+    .dashboard-item > div {
+      flex-direction: row;
+      margin: 0;
+      margin-bottom: 1em;
+    }
+  }
+</style>

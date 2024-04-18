@@ -4,7 +4,6 @@
   // import type { Board, Piece } from "./board";
   import { getContext, onMount } from "svelte";
   // import type { GamezStore } from "./store";
-  import { hrlWithContextToB64} from "./util";
   import SvgIcon from "./SvgIcon.svelte";
   import '@shoelace-style/shoelace/dist/components/button/button.js';
   import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
@@ -17,6 +16,7 @@
   // const { getStore } :any = getContext("gzStore");
   // let store: GamezStore = getStore();
   // let piece: Piece | undefined
+  export let attachmentsLimit: number = Infinity;
   export let attachments: Array<WALUrl>
   const dispatch = createEventDispatcher();
  
@@ -54,15 +54,20 @@
   }
 
   const addAttachment = async () => {
-    const hrl = await weClient.userSelectWal()
-    if (hrl) {
-      _addAttachment(hrl)
+    const wal = await weClient.userSelectWal()
+    if (wal) {
+      _addAttachment(wal)
     }
   }
 
-  const _addAttachment = (hrl: WAL) => {
-    attachments.push(weaveUrlFromWal(hrl))
+  const _addAttachment = (wal: WAL) => {
+    if (attachmentsLimit == attachments.length) {
+      removeAttachment(0)
+    }
+    attachments.push(weaveUrlFromWal(wal))
     attachments = attachments
+    // dispatch
+    dispatch('add-attachment', weaveUrlFromWal(wal))
     // handleSave()
   }
 

@@ -104,7 +104,7 @@ async function joinSignal() {
 {:else if hashes.length === 0}
 <span>Add some criteria.</span>
 {:else}
-<div style="display: flex; flex-direction: column">
+<div style="display: flex; flex-direction: column" class="criterion-outer-all">
   {#if sort == "support"}
     {#each sortedCriteria as hash}
       <Criterion on:criterion-rated={joinSignal} criterionHash={hash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}  on:transfer={(e) => {
@@ -137,3 +137,12 @@ async function joinSignal() {
 </div>
 {/if}
 
+
+<style lang="css">
+  /* if width is less than 100px, display mini view */
+  @media (max-width: 300px) {
+    .criterion-outer-all {
+      display: none !important;
+    }
+  }
+</style>

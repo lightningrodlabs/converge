@@ -176,7 +176,7 @@ async function deleteProposal() {
     });
     dispatch('proposal-deleted', { proposalHash: proposalHash });
   } catch (e: any) {
-    errorSnackbar.labelText = `Error deleting the proposal: ${e.data.data}`;
+    errorSnackbar.labelText = `Error deleting the proposal: ${e}`;
     errorSnackbar.show();
   }
 }
@@ -208,7 +208,7 @@ async function deleteProposal() {
   <mwc-circular-progress indeterminate></mwc-circular-progress>
 </div>
 {:else if error}
-<span>Error fetching the proposal: {error.data.data}</span>
+<span>Error fetching the proposal: {error}</span>
 {:else if !filter || proposal.title.includes(filter)}
 
 <!-- {JSON.stringify(sortableProposals[proposalHash.join(',')].score)} -->

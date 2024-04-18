@@ -16,10 +16,14 @@ pub mod supporter_to_criteria;
 pub use supporter_to_criteria::*;
 pub mod deliberation_to_proposals;
 pub use deliberation_to_proposals::*;
+pub mod deliberation_to_outcomes;
+pub use deliberation_to_outcomes::*;
 pub mod deliberation_to_criteria;
 pub use deliberation_to_criteria::*;
 pub mod proposal;
 pub use proposal::*;
+pub mod outcome;
+pub use outcome::*;
 pub mod criterion;
 pub use criterion::*;
 pub mod deliberation;
@@ -33,6 +37,7 @@ pub enum EntryTypes {
     Deliberation(Deliberation),
     Criterion(Criterion),
     Proposal(Proposal),
+    Outcome(Outcome),
     CriterionComment(CriterionComment),
     #[entry_type(name = "Settings", visibility = "private")]
     Settings(Settings),
@@ -45,7 +50,9 @@ pub enum LinkTypes {
     DeliberationToCriteria,
     CriterionToDeliberations,
     DeliberationToProposals,
+    DeliberationToOutcomes,
     ProposalToDeliberations,
+    OutcomeToDeliberations,
     SupporterToCriteria,
     CriterionToSupporters,
     ProposalToCriteria,
@@ -53,6 +60,7 @@ pub enum LinkTypes {
     CriterionToObjectors,
     AllCriteria,
     AllProposals,
+    AllOutcomes,
     DeliberatorToDeliberations,
     DeliberationToDeliberators,
     CriterionToCriteria,
@@ -99,6 +107,12 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 proposal,
                             )
                         }
+                        EntryTypes::Outcome(outcome) => {
+                            validate_create_outcome(
+                                EntryCreationAction::Create(action),
+                                outcome,
+                            )
+                        }
                         EntryTypes::CriterionComment(criterion_comment) => {
                             validate_create_criterion_comment(
                                 EntryCreationAction::Create(action),
@@ -131,6 +145,12 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                             validate_create_proposal(
                                 EntryCreationAction::Update(action),
                                 proposal,
+                            )
+                        }
+                        EntryTypes::Outcome(outcome) => {
+                            validate_create_outcome(
+                                EntryCreationAction::Update(action),
+                                outcome,
                             )
                         }
                         EntryTypes::CriterionComment(criterion_comment) => {
@@ -193,6 +213,17 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                             )
                         }
                         (
+                            EntryTypes::Outcome(outcome),
+                            EntryTypes::Outcome(original_outcome),
+                        ) => {
+                            validate_update_outcome(
+                                action,
+                                outcome,
+                                original_action,
+                                original_outcome,
+                            )
+                        }
+                        (
                             EntryTypes::Criterion(criterion),
                             EntryTypes::Criterion(original_criterion),
                         ) => {
@@ -243,6 +274,9 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         EntryTypes::Proposal(proposal) => {
                             validate_delete_proposal(action, original_action, proposal)
+                        }
+                        EntryTypes::Outcome(outcome) => {
+                            validate_delete_outcome(action, original_action, outcome)
                         }
                         EntryTypes::CriterionComment(criterion_comment) => {
                             validate_delete_criterion_comment(
@@ -315,6 +349,22 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         tag,
                     )
                 }
+                LinkTypes::DeliberationToOutcomes => {
+                    validate_create_link_deliberation_to_outcomes(
+                        action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::OutcomeToDeliberations => {
+                    validate_create_link_outcome_to_deliberations(
+                        action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
                 LinkTypes::SupporterToCriteria => {
                     validate_create_link_supporter_to_criteria(
                         action,
@@ -365,6 +415,14 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 }
                 LinkTypes::AllProposals => {
                     validate_create_link_all_proposals(
+                        action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::AllOutcomes => {
+                    validate_create_link_all_outcomes(
                         action,
                         base_address,
                         target_address,
@@ -492,6 +550,24 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         tag,
                     )
                 }
+                LinkTypes::DeliberationToOutcomes => {
+                    validate_delete_link_deliberation_to_outcomes(
+                        action,
+                        original_action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::OutcomeToDeliberations => {
+                    validate_delete_link_outcome_to_deliberations(
+                        action,
+                        original_action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
                 LinkTypes::SupporterToCriteria => {
                     validate_delete_link_supporter_to_criteria(
                         action,
@@ -548,6 +624,15 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 }
                 LinkTypes::AllProposals => {
                     validate_delete_link_all_proposals(
+                        action,
+                        original_action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::AllOutcomes => {
+                    validate_delete_link_all_outcomes(
                         action,
                         original_action,
                         base_address,
@@ -640,6 +725,12 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                             validate_create_proposal(
                                 EntryCreationAction::Create(action),
                                 proposal,
+                            )
+                        }
+                        EntryTypes::Outcome(outcome) => {
+                            validate_create_outcome(
+                                EntryCreationAction::Create(action),
+                                outcome,
                             )
                         }
                         EntryTypes::CriterionComment(criterion_comment) => {
@@ -765,6 +856,37 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                     proposal,
                                     original_action,
                                     original_proposal,
+                                )
+                            } else {
+                                Ok(result)
+                            }
+                        }
+                        EntryTypes::Outcome(outcome) => {
+                            let result = validate_create_outcome(
+                                EntryCreationAction::Update(action.clone()),
+                                outcome.clone(),
+                            )?;
+                            if let ValidateCallbackResult::Valid = result {
+                                let original_outcome: Option<Outcome> = original_record
+                                    .entry()
+                                    .to_app_option()
+                                    .map_err(|e| wasm_error!(e))?;
+                                let original_outcome = match original_outcome {
+                                    Some(outcome) => outcome,
+                                    None => {
+                                        return Ok(
+                                            ValidateCallbackResult::Invalid(
+                                                "The updated entry type must be the same as the original entry type"
+                                                    .to_string(),
+                                            ),
+                                        );
+                                    }
+                                };
+                                validate_update_outcome(
+                                    action,
+                                    outcome,
+                                    original_action,
+                                    original_outcome,
                                 )
                             } else {
                                 Ok(result)
@@ -907,6 +1029,13 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 original_proposal,
                             )
                         }
+                        EntryTypes::Outcome(original_outcome) => {
+                            validate_delete_outcome(
+                                action,
+                                original_action,
+                                original_outcome,
+                            )
+                        }
                         EntryTypes::CriterionComment(original_criterion_comment) => {
                             validate_delete_criterion_comment(
                                 action,
@@ -979,6 +1108,22 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 tag,
                             )
                         }
+                        LinkTypes::DeliberationToOutcomes => {
+                            validate_create_link_deliberation_to_outcomes(
+                                action,
+                                base_address,
+                                target_address,
+                                tag,
+                            )
+                        }
+                        LinkTypes::OutcomeToDeliberations => {
+                            validate_create_link_outcome_to_deliberations(
+                                action,
+                                base_address,
+                                target_address,
+                                tag,
+                            )
+                        }
                         LinkTypes::SupporterToCriteria => {
                             validate_create_link_supporter_to_criteria(
                                 action,
@@ -1029,6 +1174,14 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         LinkTypes::AllProposals => {
                             validate_create_link_all_proposals(
+                                action,
+                                base_address,
+                                target_address,
+                                tag,
+                            )
+                        }
+                        LinkTypes::AllOutcomes => {
+                            validate_create_link_all_outcomes(
                                 action,
                                 base_address,
                                 target_address,
@@ -1170,6 +1323,24 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 create_link.tag,
                             )
                         }
+                        LinkTypes::DeliberationToOutcomes => {
+                            validate_delete_link_deliberation_to_outcomes(
+                                action,
+                                create_link.clone(),
+                                base_address,
+                                create_link.target_address,
+                                create_link.tag,
+                            )
+                        }
+                        LinkTypes::OutcomeToDeliberations => {
+                            validate_delete_link_outcome_to_deliberations(
+                                action,
+                                create_link.clone(),
+                                base_address,
+                                create_link.target_address,
+                                create_link.tag,
+                            )
+                        }
                         LinkTypes::SupporterToCriteria => {
                             validate_delete_link_supporter_to_criteria(
                                 action,
@@ -1226,6 +1397,15 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         LinkTypes::AllProposals => {
                             validate_delete_link_all_proposals(
+                                action,
+                                create_link.clone(),
+                                base_address,
+                                create_link.target_address,
+                                create_link.tag,
+                            )
+                        }
+                        LinkTypes::AllOutcomes => {
+                            validate_delete_link_all_outcomes(
                                 action,
                                 create_link.clone(),
                                 base_address,

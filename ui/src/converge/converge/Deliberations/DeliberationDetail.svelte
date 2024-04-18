@@ -27,6 +27,8 @@ import SvgIcon from "../../../SvgIcon.svelte";
 import { weClientStored } from '../../../store.js';
 import { getMyDna } from '../../../util';
 import type { WALUrl } from '../../../util';
+import AllOutcomes from '../Outcomes/AllOutcomes.svelte';
+import CreateOutcome from '../Outcomes/CreateOutcome.svelte';
     // import { hrlB64WithContextToRaw, hrlWithContextToB64 } from '../../../util';
 
 const dispatch = createEventDispatcher();
@@ -47,6 +49,7 @@ let deliberatorsRaw: AgentPubKey[] | undefined;
 let editing = false;
 let criterionFormPopup = false;
 let proposalFormPopup = false;
+let outcomeFormPopup = false;
 
 let errorSnackbar: Snackbar;
 let activeTab = "criteria";
@@ -363,9 +366,9 @@ async function leaveDeliberation() {
         {/each}
         
         {#if deliberators.includes(client.myPubKey.join(','))}
-        <mwc-button style="cursor: pointer; width: fit-content; display:flex; flex-direction: column;" on:click={leaveDeliberation}>Leave</mwc-button>
+        <mwc-button class="join-leave" on:click={leaveDeliberation}>Leave</mwc-button>
         {:else}
-        <mwc-button on:click={() => {newActivity("new-join")}}>Join</mwc-button>
+        <mwc-button class="join-leave" on:click={() => {newActivity("new-join")}}>Join</mwc-button>
         {/if}
         
         <!-- &nbsp;|&nbsp;&nbsp; -->
@@ -406,10 +409,16 @@ async function leaveDeliberation() {
       </div>
   </div>
 
+  <div class="details-mini">
+    Criteria: {criteriaCount}
+    Proposals: {proposalCount}
+  </div>
+
   <div class="deliberation-section">
     <mwc-tab-bar>
       <mwc-tab on:click={() => {activeTab = "criteria"}} label="Criteria ({criteriaCount})"></mwc-tab>
       <mwc-tab on:click={() => {activeTab = "proposals"}}  label="Proposals ({proposalCount})"></mwc-tab>
+      <mwc-tab on:click={() => {activeTab = "outcomes"}}  label="Outcomes"></mwc-tab>
       <!-- <mwc-tab on:click={() => {activeTab = "activity"}}  label="Activity"></mwc-tab> -->
     </mwc-tab-bar>
     
@@ -473,10 +482,40 @@ async function leaveDeliberation() {
 
   
   <AllProposals on:proposal-rated={() => {newActivity("proposal-rated")}} sort={proposalSort} deliberationHash={deliberationHash} filter={proposalFilter} bind:proposalCount/>
+{:else if activeTab == "outcomes"}
+  <!-- <p class="instructions"></p> -->
+  <div on:click={() => {outcomeFormPopup = true; console.log(proposalFormPopup)}} class="add-button">{window.innerWidth < 768 ? "+" : "Add an outcome"}</div>
+
+  <CreateOutcome on:outcome-created={() => {newActivity("proposal-created")}} {deliberationHash} bind:outcomeFormPopup/>
+  <br><br>
+  <AllOutcomes deliberationHash={deliberationHash}/>
 {/if}
 {/if}
 
 <style lang="css">
+  /* if width is less than 100px, display mini view */
+  @media (max-width: 300px) {
+    .add-button {
+      display: none;
+    }
+    .deliberation-section {
+      display: none;
+    }
+    .instructions {
+      display: none;
+    }
+    .join-leave {
+      display: none;
+    }
+    .details-mini {
+      display: inline-block !important;
+    }
+  }
+
+  .details-mini {
+    display: none;
+  }
+
   .discussion-button {
     display: flex;
     flex-direction: row;
@@ -490,5 +529,9 @@ async function leaveDeliberation() {
     border: 0px;
     border-radius: 10px;
     /* background-color: #925ace; */
+  }
+
+  .leave {
+    cursor: pointer; width: fit-content; display:flex; flex-direction: column;
   }
 </style>

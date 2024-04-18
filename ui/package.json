@@ -12,6 +12,7 @@
     "@holochain-open-dev/profiles": "^0.300.0-dev.0",
     "@holochain/client": "^0.17.0-dev.7",
     "@lightningrodlabs/we-applet": "^0.16.2",
+    "@lightningrodlabs/we-elements": "^0.5.0",
     "@material/mwc-button": "^0.27.0",
     "@material/mwc-checkbox": "^0.27.0",
     "@material/mwc-circular-progress": "^0.27.0",

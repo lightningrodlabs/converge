@@ -97,6 +97,19 @@ export interface CreateProposalInput {
 }
 
 
+export interface Outcome { 
+  title: string;
+  description: string;
+  outcome_attachment: string;
+  proposal?: ActionHash;
+}
+
+export interface CreateOutcomeInput { 
+  outcome: Outcome;
+  deliberation: ActionHash;
+}
+
+
 
 export interface CriterionComment { 
   comment: string;

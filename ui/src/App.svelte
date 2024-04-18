@@ -27,6 +27,7 @@
   import Holochain from "./assets/holochain.png";
 import type { Deliberation, ConvergeSignal } from './converge/converge/types';
   import { appletServices } from './we';
+    import DeliberationListItem from './converge/converge/Deliberations/DeliberationListItem.svelte';
   // import AttachmentsList from './AttachmentsList.svelte';
   // import AttachmentsBind from './AttachmentsBind.svelte';
   // import AttachmentsDialog from './AttachmentsDialog.svelte';
@@ -250,8 +251,11 @@ import type { Deliberation, ConvergeSignal } from './converge/converge/types';
         <CreateDeliberation />
       {:else if currentView == "deliberation-asset"}
         <main>
-          <div class="attachment-container">
+          <div class="attachment-container big">
             <DeliberationDetail deliberationHash={currentHash} />
+          </div>
+          <div class="attachment-container small" style="padding: 0;">
+            <DeliberationListItem deliberationHash={currentHash} />
           </div>
         </main>
       {:else if currentView == "proposal-asset"}
@@ -311,6 +315,22 @@ import type { Deliberation, ConvergeSignal } from './converge/converge/types';
   @media (min-width: 640px) {
     main {
       max-width: none;
+    }
+  }
+
+  .small {
+    display: none;
+  }
+  .big {
+    display: block;
+  }
+
+  @media (max-width: 300px) {
+    .big {
+      display: none !important;
+    }
+    .small {
+      display: block !important;
     }
   }
 </style>
