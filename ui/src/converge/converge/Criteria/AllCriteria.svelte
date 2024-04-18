@@ -20,6 +20,8 @@ let hashes: Array<ActionHash> | undefined;
 let loading = true;
 let error: any = undefined;
 let sortableCriteria = {};
+let showUnsupportedCriteria = false;
+let numberOfUnsupportedCriteria = 0;
 
 async function sortCriteria() {
 // setTimeout(() => {
@@ -38,9 +40,17 @@ async function sortCriteria() {
       return b.myObjections - a.myObjections;
     }
   });
+  numberOfUnsupportedCriteria = 0;
   sortedCriteriaJoined = sortedCriteriaJoined.filter((c) => {
     if (c.supporters > 0) {
       return true;
+    } else {
+      numberOfUnsupportedCriteria++;
+      if (showUnsupportedCriteria) {
+        return true;
+      } else {
+        return false;
+      }
     }
   });
   sortedCriteria = sortedCriteriaJoined.map((c) => c.hash);
@@ -48,7 +58,7 @@ async function sortCriteria() {
   // }, 4000)
 }
 
-$: hashes, loading, error, sortedCriteria, sortableCriteria, sort, filter;
+$: hashes, loading, error, sortedCriteria, sortableCriteria, sort, filter, numberOfUnsupportedCriteria;
 $: if (sort && sortableCriteria && hashes && Object.values(sortableCriteria).length == hashes.length) {
   sortCriteria();
 }
@@ -134,6 +144,37 @@ async function joinSignal() {
       <Criterion on:criterion-rated={joinSignal} criterionHash={hash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}></Criterion>
     {/each}
   {/if}
+  {#if numberOfUnsupportedCriteria > 0}
+    {#if showUnsupportedCriteria}
+      <button
+        class="show-more-button"
+        on:click={() => {
+          showUnsupportedCriteria = false;
+          sortCriteria();
+        }}
+      >Hide {numberOfUnsupportedCriteria} unsupported criteria?</button>
+    {:else}
+      <button
+        class="show-more-button"
+        on:click={() => {
+          showUnsupportedCriteria = true;
+          sortCriteria();
+        }}
+      >Show {numberOfUnsupportedCriteria} unsupported criteria?</button>
+    {/if}
+  {/if}
 </div>
 {/if}
 
+<style>
+  .show-more-button {
+    background: #dee5ff;
+    border: 0;
+    border-radius: 4px;
+    padding: 6px;
+    cursor: pointer;
+  }
+  .show-more-button:hover {
+    background: #c4d2ff;
+  }
+</style>
