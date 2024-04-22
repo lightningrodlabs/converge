@@ -54,6 +54,8 @@ export interface Deliberation {
   settings: string;
 
   attachments?: HrlB64WithContext[];
+
+  discussion?: HrlB64WithContext;
 }
 
 export interface Objection {

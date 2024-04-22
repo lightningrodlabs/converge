@@ -8,12 +8,12 @@
   import { view, viewHash, navigate } from '../../../store.js';
   
   export let deliberationHash: ActionHash;
-  // export let outcomeCount = 0;
+  export let outcomeCount = 0;
   // export let filter;
   // export let sort = "score";
   let loading = true;
   let hashes: Array<ActionHash> | undefined;
-  let outcomeCount = 0;
+  // let outcomeCount = 0;
   let error: any = undefined;
   
   const dispatch = createEventDispatcher();
@@ -44,7 +44,7 @@
         payload: deliberationHash,
       });
       // outcomeCount = 1;
-      hashes = records.map(r => r.signed_action.hashed.hash)
+      hashes = records.map(r => r.signed_action.hashed.hash).reverse()
       outcomeCount = hashes.length
       // sortedOutcomes = hashes
     } catch (e) {
@@ -67,7 +67,7 @@
   <mwc-circular-progress indeterminate></mwc-circular-progress>
 </div>
 {:else if error}
-<span>Error fetching the proposals: {error.data.data}.</span>
+<span>Error fetching the proposals: {error}.</span>
 {:else if hashes.length === 0}
 <span>No proposals yet</span>
 {:else}

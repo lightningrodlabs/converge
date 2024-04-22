@@ -16,7 +16,8 @@ import AttachmentsList from '../../../AttachmentsList.svelte';
 import SvgIcon from "../../../SvgIcon.svelte";
 import { getMyDna } from '../../../util';
 import { weClientStored } from '../../../store.js';
-  import CreateOutcome from '../Outcomes/CreateOutcome.svelte';
+import CreateOutcome from '../Outcomes/CreateOutcome.svelte';
+import OutcomesForProposal from '../Outcomes/OutcomesForProposal.svelte';
 
 const dispatch = createEventDispatcher();
 
@@ -38,6 +39,8 @@ let convergence;
 let maxWeight;
 
 let outcomeFormPopup;
+
+let sideBySide = false;
 
 let weClient;
 let dnaHash: DnaHash;
@@ -153,56 +156,80 @@ async function fetchDeliberation() {
 <!-- <div style="display: flex; 
 flex: 1;"> -->
 <!-- {JSON.stringify(proposalHash.join(''))} -->
-<div class="outlined-item list-item criterion-outer" style="width:96%">
-  {#if convergence > 0 && maxWeight > 0}
-  <div style="display: flex; flex-direction: column; font-size: .8em; max-height: 100px;">
-  <div class="vertical-progress-bar-container">
-  <!-- <div class="vertical-progress-bar-container" style="height: 100px; border: 1px dotted black;"> -->
-    {#each Array.from({ length: 35 * convergence / maxWeight }) as _, index}
-      <div class="progress-line" style="opacity: {convergence / maxWeight}; background-color: rgb(254, 18, 18)"></div>
-    {/each}
-  </div>
-  </div>
-  {/if}
-  <div class="two-sides two-sides-proposal">
 
-  <div style="display: flex; flex: 1; flex-direction: column; width:inherit">
-  <div style="display: flex; flex-direction: row; margin-bottom: 16px; width:inherit; justify-content: space-between;  ">
-    <span style="margin-right: 4px"><strong>{ proposal.title }</strong></span>
-    <!-- <span style="white-space: pre-line">{ proposal.title }</span> -->
-    <button title="Add Board to Pocket" class="attachment-button" style="height: 30px; margin-right:10px; cursor: pointer;" on:click={()=>copyWalToPocket()} >          
-      <SvgIcon icon="addToPocket" size="20px"/>
-    </button>
-  </div>
+  <div class="outlined-item list-item criterion-outer" style="width:96%">
+    {#if convergence > 0 && maxWeight > 0}
+    <div style="display: flex; flex-direction: column; font-size: .8em; max-height: 100px;">
+      <div class="vertical-progress-bar-container">
+      <!-- <div class="vertical-progress-bar-container" style="height: 100px; border: 1px dotted black;"> -->
+        {#each Array.from({ length: 35 * convergence / maxWeight }) as _, index}
+          <div class="progress-line" style="opacity: {convergence / maxWeight}; background-color: rgb(254, 18, 18)"></div>
+        {/each}
+      </div>
+      </div>
+      {/if}
+      <div class="two-sides two-sides-proposal">
 
-  <div class="deliberation-section" style="display: flex; flex-direction: row; margin-bottom: 16px; width:inherit">
-    <!-- <span style="margin-right: 4px"><strong>Description:</strong></span> -->
-    <span style="white-space: pre-line; width:inherit">{ proposal.description }</span>
+      <div style="display: flex; flex: 1; flex-direction: column; width:inherit">
+        <div style="display: flex; flex-direction: row; margin-bottom: 16px; width:inherit; justify-content: space-between;  ">
+          <!-- <span style="white-space: pre-line">{ proposal.title }</span> -->
+          <div style="display: flex; flex-direction: column; font-size: 0.8em; position: relative;">
+            <span style="margin-right: 4px"><strong>{ proposal.title }</strong></span>
+            <br>
+            <span style="white-space: pre-line; max-height: 56px; overflow: hidden;">
+              <strong>evaluations:</strong> {["userRatings"]?.length || 0},&nbsp;
+            </span>
+            <span style="white-space: pre-line">
+              <strong>score:</strong> { Math.round(convergence / maxWeight * 100) }%
+            </span>
+          </div>
+          <div>
+            <!-- button to switch to side-by-side view -->
+            <button
+              style="height: 30px; cursor: pointer;"
+              on:click={() => {
+                sideBySide = !sideBySide
+              }}
+            >
+            <SvgIcon icon="faEye" size="20px"/>
+            View { sideBySide ? "vertical" : "side-by-side"}</button>
+            <button
+              style="height: 30px; cursor: pointer;"
+              on:click={()=>{
+                outcomeFormPopup = !outcomeFormPopup
+              }}>+ Create outcome</button>
+            <CreateOutcome on:outcome-created={(v) =>{
+              dispatch('outcome-created', {
+                outcomeHash: v.detail.outcomeHash
+              })
+            }
+            } proposalHash={proposalHash} {deliberationHash} {outcomeFormPopup} />
+            <button title="Add Board to Pocket" class="attachment-button" style="height: 30px; top: -1px; position: relative; cursor: pointer;" on:click={()=>copyWalToPocket()} >          
+              <SvgIcon icon="addToPocket" size="20px"/>
+            </button>
+            <OutcomesForProposal proposalHash={proposalHash} />
+        </div>
+      </div>
+    </div>
   </div>
-
-  <button on:click={()=>{
-    // dismiss
-    outcomeFormPopup = !outcomeFormPopup
-    // if (outcomeFormPopup) {
-    //   dispatch('dismiss', {});
-    // }
-  }}>Create outcome</button>
-  <CreateOutcome proposalHash={proposalHash} {deliberationHash} {outcomeFormPopup} />
 </div>
-</div>
-</div>
+<div style="display: {sideBySide ? "flex" : "inherit"};">
 
-  <!-- <div class="deliberation-section" style="display: flex; flex-direction: row; margin-bottom: 16px"> -->
-    <!-- <span style="margin-right: 4px"><strong>Evaluate criteria</strong></span> -->
-  <!-- </div> -->
-
+<div style="display: flex; flex-direction: row; margin-bottom: 16px; width:inherit; padding: 30px 30px 0 0;">
+  <!-- <span style="margin-right: 4px"><strong>Description:</strong></span> -->
   {#if isWeContext}
     <div style="display: flex; flex-direction: row; margin-bottom: 5px">
       <AttachmentsList {attachments} allowDelete={false}/>
     </div>
   {/if}
+  <span style="white-space: pre-line; width:inherit">{ proposal.description }</span>
+</div>
 
-  <div style="flex-direction: row; margin-bottom: 16px">
+<!-- <div class="deliberation-section" style="display: flex; flex-direction: row; margin-bottom: 16px"> -->
+    <!-- <span style="margin-right: 4px"><strong>Evaluate criteria</strong></span> -->
+  <!-- </div> -->
+
+  <div style="flex-direction: row; margin-bottom: 16px;">
     <h2 style="margin-bottom: 0; margin-top: 30px;">Evaluate</h2>
     <span style="white-space: pre-line">
       <!-- {deliberationHash} -->
@@ -214,6 +241,7 @@ flex: 1;"> -->
       {/if}
     </span>
   </div>
+</div>
 
 {/if}
 

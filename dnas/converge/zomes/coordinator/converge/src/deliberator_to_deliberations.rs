@@ -1,7 +1,6 @@
 use hdk::prelude::*;
 use converge_integrity::*;
 use zome_utils::*;
-
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AddDeliberationForDeliberatorInput {
     pub base_deliberator: AgentPubKey,
@@ -29,7 +28,9 @@ pub fn add_deliberation_for_deliberator(
 pub fn get_deliberations_for_deliberator(
     deliberator: AgentPubKey,
 ) -> ExternResult<Vec<Record>> {
-    let links = get_links(link_input(deliberator, LinkTypes::DeliberatorToDeliberations, None))?;
+    let links = get_links(
+        link_input(deliberator, LinkTypes::DeliberatorToDeliberations, None),
+    )?;
     let get_input: Vec<GetInput> = links
         .into_iter()
         .map(|link| GetInput::new(
@@ -53,11 +54,9 @@ pub fn get_deliberations_for_deliberator(
 pub fn get_deliberators_for_deliberation(
     deliberation_hash: ActionHash,
 ) -> ExternResult<Vec<AgentPubKey>> {
-    let links = get_links(link_input(
-        deliberation_hash,
-        LinkTypes::DeliberationToDeliberators,
-        None,
-    ))?;
+    let links = get_links(
+        link_input(deliberation_hash, LinkTypes::DeliberationToDeliberators, None),
+    )?;
     let agents: Vec<AgentPubKey> = links
         .into_iter()
         .map(|link| AgentPubKey::from(
@@ -79,11 +78,13 @@ pub struct RemoveDeliberationForDeliberatorInput {
 pub fn remove_deliberation_for_deliberator(
     input: RemoveDeliberationForDeliberatorInput,
 ) -> ExternResult<()> {
-    let links = get_links(link_input(
-        input.base_deliberator.clone(),
-        LinkTypes::DeliberatorToDeliberations,
-        None,
-    ))?;
+    let links = get_links(
+        link_input(
+            input.base_deliberator.clone(),
+            LinkTypes::DeliberatorToDeliberations,
+            None,
+        ),
+    )?;
     for link in links {
         if ActionHash::try_from(link.target.clone())
             .map_err(|_| {
@@ -95,11 +96,13 @@ pub fn remove_deliberation_for_deliberator(
             delete_link(link.create_link_hash)?;
         }
     }
-    let links = get_links(link_input(
-        input.target_deliberation_hash.clone(),
-        LinkTypes::DeliberationToDeliberators,
-        None,
-    ))?;
+    let links = get_links(
+        link_input(
+            input.target_deliberation_hash.clone(),
+            LinkTypes::DeliberationToDeliberators,
+            None,
+        ),
+    )?;
     for link in links {
         if AgentPubKey::from(
                 EntryHash::try_from(link.target.clone())

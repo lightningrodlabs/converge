@@ -2,7 +2,6 @@ use std::ptr::null;
 use hdk::prelude::{*, tracing::field::debug};
 use converge_integrity::*;
 use zome_utils::*;
-
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AddCriterionForObjectorInput {
     pub base_objector: AgentPubKey,
@@ -25,11 +24,9 @@ pub fn add_criterion_for_objector(
             },
         )?;
     }
-    let links = get_links(link_input(
-        input.base_objector.clone(),
-        LinkTypes::SupporterToCriteria,
-        None,
-    ))?;
+    let links = get_links(
+        link_input(input.base_objector.clone(), LinkTypes::SupporterToCriteria, None),
+    )?;
     for link in links {
         if ActionHash::try_from(link.target.clone())
             .map_err(|_| {
@@ -41,11 +38,13 @@ pub fn add_criterion_for_objector(
             delete_link(link.create_link_hash)?;
         }
     }
-    let links = get_links(link_input(
-        input.target_criterion_hash.clone(),
-        LinkTypes::CriterionToSupporters,
-        None,
-    ))?;
+    let links = get_links(
+        link_input(
+            input.target_criterion_hash.clone(),
+            LinkTypes::CriterionToSupporters,
+            None,
+        ),
+    )?;
     for link in links {
         if AgentPubKey::from(
                 EntryHash::try_from(link.target.clone())
@@ -59,11 +58,9 @@ pub fn add_criterion_for_objector(
             delete_link(link.create_link_hash)?;
         }
     }
-    let links = get_links(link_input(
-        input.base_objector.clone(),
-        LinkTypes::ObjectorToCriteria,
-        None,
-    ))?;
+    let links = get_links(
+        link_input(input.base_objector.clone(), LinkTypes::ObjectorToCriteria, None),
+    )?;
     for link in links {
         if ActionHash::try_from(link.target.clone())
             .map_err(|_| {
@@ -75,11 +72,13 @@ pub fn add_criterion_for_objector(
             delete_link(link.create_link_hash)?;
         }
     }
-    let links = get_links(link_input(
-        input.target_criterion_hash.clone(),
-        LinkTypes::CriterionToObjectors,
-        None,
-    ))?;
+    let links = get_links(
+        link_input(
+            input.target_criterion_hash.clone(),
+            LinkTypes::CriterionToObjectors,
+            None,
+        ),
+    )?;
     for link in links {
         if AgentPubKey::from(
                 EntryHash::try_from(link.target.clone())
@@ -177,7 +176,9 @@ pub struct AgentPubKeyWithTag {
 pub fn get_objectors_for_criterion(
     criterion_hash: ActionHash,
 ) -> ExternResult<Vec<AgentPubKeyWithTag>> {
-    let links = get_links(link_input(criterion_hash, LinkTypes::CriterionToObjectors, None))?;
+    let links = get_links(
+        link_input(criterion_hash, LinkTypes::CriterionToObjectors, None),
+    )?;
     let agents: Vec<AgentPubKeyWithTag> = links
         .into_iter()
         .map(|link| {
@@ -209,11 +210,9 @@ pub struct RemoveCriterionForObjectorInput {
 pub fn remove_criterion_for_objector(
     input: RemoveCriterionForObjectorInput,
 ) -> ExternResult<()> {
-    let links = get_links(link_input(
-        input.base_objector.clone(),
-        LinkTypes::ObjectorToCriteria,
-        None,
-    ))?;
+    let links = get_links(
+        link_input(input.base_objector.clone(), LinkTypes::ObjectorToCriteria, None),
+    )?;
     for link in links {
         if ActionHash::try_from(link.target.clone())
             .map_err(|_| {
@@ -225,11 +224,13 @@ pub fn remove_criterion_for_objector(
             delete_link(link.create_link_hash)?;
         }
     }
-    let links = get_links(link_input(
-        input.target_criterion_hash.clone(),
-        LinkTypes::CriterionToObjectors,
-        None,
-    ))?;
+    let links = get_links(
+        link_input(
+            input.target_criterion_hash.clone(),
+            LinkTypes::CriterionToObjectors,
+            None,
+        ),
+    )?;
     for link in links {
         if AgentPubKey::from(
                 EntryHash::try_from(link.target.clone())

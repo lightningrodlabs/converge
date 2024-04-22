@@ -15,6 +15,7 @@ const dispatch = createEventDispatcher();
 export let criterionHash: ActionHash;
 export let proposalHash: ActionHash;
 export let ratings: any[] | undefined;
+export let userRatings: any[] = [];
 export let allSupport;
 export let allCombinedRatings;
 export let allWeight;
@@ -52,6 +53,14 @@ $: if (responded) {
   combinedRating = ratings.reduce((sum, item) => sum + JSON.parse(item["tag"]), 0) / ratings.length;
   let hashTag = criterionHash.join(',');
   allCombinedRatings[hashTag] = combinedRating
+  // add agentHash to userRatings but limit to only one per agent
+  let newRatings = ratings.map(item => item["agentAsString"]);
+  newRatings.forEach(rating => {
+    if (!userRatings?.includes(rating)) {
+      userRatings.push(rating);
+    }
+  });
+  
   allWeight[hashTag] = combinedRating * averageSupport
 } else if (ratings && ratings.length > 0) {
   // console.log('hishihihihi')
@@ -59,6 +68,14 @@ $: if (responded) {
   let hashTag = criterionHash.join(',');
   allCombinedRatings[hashTag] = combinedRating
   allWeight[hashTag] = combinedRating * averageSupport
+
+  // add agentHash to userRatings but limit to only one per agent
+  let newRatings = ratings.map(item => item["agentAsString"]);
+  newRatings.forEach(rating => {
+    if (!userRatings?.includes(rating)) {
+      userRatings.push(rating);
+    }
+  });
 }
 
 // async function calculateRatings() {

@@ -121,6 +121,9 @@ async function joinSignal() {
         console.log("transfer", e.detail)
         // scroll to e.detail.to
         
+      }}
+      on:criterion-comment-created={(e) => {
+        dispatch('criterion-comment-created', e.detail);
       }} />
     {/each}
   {:else if sort == "objections"}

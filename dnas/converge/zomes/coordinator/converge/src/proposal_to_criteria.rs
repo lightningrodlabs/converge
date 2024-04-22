@@ -1,7 +1,6 @@
 use hdk::prelude::*;
 use converge_integrity::*;
 use zome_utils::*;
-
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AddCriterionForProposalInput {
     pub base_proposal_hash: ActionHash,
@@ -31,7 +30,9 @@ pub struct Rating {
 }
 #[hdk_extern]
 pub fn get_ratings_for_proposal(proposal_hash: ActionHash) -> ExternResult<Vec<Rating>> {
-    let links = get_links(link_input(proposal_hash, LinkTypes::ProposalToCriteria, None))?;
+    let links = get_links(
+        link_input(proposal_hash, LinkTypes::ProposalToCriteria, None),
+    )?;
     let output: Vec<Rating> = links
         .into_iter()
         .map(|link| {
@@ -56,7 +57,9 @@ pub fn get_ratings_for_proposal(proposal_hash: ActionHash) -> ExternResult<Vec<R
 pub fn get_criteria_for_proposal(
     proposal_hash: ActionHash,
 ) -> ExternResult<Vec<Record>> {
-    let links = get_links(link_input(proposal_hash, LinkTypes::ProposalToCriteria, None))?;
+    let links = get_links(
+        link_input(proposal_hash, LinkTypes::ProposalToCriteria, None),
+    )?;
     let get_input: Vec<GetInput> = links
         .into_iter()
         .map(|link| GetInput::new(
@@ -85,11 +88,9 @@ pub struct RemoveCriterionForProposalInput {
 pub fn remove_criterion_for_proposal(
     input: RemoveCriterionForProposalInput,
 ) -> ExternResult<()> {
-    let links = get_links(link_input(
-        input.base_proposal_hash.clone(),
-        LinkTypes::ProposalToCriteria,
-        None,
-    ))?;
+    let links = get_links(
+        link_input(input.base_proposal_hash.clone(), LinkTypes::ProposalToCriteria, None),
+    )?;
     for link in links {
         let me: AgentPubKey = agent_info()?.agent_latest_pubkey.into();
         if link.author == me {

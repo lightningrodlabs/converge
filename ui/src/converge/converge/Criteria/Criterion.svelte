@@ -462,6 +462,9 @@ async function scrollToDiv() {
   <!-- <div style="display: flex; flex-direction: row;"> -->
     <CriterionPopup on:switched-tab={scrollToDiv} {criterionHash} {objections} {deliberationHash} {showSlider} bind:criterionPopupBoolean {criterion} {supporters} {sponsored} {support} {addSupportPercentage} {mySupport} on:transfer={(e) => {
       dispatch('transfer', e.detail);
+    }}
+    on:criterion-comment-created={(e) => {
+      dispatch('criterion-comment-created', e.detail);
     }} />
   <!-- </div> -->
   <!-- {/if} -->

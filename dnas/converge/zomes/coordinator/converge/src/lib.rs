@@ -1,3 +1,5 @@
+pub mod proposal_to_outcomes;
+
 pub mod settings;
 pub mod criterion_to_criterion_comments;
 pub mod criterion_comment;
@@ -52,6 +54,7 @@ pub struct ActivityPayload {
     deliberation_hash: ActionHash,
     message: String,
     title: String,
+    context: Option<String>,
 }
 #[hdk_extern]
 pub fn new_activity_sender(data: ActivityPayload) -> ExternResult<InitCallbackResult> {
@@ -77,10 +80,6 @@ pub fn new_activity_sender(data: ActivityPayload) -> ExternResult<InitCallbackRe
                         None,
                         data.clone(),
                     )?;
-                    // let zome_call_response = send_remote_signal(
-                    //     ExternIO::encode(data.clone()).unwrap(), 
-                    //     vec![agent.clone()]
-                    // )?;
                     debug!("zome_call_response: {:?}", zome_call_response);
                 }
             }
@@ -132,8 +131,10 @@ pub fn post_commit(committed_actions: Vec<SignedActionHashed>) {
 fn signal_action(action: SignedActionHashed) -> ExternResult<()> {
     match action.hashed.content.clone() {
         Action::CreateLink(create_link) => {
-            if let Ok(Some(link_type))
-                = LinkTypes::from_type(create_link.zome_index, create_link.link_type) {
+            if let Ok(Some(link_type)) = LinkTypes::from_type(
+                create_link.zome_index,
+                create_link.link_type,
+            ) {
                 emit_signal(Signal::LinkCreated {
                     action,
                     link_type,
@@ -154,11 +155,10 @@ fn signal_action(action: SignedActionHashed) -> ExternResult<()> {
                 )?;
             match record.action() {
                 Action::CreateLink(create_link) => {
-                    if let Ok(Some(link_type))
-                        = LinkTypes::from_type(
-                            create_link.zome_index,
-                            create_link.link_type,
-                        ) {
+                    if let Ok(Some(link_type)) = LinkTypes::from_type(
+                        create_link.zome_index,
+                        create_link.link_type,
+                    ) {
                         emit_signal(Signal::LinkDeleted {
                             action,
                             link_type,
@@ -186,8 +186,9 @@ fn signal_action(action: SignedActionHashed) -> ExternResult<()> {
         }
         Action::Update(update) => {
             if let Ok(Some(app_entry)) = get_entry_for_action(&action.hashed.hash) {
-                if let Ok(Some(original_app_entry))
-                    = get_entry_for_action(&update.original_action_address) {
+                if let Ok(Some(original_app_entry)) = get_entry_for_action(
+                    &update.original_action_address,
+                ) {
                     emit_signal(Signal::EntryUpdated {
                         action,
                         app_entry,
@@ -198,8 +199,9 @@ fn signal_action(action: SignedActionHashed) -> ExternResult<()> {
             Ok(())
         }
         Action::Delete(delete) => {
-            if let Ok(Some(original_app_entry))
-                = get_entry_for_action(&delete.deletes_address) {
+            if let Ok(Some(original_app_entry)) = get_entry_for_action(
+                &delete.deletes_address,
+            ) {
                 emit_signal(Signal::EntryDeleted {
                     action,
                     original_app_entry,

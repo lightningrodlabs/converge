@@ -1,7 +1,6 @@
 use hdk::prelude::*;
 use converge_integrity::*;
 use zome_utils::*;
-
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AddCriterionCommentForCriterionInput {
     pub base_criterion_hash: ActionHash,
@@ -23,11 +22,9 @@ pub fn add_criterion_comment_for_criterion(
 pub fn get_criterion_comments_for_criterion(
     criterion_hash: ActionHash,
 ) -> ExternResult<Vec<Record>> {
-    let links = get_links(link_input(
-        criterion_hash,
-        LinkTypes::CriterionToCriterionComments,
-        None,
-    ))?;
+    let links = get_links(
+        link_input(criterion_hash, LinkTypes::CriterionToCriterionComments, None),
+    )?;
     let get_input: Vec<GetInput> = links
         .into_iter()
         .map(|link| GetInput::new(
@@ -56,11 +53,13 @@ pub struct RemoveCriterionCommentForCriterionInput {
 pub fn remove_criterion_comment_for_criterion(
     input: RemoveCriterionCommentForCriterionInput,
 ) -> ExternResult<()> {
-    let links = get_links(link_input(
-        input.base_criterion_hash.clone(),
-        LinkTypes::CriterionToCriterionComments,
-        None,
-    ))?;
+    let links = get_links(
+        link_input(
+            input.base_criterion_hash.clone(),
+            LinkTypes::CriterionToCriterionComments,
+            None,
+        ),
+    )?;
     for link in links {
         if ActionHash::try_from(link.target.clone())
             .map_err(|_| {

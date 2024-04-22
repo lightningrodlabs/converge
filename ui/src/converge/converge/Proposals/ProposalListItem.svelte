@@ -13,6 +13,7 @@ import RateCriteria from './RateCriteria.svelte';
 import '@material/mwc-linear-progress';
 import '@material/mwc-icon-button'
 import ProposalDetail from './ProposalDetail.svelte';
+import OutcomesForProposal from '../Outcomes/OutcomesForProposal.svelte';
 
 
 const dispatch = createEventDispatcher();
@@ -24,6 +25,7 @@ export let filter;
 export let hashes;
 export let sortableProposals;
 export let anyProposalPopup;
+export let userRatings;
 // let deliberationHash: ActionHash | undefined;
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
@@ -246,26 +248,34 @@ async function deleteProposal() {
   <!-- </div> -->
 <div class="two-sides">
   <div style="display: flex; flex: 1; flex-direction: column">
-    <div style="display: flex; flex-direction: row; margin-bottom: 16px">
+    <div style="display: flex; flex-direction: row; margin-bottom: 3px">
       <span style="white-space: pre-line">{ proposal.title }</span>
     </div>
 
     <!-- <div style="flex: 1; display: flex; flex-direction: row;">
       <mwc-linear-progress progress="0.5" style="flex-grow: 1;"></mwc-linear-progress>
     </div> -->
-    
-    <div class="overflow-content" style="display: flex; flex-direction: row; margin-bottom: 16px; font-size: 0.8em; position: relative;">
+
+    <div class="overflow-content" style="display: flex; flex-direction: row;; font-size: 0.8em; position: relative;">
       <span style="white-space: pre-line; max-height: 56px; overflow: hidden;">
+        <strong>evaluations:</strong> {userRatings?.length || 0}&nbsp;&nbsp;
+      </span>
+
+      <span style="white-space: pre-line">
+        <strong>score:</strong> { Math.round(convergence / maxWeight * 100) }%
+      </span>
+    </div>
+    
+    <div class="overflow-content" style="display: flex; flex-direction: row; font-size: 0.8em; position: relative; margin-top: 3px;">
+      <span style="white-space: pre-line; max-height: 44px; overflow: hidden;">
         { proposal.description }
       </span>
     </div>
 
-    <div class="overflow-content" style="display: flex; flex-direction: row; margin-bottom: 16px; font-size: 0.8em; position: relative;">
-      <span style="white-space: pre-line">score: { Math.round(convergence / maxWeight * 100) }%</span>
-    </div>
-
   </div>
-  <div style="display: flex; flex-direction: column">
+  <OutcomesForProposal proposalHash={proposalHash} />
+
+  <div style="display: flex; flex-direction: column; flex-direction: row; align-items: center; margin: 2px;">
     
     {#if bestScoreKey == proposalHash.join(',')}
       <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-right: 16px">
@@ -283,7 +293,7 @@ async function deleteProposal() {
 </div>
 </div>
 
-<RateCriteria on:proposal-rated={rateAlert} bind:allSupport bind:convergence bind:maxWeight deliberationHash={deliberationHash} proposalHash={proposalHash} display={false} />
+<RateCriteria on:proposal-rated={rateAlert} bind:userRatings bind:allSupport bind:convergence bind:maxWeight deliberationHash={deliberationHash} proposalHash={proposalHash} display={false} />
 
 <!-- <div style="display:relative; z-index: 9999">
   <button on:click={()=>{popupElement.style.width = "90%"; console.log('none')}}>shrink</button>
@@ -301,7 +311,11 @@ async function deleteProposal() {
   <button class="close-button" on:click={() => {proposalDetailHash=proposalHash; proposalPopup = false; anyProposalPopup = false;}}>esc</button><br>
 <!-- <div class="popup-container" style="padding: 30px 24px 30px 30px;"> -->
   <!-- {#if proposalDetailHash} -->
-  <ProposalDetail on:proposal-rated={rateAlert} proposalHash={proposalDetailHash} on:dismiss={() => {proposalPopup = false; anyProposalPopup = false;}} />
+  <ProposalDetail on:proposal-rated={rateAlert} on:outcome-created={(v)=>{
+      dispatch('outcome-created', { outcomeHash: v.detail.outcomeHash });
+      proposalPopup=false
+    }
+  } proposalHash={proposalDetailHash} on:dismiss={() => {proposalPopup = false; anyProposalPopup = false;}} />
     <!-- {/if} -->
   <div id="move-right" on:mousedown={moveRight}>
     <mwc-icon-button style="top: 8px; background-color: white;

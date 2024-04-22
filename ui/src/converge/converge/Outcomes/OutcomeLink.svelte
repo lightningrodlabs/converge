@@ -20,7 +20,6 @@
   import { getMyDna } from '../../../util';
 
   export let outcomeHash: ActionHash;
-  export let deliberationHash: ActionHash;
   
   const dispatch = createEventDispatcher();
 
@@ -110,69 +109,6 @@
   {#if error}
     <div style="color:red">Error getting outcome: {error}</div>
   {:else}
-    <div style="display:flex; align-items:center; padding: 6px 28px; margin-top: 6px; box-shadow: 0px 0px 6px #00000019;">
-      <!-- {#if outcome?.title} -->
-        <h1
-          style="font-size: 24px; margin-right: auto;"
-        >
-          {outcome?.title}
-        </h1>
-      <!-- {/if} -->
-      {#if weaveUrl}
-        <AttachmentsList attachments={[
-          // outcome?.proposal as WAL attachment
-          weaveUrl
-        ]} allowDelete={false} />
-        <div style="font-size: 50px; height: 75px;">→</div>
-      {/if}
-      <AttachmentsList attachments={[outcome?.outcome_attachment]} allowDelete={false} />
-      <div
-        style="display: flex; align-items: center; margin-left: auto;"
-      >
-      {#if showEmbed}
-        <button
-          style="background: #f5f5f5; border: 1px solid #e0e0e0; padding: 6px; cursor: pointer;"
-          on:click={() => {
-            showEmbed = false;
-            console.log(showEmbed)
-          }}
-          >
-          Collapse
-        </button>
-      {:else}
-        <button
-          style="background: #f5f5f5; border: 1px solid #e0e0e0; padding: 6px; cursor: pointer;"
-          on:click={() => {
-            showEmbed = true;
-            console.log(showEmbed)
-          }}
-          >
-          Expand
-        </button>
-        {/if}
-      </div>
-    </div>
-    
-    {#if showEmbed}
-      <div style="display: flex;  box-shadow: 0px 4px 6px #00000019; flex-direction:column; border-top: 0; padding: 6px; background: white;">
-        {#if outcome.proposal}
-          <div>
-            <ProposalListItem proposalHash={outcome.proposal} {deliberationHash} {allProposalScores} {sortableProposals} />
-          </div>
-        {/if}
-        <wal-embed
-          bind:this={walEmbed}
-          on:click={(e)=>{
-            console.log(e)
-            e.stopPropagation()
-          }}
-          class="embed"
-          style="margin-top: 20px;"
-          src={outcome.outcome_attachment}
-            >
-        </wal-embed>
-      </div>
-    {/if}
-
+    <AttachmentsList attachments={[outcome?.outcome_attachment]} allowDelete={false} />
   {/if}
 {/if}

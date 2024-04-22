@@ -1,3 +1,5 @@
+pub mod proposal_to_outcomes;
+pub use proposal_to_outcomes::*;
 pub mod settings;
 pub use settings::*;
 pub mod criterion_to_criterion_comments;
@@ -68,8 +70,8 @@ pub enum LinkTypes {
     AllCriterionComments,
     CriterionToCriterionComments,
     SettingsUpdates,
+    ProposalToOutcomes,
 }
-
 #[hdk_extern]
 pub fn genesis_self_check(
     _data: GenesisSelfCheckData,
@@ -485,6 +487,14 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         tag,
                     )
                 }
+                LinkTypes::ProposalToOutcomes => {
+                    validate_create_link_proposal_to_outcomes(
+                        action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
             }
         }
         FlatOp::RegisterDeleteLink {
@@ -696,6 +706,15 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 }
                 LinkTypes::SettingsUpdates => {
                     validate_delete_link_settings_updates(
+                        action,
+                        original_action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::ProposalToOutcomes => {
+                    validate_delete_link_proposal_to_outcomes(
                         action,
                         original_action,
                         base_address,
@@ -1244,6 +1263,14 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 tag,
                             )
                         }
+                        LinkTypes::ProposalToOutcomes => {
+                            validate_create_link_proposal_to_outcomes(
+                                action,
+                                base_address,
+                                target_address,
+                                tag,
+                            )
+                        }
                     }
                 }
                 OpRecord::DeleteLink { original_action_hash, base_address, action } => {
@@ -1469,6 +1496,15 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         LinkTypes::SettingsUpdates => {
                             validate_delete_link_settings_updates(
+                                action,
+                                create_link.clone(),
+                                base_address,
+                                create_link.target_address,
+                                create_link.tag,
+                            )
+                        }
+                        LinkTypes::ProposalToOutcomes => {
+                            validate_delete_link_proposal_to_outcomes(
                                 action,
                                 create_link.clone(),
                                 base_address,

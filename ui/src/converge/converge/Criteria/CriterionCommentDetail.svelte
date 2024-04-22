@@ -45,6 +45,8 @@ let alternative;
 let respondingTo;
 let nickName;
 
+let fetchTriesCount = 0;
+
 let editing = false;
 let errorSnackbar: Snackbar;
 
@@ -153,6 +155,15 @@ async function fetchCriterionComment() {
 
       // console.log(test)
       // let x = decode(test.tag) as string;
+    } else {
+      // wait a second
+      if (fetchTriesCount > 5) {
+        throw new Error('Could not fetch the criterion comment');
+      } else {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        fetchTriesCount += 1;
+        await fetchCriterionComment();
+      }
     }
   } catch (e) {
     error = e;
@@ -183,12 +194,12 @@ async function deleteCriterionComment() {
 <mwc-snackbar bind:this={errorSnackbar} leading>
 </mwc-snackbar>
 
-{#if loading}
+{#if loading || !record}
 <div style="display: flex; flex: 1; align-items: center; justify-content: center">
   <mwc-circular-progress indeterminate></mwc-circular-progress>
 </div>
 {:else if error}
-<span>Error fetching the criterion comment: {error.data.data}</span>
+<span>Error fetching the criterion comment: {error}</span>
 {:else if editing}
 <EditCriterionComment
   originalCriterionCommentHash={ criterionCommentHash}

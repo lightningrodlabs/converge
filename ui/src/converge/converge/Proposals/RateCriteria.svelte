@@ -12,6 +12,7 @@ export let convergence = 0;
 export let maxWeight = 0;
 export let display: boolean = true;
 export let allSupport = {};
+export let userRatings;
 
 const dispatch = createEventDispatcher();
 
@@ -163,9 +164,9 @@ score {JSON.stringify(convergence / maxWeight)} -->
     <!-- <RateCriterion criterionHash={hash} proposalHash={proposalHash} /> -->
     <!-- <div style="margin-bottom: 8px;"> -->
       {#if allRatings && allRatings[hash.join(',')]}
-        <RateCriterion on:proposal-rated={rateAlert} bind:allWeight bind:allSupport bind:allCombinedRatings criterionHash={hash} proposalHash={proposalHash} display={true} ratings={allRatings[hash.join(',')]} />
+        <RateCriterion on:proposal-rated={rateAlert} bind:userRatings bind:allWeight bind:allSupport bind:allCombinedRatings criterionHash={hash} proposalHash={proposalHash} display={true} ratings={allRatings[hash.join(',')]} />
       {:else}
-        <RateCriterion on:proposal-rated={rateAlert} bind:allWeight bind:allSupport bind:allCombinedRatings criterionHash={hash} proposalHash={proposalHash} display={true} ratings={[]} />
+        <RateCriterion on:proposal-rated={rateAlert} bind:userRatings bind:allWeight bind:allSupport bind:allCombinedRatings criterionHash={hash} proposalHash={proposalHash} display={true} ratings={[]} />
       {/if}
     <!-- </div> -->
   {/each}
@@ -176,9 +177,9 @@ score {JSON.stringify(convergence / maxWeight)} -->
   {#if hashes && hashes.length > 0}
     {#each hashes as hash}
       {#if allRatings && allRatings[hash.join(',')]}
-        <RateCriterion on:proposal-rated={rateAlert} bind:allWeight bind:allSupport bind:allCombinedRatings criterionHash={hash} proposalHash={proposalHash} {display} ratings={allRatings[hash.join(',')]} />
+        <RateCriterion on:proposal-rated={rateAlert} bind:userRatings bind:allWeight bind:allSupport bind:allCombinedRatings criterionHash={hash} proposalHash={proposalHash} {display} ratings={allRatings[hash.join(',')]} />
       {:else}
-        <RateCriterion on:proposal-rated={rateAlert} bind:allWeight bind:allSupport bind:allCombinedRatings criterionHash={hash} proposalHash={proposalHash} {display} ratings={[]} />
+        <RateCriterion on:proposal-rated={rateAlert} bind:userRatings bind:allWeight bind:allSupport bind:allCombinedRatings criterionHash={hash} proposalHash={proposalHash} {display} ratings={[]} />
       {/if}
     {/each}
   {/if}

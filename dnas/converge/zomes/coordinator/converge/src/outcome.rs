@@ -6,9 +6,7 @@ pub struct CreateOutcomeInput {
     deliberation: ActionHash,
 }
 #[hdk_extern]
-pub fn create_outcome(
-    create_outcome_input: CreateOutcomeInput,
-) -> ExternResult<Record> {
+pub fn create_outcome(create_outcome_input: CreateOutcomeInput) -> ExternResult<Record> {
     let CreateOutcomeInput { outcome, deliberation } = create_outcome_input;
     let outcome_hash = create_entry(&EntryTypes::Outcome(outcome.clone()))?;
     let record = get(outcome_hash.clone(), GetOptions::default())?

@@ -332,5 +332,8 @@ import type { Deliberation, ConvergeSignal } from './converge/converge/types';
     .small {
       display: block !important;
     }
+    small {
+      display: none;
+    }
   }
 </style>

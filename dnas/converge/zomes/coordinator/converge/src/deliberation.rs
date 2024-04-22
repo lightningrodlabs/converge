@@ -1,7 +1,6 @@
 use hdk::prelude::*;
 use converge_integrity::*;
 use zome_utils::*;
-
 #[hdk_extern]
 pub fn create_deliberation(deliberation: Deliberation) -> ExternResult<Record> {
     debug!("create_deliberation: {:?}", deliberation);
@@ -27,11 +26,13 @@ pub fn create_deliberation(deliberation: Deliberation) -> ExternResult<Record> {
 pub fn get_deliberation(
     original_deliberation_hash: ActionHash,
 ) -> ExternResult<Option<Record>> {
-    let links = get_links(link_input(
-        original_deliberation_hash.clone(),
-        LinkTypes::DeliberationUpdates,
-        None,
-    ))?;
+    let links = get_links(
+        link_input(
+            original_deliberation_hash.clone(),
+            LinkTypes::DeliberationUpdates,
+            None,
+        ),
+    )?;
     let latest_link = links
         .into_iter()
         .max_by(|link_a, link_b| link_a.timestamp.cmp(&link_b.timestamp));

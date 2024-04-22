@@ -224,7 +224,7 @@ body {
   transition: all 0s ease;
   vertical-align: top;
   padding: 4px 8px;
-  padding-bottom: 0px;
+  /* padding-bottom: 0px; */
   /* display: inline-block;
   width: 100%;
   width: calc(50% - 9px); */
@@ -370,6 +370,18 @@ mwc-slider[disabled] .mdc-slider__thumb-knob {
   padding-top: 0px;
   min-height: 100vh;
   width: calc(100vw - 65px);
+}
+
+/* mini view */
+@media (max-width: 300px) {
+  main {
+    width: 100%;
+  }
+
+  .attachment-container {
+    padding-top: 0px;
+    width: 100%;
+  }
 }
 
 .reload-page {

@@ -81,6 +81,20 @@ async function createOutcome() {
       fn_name: 'create_outcome',
       payload: createOutcomeInput,
     });
+
+    if (record) {
+      await client.callZome({
+        cap_secret: null,
+        role_name: 'converge',
+        zome_name: 'converge',
+        fn_name: 'add_outcome_for_proposal',
+        payload: {
+          base_proposal_hash: proposalHash,
+          target_outcome_hash: record.signed_action.hashed.hash,
+        },
+      });
+    }
+
     dismissPopup()
     dispatch('outcome-created', { outcomeHash: record.signed_action.hashed.hash });
   } catch (e) {
@@ -103,7 +117,7 @@ async function createOutcome() {
           <h2 style="font-size: 18px">Create Outcome</h2>
 
           <div style="margin-bottom: 16px; margin-right: 10px;">
-            <mwc-textfield style="width: 100%;" outlined label="Title" value={ title } on:input={e => { title = e.target.value;} }></mwc-textfield>          
+            <mwc-textfield style="width: 100%;" outlined label="Title (optional)" value={ title } on:input={e => { title = e.target.value;} }></mwc-textfield>          
           </div>
 
           <!-- dropdown option of sorted proposals -->
@@ -146,7 +160,7 @@ async function createOutcome() {
             </button>
           {/if}
 
-          <label class="instructions">Warning: you will not be able to edit the above details after creating.</label>
+          <label class="instructions">Warning: you will not be able to edit OR DELETE this after creating</label>
 
           <div style="display: flex; flex-direction: row">
             <mwc-button

@@ -142,7 +142,10 @@ async function rateAlert() {
     <!-- {JSON.stringify(sortableProposals)} -->
       <!-- {#if sort == "score"} -->
         <!-- {#each sortedProposals as hash} -->
-          <ProposalListItem on:proposal-rated={rateAlert} bind:anyProposalPopup bind:sortableProposals bind:allProposalScores proposalHash={hash} {deliberationHash} {hashes} {filter} on:proposal-deleted={() => fetchProposals()} />
+          <ProposalListItem on:proposal-rated={rateAlert} on:outcome-created={(v) => {
+            dispatch('outcome-created', v);
+          }
+          } bind:anyProposalPopup bind:sortableProposals bind:allProposalScores proposalHash={hash} {deliberationHash} {hashes} {filter} on:proposal-deleted={() => fetchProposals()} />
         <!-- {/each} -->
       <!-- {:else if sort == "respondants"} -->
         <!-- {#each sortedProposals as hash} -->

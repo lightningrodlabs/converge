@@ -13,7 +13,7 @@ import '@material/mwc-textarea';
 import { view, viewHash, navigate } from '../../../store.js';
 import AttachmentsDialog from "../../../AttachmentsDialog.svelte"
 import SvgIcon from "../../../SvgIcon.svelte";
-import { WeClient, isWeContext, initializeHotReload, type WAL, type Hrl } from '@lightningrodlabs/we-applet';
+import { WeClient, isWeContext, initializeHotReload, type WAL, type Hrl, weaveUrlFromWal } from '@lightningrodlabs/we-applet';
 import AttachmentsBind from '../../../AttachmentsBind.svelte';
 import { HoloHashMap, type EntryHashMap } from "@holochain-open-dev/utils";
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
@@ -28,11 +28,13 @@ let title: string = '';
 let description: string = '';
 let settings: any = {scoring: 'classic'};
 let attachments: Array<WALUrl> = [];
+let discussionAttachments: Array<WALUrl> = [];
 let errorSnackbar: Snackbar;
 // let threadsInfos: HoloHashMap<EntryHash, AppletInfo> = new HoloHashMap
 let discussionApps = {};
 let selectedDiscussionApp: string = "none";
 let attachmentTypes = [];
+let discussionWALUrl: WALUrl = null;
 
 $: title, description, settings, attachments, discussionApps;
 $: isDeliberationValid = true && title !== '' && settings !== '';
@@ -80,7 +82,8 @@ async function createDeliberation() {
     title: title!,
     description: description!,
     settings: JSON.stringify(settings!),
-    attachments: attachments
+    attachments: attachments,
+    discussion: discussionAttachments[0] ? discussionAttachments[0] : null,
     // discussionApp: selectedDiscussionApp.appletName
   };
 
@@ -108,43 +111,43 @@ async function createDeliberation() {
       },
     });
 
-    if (selectedDiscussionApp != "none") {
-      // add discussion
-      const appletHash = discussionApps[selectedDiscussionApp][0]
-      const appletInfo = await weClient.appletInfo(appletHash)
-      console.log("appletInfo2", appletInfo)
-      const aType = discussionApps[selectedDiscussionApp][1]
-      console.log("aType", aType)
-      const threadsCreate = {hrl:[dna, record.signed_action.hashed.hash], attachmentType:"{}"}
-      console.log("threadsCreate", threadsCreate)
-      const hrlWithContext = await aType.create(threadsCreate)
-      console.log("hrl", hrlWithContext)
-      console.log("b64", hrlWithContextToB64(hrlWithContext))
+    // if (selectedDiscussionApp != "none") {
+    //   // add discussion
+    //   const appletHash = discussionApps[selectedDiscussionApp][0]
+    //   const appletInfo = await weClient.appletInfo(appletHash)
+    //   console.log("appletInfo2", appletInfo)
+    //   const aType = discussionApps[selectedDiscussionApp][1]
+    //   console.log("aType", aType)
+    //   const threadsCreate = {hrl:[dna, record.signed_action.hashed.hash], attachmentType:"{}"}
+    //   console.log("threadsCreate", threadsCreate)
+    //   const hrlWithContext = await aType.create(threadsCreate)
+    //   console.log("hrl", hrlWithContext)
+    //   console.log("b64", hrlWithContextToB64(hrlWithContext))
       
-      const hrlB64 = hrlWithContextToB64(hrlWithContext)
-      const deliberationUpdate = {
-        original_deliberation_hash: record.signed_action.hashed.hash,
-        previous_deliberation_hash: record.signed_action.hashed.hash,
-        updated_deliberation: {
-          ...deliberationEntry,
-          discussion: {
-            hrl: JSON.stringify(hrlB64.hrl),
-            context: hrlB64.context,
-          }
-        }
-      }
+    //   const hrlB64 = hrlWithContextToB64(hrlWithContext)
+    //   const deliberationUpdate = {
+    //     original_deliberation_hash: record.signed_action.hashed.hash,
+    //     previous_deliberation_hash: record.signed_action.hashed.hash,
+    //     updated_deliberation: {
+    //       ...deliberationEntry,
+    //       discussion: {
+    //         hrl: JSON.stringify(hrlB64.hrl),
+    //         context: hrlB64.context,
+    //       }
+    //     }
+    //   }
       
-      console.log("deliberationUpdate", deliberationUpdate)
+    //   console.log("deliberationUpdate", deliberationUpdate)
       
-      // update deliberation to include newly created discussion
-      await client.callZome({
-        cap_secret: null,
-        role_name: 'converge',
-        zome_name: 'converge',
-        fn_name: 'update_deliberation',
-        payload: deliberationUpdate,
-      });
-    }
+    //   // update deliberation to include newly created discussion
+    //   await client.callZome({
+    //     cap_secret: null,
+    //     role_name: 'converge',
+    //     zome_name: 'converge',
+    //     fn_name: 'update_deliberation',
+    //     payload: deliberationUpdate,
+    //   });
+    // }
 
     // await client.callZome({
     //   cap_secret: null,
@@ -213,7 +216,19 @@ async function createDeliberation() {
     </div>
     {/if}
     <div style="display:flex; flex-wrap:wrap; align-items: center; margin-bottom:10px;">
-      <label>Attachments &nbsp;
+      <label style="margin-top:5px">Discussion&nbsp;</label>
+      <AttachmentsDialog bind:this={attachmentsDialog} attachmentsLimit={1} bind:attachments={discussionAttachments} 
+      on:add-attachments={
+        (e) => {
+          console.log("add-attachments", e.detail)
+          discussionWALUrl = weaveUrlFromWal(e.detail.attachments[0])
+          console.log(discussionWALUrl)
+          // props.attachments = e.detail.attachments
+          // bind.refresh()
+        }
+      }></AttachmentsDialog>
+
+      <label style="margin-top:5px">Attachments &nbsp;
       </label>
       <!-- <div style="margin-left:10px; margin-right:10px;">
         <button class="attachment-button" on:click={()=>attachmentsDialog.open()} >          
@@ -229,6 +244,7 @@ async function createDeliberation() {
         console.log("add-attachments", e.detail)
       }
     }></AttachmentsBind> -->
+    
     <AttachmentsDialog bind:this={attachmentsDialog} bind:attachments on:add-attachments={
       (e) => {
         console.log("add-attachments", e.detail)

@@ -154,7 +154,7 @@
         fn_name: 'create_criterion_comment',
         payload: criterionCommentEntry,
       });
-      dispatch('criterion-comment-created', { criterionCommentHash: record.signed_action.hashed.hash });
+      dispatch('criterion-comment-created', {context: JSON.stringify({criterionCommentHash: encodeHashToBase64(record.signed_action.hashed.hash), criterionHash: encodeHashToBase64(criterionHash)})});
     } catch (e) {
       errorSnackbar.labelText = `Error creating the criterion comment: ${e.data.data}`;
       errorSnackbar.show();
@@ -282,7 +282,11 @@
   <!-- COMMENTS STARTS -->
   <CriterionCommentsForCriterion {showSlider} {criterion} {criterionHash} {objections} {alternatives} {deliberationHash} {mySupport} on:transfer={(e) => {
     dispatch('transfer', e.detail);
-  }}>
+  }}
+  on:criterion-comment-created={(e) => {
+    dispatch('criterion-comment-created', e.detail);
+  }}
+  >
   </CriterionCommentsForCriterion>
 
 
