@@ -63,23 +63,22 @@ onMount(async () => {
   }
   loading = false;
 
-  client.on('signal', signal => {
-    if (signal.zome_name !== 'converge') return;
-    const payload = signal.payload as ConvergeSignal;
-    if (payload.type !== 'LinkCreated') return;
-    let linkType = Object.keys(payload.link_type)[0]
-    console.log(linkType)
-    if (linkType !== 'CriterionToCriterionComments') return;
-    hashes = [...hashes, payload.action.hashed.content.target_address];
-    scrollToBottom();
-  });
+  // client.on('signal', signal => {
+  //   if (signal.zome_name !== 'converge') return;
+  //   const payload = signal.payload as ConvergeSignal;
+  //   if (payload.type !== 'LinkCreated') return;
+  //   let linkType = Object.keys(payload.link_type)[0]
+  //   console.log(linkType)
+  //   if (linkType !== 'CriterionToCriterionComments') return;
+  //   hashes = [...hashes, payload.action.hashed.content.target_address];
+  //   scrollToBottom();
+  // });
 
   client.on('signal', signal => {
     console.log("signal", signal)
     if (signal.zome_name !== 'converge') return;
     const payload = signal.payload as ConvergeSignal;
     if (payload.message == "criterion-comment-created") {
-      console.log("+++++++++++++++++", JSON.parse(payload.context));
       hashes = [...hashes, decodeHashFromBase64(JSON.parse(payload.context).criterionCommentHash)];
       console.log("hashes", hashes)
       scrollToBottom();
@@ -193,7 +192,7 @@ async function removeObjection() {
         background-color: #f2f2f2;
         cursor: pointer;">
         <!-- <mwc-switch on:click={(e) => {console.log(e.target)}} name="choice"></mwc-switch>  -->
-        <mwc-formfield style="padding: 10px 2px;" label="Submit a comment as objection to the criterion?">
+        <mwc-formfield style="padding: 10px 2px; cursor: pointer;" label="Submit comment as an objection to the criterion?">
           <input type="checkbox" bind:checked={commentIsAnObjection} />
           </mwc-formfield>
       </div>
@@ -214,6 +213,8 @@ async function removeObjection() {
 
   <!-- {#if showSlider} -->
   <CreateCriterionComment on:criterion-comment-created={(e) => {
+    hashes = [...hashes, JSON.parse(e.detail.context).criterionCommentHash];
+    scrollToBottom();
     dispatch('criterion-comment-created', e.detail);
     commentReference=undefined
   }

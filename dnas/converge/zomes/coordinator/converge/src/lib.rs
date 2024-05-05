@@ -1,5 +1,6 @@
+pub mod all_viewed;
+pub mod viewed;
 pub mod proposal_to_outcomes;
-
 pub mod settings;
 pub mod criterion_to_criterion_comments;
 pub mod criterion_comment;

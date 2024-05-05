@@ -11,8 +11,8 @@ import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
 import CriterionPopup from './CriterionPopup.svelte';
-    import { navigate } from '../../../store';
-    import SvgIcon from "../SvgIcon.svelte";
+import { countViewed, addToViewed, navigate } from '../../../store.js';
+import SvgIcon from "../SvgIcon.svelte";
 
 const dispatch = createEventDispatcher();
 
@@ -40,6 +40,7 @@ let mySupport;
 let criterionPopupBoolean = false;
 let myDiv;
 let commentsNumber;
+let unreadCommentsNumber;
 const scoringLevel = 4;
 
 let errorSnackbar: Snackbar;
@@ -51,6 +52,7 @@ onMount(async () => {
     throw new Error(`The criterionHash input is required for the CriterionDetail element`);
   }
   await fetchCriterion();
+  await addToViewed(criterionHash, client);
   await fetchSupport();
   await fetchObjections();
   console.log(objections)
@@ -164,6 +166,8 @@ async function fetchSupport() {
           payload: criterionHash,
         });
         commentsNumber = records.length;
+        console.log(records, "comments")
+        unreadCommentsNumber = Math.max(0, commentsNumber - countViewed(records.map(r => r.signed_action.hashed.hash)));
       } catch (e) {
         error = e;
       }
@@ -433,11 +437,16 @@ async function scrollToDiv() {
     {:else}
       <mwc-icon-button style="top: 8px;
         position: relative; background-color: #f1f1f1; border-radius: 100%;">
+        {#if commentsNumber && commentsNumber > 0}
+          <div id="commentsNumber">
+            {commentsNumber}
+          </div>
+        {/if}
         <SvgIcon icon=faComments size=20/>
       </mwc-icon-button>
-      {#if commentsNumber && commentsNumber > 0}
-        <div id="commentsNumber">
-          {commentsNumber}
+      {#if unreadCommentsNumber && unreadCommentsNumber > 0}
+        <div id="unreadCommentsNumber">
+          {unreadCommentsNumber}
         </div>
       {/if}
     {/if}

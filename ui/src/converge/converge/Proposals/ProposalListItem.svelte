@@ -12,6 +12,7 @@ import '@material/mwc-icon-button';
 import RateCriteria from './RateCriteria.svelte';
 import '@material/mwc-linear-progress';
 import '@material/mwc-icon-button'
+import { countViewed, addToViewed } from '../../../store.js';
 import ProposalDetail from './ProposalDetail.svelte';
 import OutcomesForProposal from '../Outcomes/OutcomesForProposal.svelte';
 
@@ -72,6 +73,7 @@ onMount(async () => {
     throw new Error(`The proposalHash input is required for the ProposalDetail element`);
   }
   await fetchProposal();
+  addToViewed(proposalHash, client);
   // await fetchDeliberation();
 
   window.addEventListener("keydown", checkKey);
@@ -306,7 +308,8 @@ async function deleteProposal() {
   <div id="move-left" on:mousedown={moveLeft}>
     <mwc-icon-button style="top: 8px; background-color: white;
     border-radius: 50px; margin-right: 8px;
-    position: relative;" icon="⇦"></mwc-icon-button>
+    
+    position: relative;">⇦</mwc-icon-button>
     </div>
   <button class="close-button" on:click={() => {proposalDetailHash=proposalHash; proposalPopup = false; anyProposalPopup = false;}}>esc</button><br>
 <!-- <div class="popup-container" style="padding: 30px 24px 30px 30px;"> -->
@@ -320,7 +323,7 @@ async function deleteProposal() {
   <div id="move-right" on:mousedown={moveRight}>
     <mwc-icon-button style="top: 8px; background-color: white;
     border-radius: 50px; margin: 8px;
-    position: relative;" icon="⇨"></mwc-icon-button>  
+    position: relative;">⇨</mwc-icon-button>  
     </div>
 </dialog>
 <!-- </div> -->
@@ -374,6 +377,7 @@ async function deleteProposal() {
     position: fixed;
     right: 0px;
     top: 40vh;
+    margin-right: -10px;
     opacity: 0; /* Initially hidden */
     animation: showMoveLeft 0.1s forwards 0.3s; /* Appears after 0.3s delay (same as dialog's animation duration) */
   }

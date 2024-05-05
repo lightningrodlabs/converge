@@ -16,6 +16,7 @@
   import ProposalListItem from '../Proposals/ProposalListItem.svelte';
   import '@lightningrodlabs/we-elements/dist/elements/wal-embed.js';
   import { weClientStored } from '../../../store.js';
+  import { countViewed, addToViewed } from '../../../store.js';
   import SvgIcon from '../SvgIcon.svelte';
   import { getMyDna } from '../../../util';
 
@@ -79,6 +80,7 @@
       throw new Error(`The proposalHash input is required for the ProposalDetail element`);
     }
     await fetchOutcome();
+    addToViewed(outcomeHash, client);
     // await fetchDeliberation();
 
     dnaHash = await getMyDna("converge", client)
@@ -110,7 +112,9 @@
   {#if error}
     <div style="color:red">Error getting outcome: {error}</div>
   {:else}
-    <div style="display:flex; align-items:center; padding: 6px 28px; margin-top: 6px; box-shadow: 0px 0px 6px #00000019;">
+    <div class="outcome-outer" style="display:flex; padding: 6px 28px; flex-direction: column">
+      <div style="display:flex; align-items:center; flex-direction: row;">
+      <!-- <div > -->
       <!-- {#if outcome?.title} -->
         <h1
           style="font-size: 24px; margin-right: auto;"
@@ -131,7 +135,7 @@
       >
       {#if showEmbed}
         <button
-          style="background: #f5f5f5; border: 1px solid #e0e0e0; padding: 6px; cursor: pointer;"
+          class="expand-button"
           on:click={() => {
             showEmbed = false;
             console.log(showEmbed)
@@ -141,7 +145,7 @@
         </button>
       {:else}
         <button
-          style="background: #f5f5f5; border: 1px solid #e0e0e0; padding: 6px; cursor: pointer;"
+          class="expand-button"
           on:click={() => {
             showEmbed = true;
             console.log(showEmbed)
@@ -152,9 +156,8 @@
         {/if}
       </div>
     </div>
-    
     {#if showEmbed}
-      <div style="display: flex;  box-shadow: 0px 4px 6px #00000019; flex-direction:column; border-top: 0; padding: 6px; background: white;">
+      <div class="expanded-outcome">
         {#if outcome.proposal}
           <div>
             <ProposalListItem proposalHash={outcome.proposal} {deliberationHash} {allProposalScores} {sortableProposals} />
@@ -173,6 +176,40 @@
         </wal-embed>
       </div>
     {/if}
+  </div>
 
   {/if}
 {/if}
+
+<style>
+  .outcome-outer {
+    display:flex; 
+    /* align-items:center;  */
+    padding: 6px 28px; 
+    margin-top: 6px; 
+    box-shadow: 0px 0px 6px 4px #00000019;
+    border-radius: 6px;
+  }
+
+  .outcome-outer:hover {
+    box-shadow: 0px 0px 6px 4px #00000034;
+  }
+
+  .expanded-outcome {
+    /* margin-top: -6px; border-radius: 6px; display: flex;  box-shadow: 0px 4px 6px #00000034; flex-direction:column; border-top: 0; padding: 6px; background: white; */
+  }
+
+  .expand-button {
+    background: rgb(245, 245, 245);
+    border: none;
+    padding: 6px;
+    cursor: pointer;
+    border-radius: 4px;
+    background-color: #86658e;
+    color: white;
+  }
+
+  .expand-button:hover {
+    background-color: #5c455e;
+  }
+</style>

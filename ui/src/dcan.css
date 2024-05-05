@@ -57,6 +57,19 @@ main {
   text-align: left;
 }
 
+.whiteless-container {
+  /* background-color: white; */
+  padding: 25px;
+  padding-top: 0;
+  min-height: 70vh;
+  /* min-width: 68%; */
+  /* width: 94% !important; */
+  width: 85vw;
+  margin-left: 5vw;
+  border-radius: 20px;
+  text-align: left;
+}
+
 .invisible-outer {
   background-color: transparent;
   padding: 25px;
@@ -68,6 +81,7 @@ main {
 }
 
 .dashboard-item {
+  background-color: white;
   list-style: none;
   display: inline-block;
   margin: 4px 4px 4px 0px;
@@ -182,10 +196,11 @@ nav logo {
 }
 
 .logo-image.small {
-  width: 1.7em;
+  width: 5.7em;
   margin: 1px 6px 0 -4px;
   padding: 1px;
   box-shadow: none;
+  border-radius: 0;
 }
 
 .icon {
@@ -278,6 +293,10 @@ h1 {
   text-decoration: none;
   vertical-align: middle;
   cursor: pointer;
+}
+
+.new-action-button:hover {
+  background-color: rgb(77, 77, 77);
 }
 
 .new-action-button > * {
@@ -395,7 +414,7 @@ footer {
   position: relative;
 }
 
-#commentsNumber {
+#unreadCommentsNumber {
   position: relative;
   top: -42px;
   right: -48px;
@@ -407,4 +426,11 @@ footer {
   border-radius: 100%;
   width: 17px;
   height: 17px;
+}
+
+#commentsNumber {
+  display: inline-block;
+  font-size: 16px;
+  width: 0;
+  margin-right: 4px;
 }

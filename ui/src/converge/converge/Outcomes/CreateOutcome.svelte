@@ -12,6 +12,7 @@ import AttachmentsDialog from "../../../AttachmentsDialog.svelte"
 import Criterion from '../Criteria/Criterion.svelte';
 import type { WALUrl } from '../../../util';
 import AttachmentsList from "../../../AttachmentsList.svelte";
+import { countViewed, addToViewed } from '../../../store.js';
 import { weaveUrlToWAL } from "@lightningrodlabs/we-applet";
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
@@ -83,6 +84,8 @@ async function createOutcome() {
     });
 
     if (record) {
+      addToViewed(record.signed_action.hashed.hash, client);
+
       await client.callZome({
         cap_secret: null,
         role_name: 'converge',
@@ -95,12 +98,13 @@ async function createOutcome() {
       });
     }
 
-    dismissPopup()
     dispatch('outcome-created', { outcomeHash: record.signed_action.hashed.hash });
   } catch (e) {
-    errorSnackbar.labelText = `Error creating the outcome: ${e}`;
-    errorSnackbar.show();
+    console.error("no propposal to add to", e);
+    // errorSnackbar.labelText = `Error creating the outcome: ${e}`;
+    // errorSnackbar.show();
   }
+  dismissPopup()
 }
 
 </script>

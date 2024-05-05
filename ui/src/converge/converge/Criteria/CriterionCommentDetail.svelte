@@ -14,6 +14,7 @@ import EditCriterionComment from './EditCriterionComment.svelte';
 import ObjectionMini from './Objection.svelte'
 import AlternativeMini from './Alternative.svelte'
 import { encodeHashToBase64 } from "@holochain/client";
+import { countViewed, addToViewed } from '../../../store.js';
 import type { AsyncStatus } from "@holochain-open-dev/stores";
 import type { Profile } from "@holochain-open-dev/profiles";
 import Avatar from '../Avatar.svelte';
@@ -73,14 +74,8 @@ onMount(async () => {
     throw new Error(`The criterionCommentHash input is required for the CriterionCommentDetail element`);
   }
   await fetchCriterionComment();
+  addToViewed(criterionCommentHash, client);
   loading = false;
-
-  await profilesStore.profiles.get(criterionComment.author).subscribe((profile) => {
-    console.log("profile: ", profile)
-    if (profile.status == "complete") {
-      nickName = profile.value.entry.nickname
-    }
-  })
 });
 
 async function fetchObjection(objection_hash) {
@@ -132,7 +127,13 @@ async function fetchCriterionComment() {
     });
     if (record) {
       criterionComment = decode((record.entry as any).Present.entry) as CriterionComment;
-      console.log(criterionComment.objection_reference)
+
+      await profilesStore.profiles.get(criterionComment.author).subscribe((profile) => {
+        console.log("profile: ", profile)
+        if (profile.status == "complete") {
+          nickName = profile.value.entry.nickname
+        }
+      })
 
       if (criterionComment.objection_reference) {
         console.log('fetching objection')
@@ -172,21 +173,21 @@ async function fetchCriterionComment() {
   loading = false;
 }
 
-async function deleteCriterionComment() {
-  try {
-    await client.callZome({
-      cap_secret: null,
-      role_name: 'converge',
-      zome_name: 'converge',
-      fn_name: 'delete_criterion_comment',
-      payload: criterionCommentHash,
-    });
-    dispatch('criterion-comment-deleted', { criterionCommentHash: criterionCommentHash });
-  } catch (e: any) {
-    errorSnackbar.labelText = `Error deleting the criterion comment: ${e.data.data}`;
-    errorSnackbar.show();
-  }
-}
+// async function deleteCriterionComment() {
+//   try {
+//     await client.callZome({
+//       cap_secret: null,
+//       role_name: 'converge',
+//       zome_name: 'converge',
+//       fn_name: 'delete_criterion_comment',
+//       payload: criterionCommentHash,
+//     });
+//     dispatch('criterion-comment-deleted', { criterionCommentHash: criterionCommentHash });
+//   } catch (e: any) {
+//     errorSnackbar.labelText = `Error deleting the criterion comment: ${e.data.data}`;
+//     errorSnackbar.show();
+//   }
+// }
 </script>
 
 {#if filter == "all" || filter == "objections" && objection || filter == "alternatives" && alternative}
@@ -200,7 +201,7 @@ async function deleteCriterionComment() {
 </div>
 {:else if error}
 <span>Error fetching the criterion comment: {error}</span>
-{:else if editing}
+<!-- {:else if editing}
 <EditCriterionComment
   originalCriterionCommentHash={ criterionCommentHash}
   currentRecord={record}
@@ -209,7 +210,7 @@ async function deleteCriterionComment() {
     await fetchCriterionComment()
   } }
   on:edit-canceled={() => { editing = false; } }
-></EditCriterionComment>
+></EditCriterionComment> -->
 
 {:else}
 <!-- Assuming you have necessary MWC components and styles imported -->
@@ -260,7 +261,7 @@ async function deleteCriterionComment() {
         {#if !objection && !alternative}
           <span class="comment-text">{criterionComment.comment}</span>
         {/if}
-        <span class="timestamp">{new Date(criterionComment.created / 1000).toLocaleString()}</span>
+        <span class="timestamp">{new Date(criterionComment.created).toLocaleString()}</span>
         <span class="timestamp">
         <button class="reply" on:click={() => {commentReference = {hash: criterionCommentHash, comment: criterionComment.comment};}}>Reply</button>
         </span>

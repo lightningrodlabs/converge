@@ -148,7 +148,7 @@ async function createProposal() {
             </button>
           {/if}
 
-          <label class="instructions">Warning: you will not be able to edit OR DELETE after creating</label>
+          <label class="instructions">Warning: After creating a proposal, it belongs to everyone and cannot be edited or deleted.</label>
 
           <div style="display: flex; flex-direction: row">
             <mwc-button

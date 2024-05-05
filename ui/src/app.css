@@ -10,9 +10,29 @@ h1, h2 {
 }
 
 h2 {
-  font-size: 1.2rem;
-  margin: 0.5;
+  font-family: Roboto;
+  font-weight: 500;
+  font-size: 16px;
+  color: black;
+  text-align: left;
 }
+
+.notifications, .dashboard, .bulletin {
+  width: 24px;
+  height: 26px;
+  color: #d6ddeb;
+  /* margin: 0 10px; */
+  /* margin-right: 10px; */
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 6px;
+}
+
+.notifications:hover, .dashboard:hover, .bulletin:hover {
+  background-color: #c0b8c3;
+}
+
+
 
 .dashboard-section {
   margin: 0.2rem 0;
@@ -34,6 +54,10 @@ h2 {
   cursor: pointer;
   display: flex;
   justify-content: space-between;
+}
+
+.dashboard-item:hover {
+  box-shadow: 0px 0px 6px 4px #00000034;
 }
 
 .dashboard-item > div {
@@ -78,7 +102,8 @@ h2 {
 }
 
 body {
-  background-color: #e6ecf8;
+  /* background-color: #e6ecf8; */
+  background-color: #e6e9f8;
   color: #525252;
 }
 
@@ -200,6 +225,12 @@ body {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  transition: all 0.2s ease;
+}
+
+.outlined-item:hover, .criterion-outer:hover {
+  box-shadow: 0px 0px 6px 4px #00000034;
+  transition: all 0.2s ease;
 }
 
 .criterion {
@@ -337,6 +368,10 @@ mwc-slider[disabled] .mdc-slider__thumb-knob {
   z-index: 99999999;
 }
 
+#logo {
+  cursor: pointer;
+}
+
 .red-alarm {
   background-color: black;
   color: red;
@@ -410,13 +445,17 @@ mwc-slider[disabled] .mdc-slider__thumb-knob {
   margin-left: 10px;
   text-align: center;
   font-size: 0.9em;
+  color: #757575;
+  font-weight: 700;
+  width: 67px;
 }
 
-.issue-info > div > strong {
+.issue-info strong {
   font-size: 1.4em;
   position: relative;
   top: 4px;
-  color: #757575;
+  /* color: #757575; */
+  /* color: #be59e9; */
 }
 
 .criterion-side-list {
@@ -424,4 +463,8 @@ mwc-slider[disabled] .mdc-slider__thumb-knob {
   max-height: calc(100vh - 4em);
   overflow: auto;
   /* max-width: 32vw; */
+}
+
+.donthover:hover {
+  box-shadow: 0px 0px 6px #00000019;
 }

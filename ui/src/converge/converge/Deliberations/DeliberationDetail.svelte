@@ -44,6 +44,7 @@ let error: any = undefined;
 let record: Record | undefined;
 let deliberation: Deliberation | undefined;
 let deliberators: String[] | undefined;
+let completedDeliberators: String[] | undefined;
 let deliberatorsRaw: AgentPubKey[] | undefined;
 
 let editing = false;
@@ -80,7 +81,7 @@ weClientStored.subscribe(value => {
   weClient = value;
 });
 
-$: editing, error, loading, record, deliberation, activeTab, criterionFormPopup, proposalFormPopup, criteriaCount, proposalCount, criteriaFilter, proposalFilter, criteriaSort, proposalSort, sortedCriteria;
+$: editing, error, loading, record, deliberation, activeTab, criterionFormPopup, proposalFormPopup, criteriaCount, proposalCount, criteriaFilter, proposalFilter, criteriaSort, proposalSort, sortedCriteria, outcomeCount, deliberators, completedDeliberators, deliberatorsRaw, attachments, weClient, dnaHash;
 
 onMount(async () => {
   dnaHash = await getMyDna("converge", client)
@@ -168,7 +169,7 @@ async function fetchDeliberation() {
       payload: deliberationHash,
     });
     if (record) {
-      deliberation = decode((record.entry as any).Present.entry) as Deliberation;
+      deliberation = decode((record.record.entry as any).Present.entry) as Deliberation;
       attachments = deliberation.attachments
     }
   } catch (e) {
@@ -202,6 +203,7 @@ async function fetchDeliberation() {
   }
 
   try {
+    console.log("trying to get deliberators")
     const records = await client.callZome({
       cap_secret: null,
       role_name: 'converge',
@@ -209,8 +211,11 @@ async function fetchDeliberation() {
       fn_name: 'get_deliberators_for_deliberation',
       payload: deliberationHash,
     });
-    deliberators = records.map((record: AgentPubKey) => record.join(','));
-    deliberatorsRaw = records;
+    deliberators = records.map((record) => record.deliberator.join(','));
+    completedDeliberators = records
+      .filter((record) => record.completed)
+      .map((record) => record.deliberator.join(','));
+    deliberatorsRaw = records.map((record) => record.deliberator);
   } catch (e) {
     error = e;
   }
@@ -300,25 +305,73 @@ async function leaveDeliberation() {
     // dispatch('deliberation-left', { deliberationHash: deliberationHash });
     // navigate('')
   } catch (e: any) {
+    console.log("error", e)
     errorSnackbar.labelText = `Error leaving the deliberation: ${e.data.data}`;
     errorSnackbar.show();
   }
 }
 
-  let isExpanded = false;
-  let isExpanded2 = false;
-  function expandSearch() {
-    if (isExpanded) {
-      criteriaFilter = "";
-    }
-    isExpanded = !isExpanded;
+async function completeDeliberation() {
+  await leaveDeliberation();
+  try {
+    await client.callZome({
+      cap_secret: null,
+      role_name: 'converge',
+      zome_name: 'converge',
+      fn_name: 'add_completed_tag',
+      payload: deliberationHash,
+    });
+    // 1 second timeout
+    // await new Promise(r => setTimeout(r, 10));
+    deliberators = deliberators.filter(item => item !== client.myPubKey.join(','));
+    // await new Promise(r => setTimeout(r, 10));
+    completedDeliberators = [...completedDeliberators, client.myPubKey.join(',')]
+    console.log("completedDeliberators", completedDeliberators)
+    console.log("deliberators", deliberators)
+    deliberatorsRaw = [...deliberatorsRaw, client.myPubKey]
+  } catch (e: any) {
+    errorSnackbar.labelText = `Error completing the deliberation: ${e.data.data}`;
+    errorSnackbar.show();
   }
-  function expandSearch2() {
-    if (isExpanded2) {
-      proposalFilter = "";
-    }
-    isExpanded2 = !isExpanded2;
+}
+
+async function rejoinDeliberation() {
+  await new Promise(r => setTimeout(r, 200));
+  try {
+    await client.callZome({
+      cap_secret: null,
+      role_name: 'converge',
+      zome_name: 'converge',
+      fn_name: 'remove_completed_tag',
+      payload: deliberationHash,
+    });
+    completedDeliberators = completedDeliberators.filter(item => item !== client.myPubKey.join(','));
+    deliberators = deliberators.filter(item => item !== client.myPubKey.join(','));
+    deliberatorsRaw = deliberatorsRaw.filter(item => item.join(',') !== client.myPubKey.join(','));
+    console.log("test", completedDeliberators, deliberators)
+    await new Promise(r => setTimeout(r, 200));
+    await joinDeliberation();
+  } catch (e: any) {
+    console.log("error", e)
+    errorSnackbar.labelText = `Error rejoining the deliberation: ${e}`;
+    errorSnackbar.show();
   }
+}
+
+let isExpanded = false;
+let isExpanded2 = false;
+function expandSearch() {
+  if (isExpanded) {
+    criteriaFilter = "";
+  }
+  isExpanded = !isExpanded;
+}
+function expandSearch2() {
+  if (isExpanded2) {
+    proposalFilter = "";
+  }
+  isExpanded2 = !isExpanded2;
+}
 
 </script>
 
@@ -377,18 +430,20 @@ async function leaveDeliberation() {
       
       <div style="display: flex; flex-direction: row; width: fit-content; margin-bottom: 6px;">
         
-        {#each deliberatorsRaw as deliberator}
+        {#each deliberatorsRaw.filter(d => !completedDeliberators.includes(d.join(','))) as deliberator}
           <div class="avatar-overlap">
             <Avatar showNickname={false} agentPubKey={deliberator}  size={24} namePosition="row"></Avatar>
           </div>
         {/each}
-        
-        {#if deliberators.includes(client.myPubKey.join(','))}
-        <mwc-button class="join-leave" on:click={leaveDeliberation}>Leave</mwc-button>
-        {:else}
-        <mwc-button class="join-leave" on:click={() => {newActivity("new-join")}}>Join</mwc-button>
+
+        {#if !completedDeliberators.includes(client.myPubKey.join(','))}
+          {#if deliberators.includes(client.myPubKey.join(','))}
+            <mwc-button class="join-leave" on:click={leaveDeliberation}>Leave</mwc-button>
+            <!-- <mwc-button class="join-leave" on:click={completeDeliberation}>complete</mwc-button> -->
+          {:else}
+            <mwc-button class="join-leave" on:click={() => {newActivity("new-join")}}>Join</mwc-button>
+          {/if}
         {/if}
-        
         <!-- &nbsp;|&nbsp;&nbsp; -->
         
         <!-- {deliberators.length} 
@@ -396,32 +451,63 @@ async function leaveDeliberation() {
 
       </div>
     </div>
-      
-    <div style="display: flex; flex-direction: row; float: right; width: min-content; flex-shrink:0; align-self:start">
-      <button title="Add Board to Pocket" class="attachment-button" style="margin-right:10px; cursor: pointer;" on:click={()=>copyWalToPocket()} >          
-        <SvgIcon icon="addToPocket" size="20px"/>
-      </button>
-      <!-- {JSON.stringify(deliberation.discussion)} -->
-      {#if isWeContext && deliberation.discussion}
-        {@const conversation = weaveUrlToWAL(deliberation.discussion)}
-        {#await weClient.assetInfo(conversation)}
-          <sl-button size="small" loading></sl-button>
-        {:then { attachableInfo }}
-        <button class="discussion-button"
-          on:click={(e)=>{
-            e.stopPropagation()
-            activeTab = "discussion"
-            weClient.openWal(conversation)
-            // weClient.openAppletBlock(hrlWithContext.hrl[0], "active_boards", hrlWithContext.context)
-          }} >
-            <SvgIcon icon="faComments" size="22px"/>
-            <!-- Discussion -->
-          </button>
-        {:catch error}
-          Oops. something's wrong.
-        {/await}
-      {/if}
+    
+    <div style="display:flex; flex-direction:column; justify-content:space-between;">
+      <div style="display: flex; flex-direction: row; float: right; width: min-content; flex-shrink:0; align-self:end">
+        <button title="Add Board to Pocket" class="attachment-button" style="margin-right:10px; cursor: pointer;" on:click={()=>copyWalToPocket()} >          
+          <SvgIcon icon="addToPocket" size="20px"/>
+        </button>
+        <!-- {JSON.stringify(deliberation.discussion)} -->
+        {#if isWeContext && deliberation.discussion}
+          {@const conversation = weaveUrlToWAL(deliberation.discussion)}
+          {#await weClient.assetInfo(conversation)}
+            <sl-button size="small" loading></sl-button>
+          {:then { attachableInfo }}
+          <button class="discussion-button"
+            on:click={(e)=>{
+              e.stopPropagation()
+              activeTab = "discussion"
+              weClient.openWal(conversation)
+              // weClient.openAppletBlock(hrlWithContext.hrl[0], "active_boards", hrlWithContext.context)
+            }} >
+              <SvgIcon icon="faComments" size="22px"/>
+              <!-- Discussion -->
+            </button>
+          {:catch error}
+            Oops. something's wrong.
+          {/await}
+        {/if}
       </div>
+      <!-- {JSON.stringify(completedDeliberators)}
+      {deliberatorsRaw.filter(d => completedDeliberators.includes(d.join(','))).length > 0}
+      {!completedDeliberators.includes(client.myPubKey.join(',')) && deliberators.includes(client.myPubKey.join(','))}
+      {completedDeliberators.includes(client.myPubKey.join(','))} -->
+
+      <div style="display: flex; flex-direction: row; width: fit-content; margin-bottom: 6px; height: 35px;">
+        {#if !completedDeliberators.includes(client.myPubKey.join(',')) && deliberators.includes(client.myPubKey.join(','))}
+          <mwc-button class="join-leave" on:click={completeDeliberation}>complete</mwc-button>
+        {/if}
+        {#if completedDeliberators.length > 0}
+          <!-- {#if !completedDeliberators.includes(client.myPubKey.join(',')) && deliberators.includes(client.myPubKey.join(','))} -->
+          {#if completedDeliberators.includes(client.myPubKey.join(','))}
+            <!-- <div class="leave" style="padding: 14px;
+              font-family: monospace;
+              font-size: 12px;">
+              COMPLETED
+            </div> -->
+            <div class="leave" on:click={leaveDeliberation}>
+              <mwc-button class="join-leave" on:click={rejoinDeliberation}>Rejoin</mwc-button>
+            </div>
+          {/if}
+          {#each deliberatorsRaw.filter(d => completedDeliberators.includes(d.join(','))) as deliberator}
+            <div class="avatar-overlap">
+              <Avatar showNickname={false} agentPubKey={deliberator}  size={24} namePosition="row"></Avatar>
+            </div>
+          {/each}
+
+        {/if}
+      </div>
+    </div>
   </div>
 
   <div class="details-mini">
@@ -504,7 +590,7 @@ async function leaveDeliberation() {
     outcomesTab.click();
   }} on:proposal-rated={() => {newActivity("proposal-rated")}} sort={proposalSort} deliberationHash={deliberationHash} filter={proposalFilter} bind:proposalCount/>
 {:else if activeTab == "outcomes"}
-  <p class="instructions">Link to an asset from another tool such as a "Who's In?" action</p>
+  <p class="instructions">Link to an asset from another tool such as a "Who's In?" coordination</p>
   <!-- <p class="instructions"></p> -->
   <div on:click={() => {outcomeFormPopup = true; console.log(proposalFormPopup)}} class="add-button">{window.innerWidth < 768 ? "+" : "Add an outcome"}</div>
 

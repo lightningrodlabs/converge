@@ -25,10 +25,14 @@
   import { MyProfile } from '@holochain-open-dev/profiles/dist/elements/my-profile.js';
   import { WeClient, isWeContext, initializeHotReload, type WAL, type Hrl } from '@lightningrodlabs/we-applet';  
   import Holochain from "./assets/holochain.png";
-import type { Deliberation, ConvergeSignal } from './converge/converge/types';
+  import type { Deliberation, ConvergeSignal } from './converge/converge/types';
   import { appletServices } from './we';
-    import DeliberationListItem from './converge/converge/Deliberations/DeliberationListItem.svelte';
-  // import AttachmentsList from './AttachmentsList.svelte';
+  import DeliberationListItem from './converge/converge/Deliberations/DeliberationListItem.svelte';
+  import Instructions from './Instructions.svelte';
+  import SvgIcon from './SvgIcon.svelte';
+  import AllViewed from './converge/converge/AllViewed.svelte';
+  import { fade } from 'svelte/transition';
+// import AttachmentsList from './AttachmentsList.svelte';
   // import AttachmentsBind from './AttachmentsBind.svelte';
   // import AttachmentsDialog from './AttachmentsDialog.svelte';
 
@@ -49,10 +53,35 @@ import type { Deliberation, ConvergeSignal } from './converge/converge/types';
 
   let connected = false
 
-  let hrlWithContext: HrlWithContext
+  // let hrlWithContext: HrlWithContext
   let weClient: WeClient
 
   $: client, loading, store, profilesStore, initialized, dna;
+
+  async function checkIfNew() {
+      try {
+          const records = await client
+          .callZome({
+              cap_secret: null,
+              role_name: 'converge',
+              zome_name: 'converge',
+              fn_name: 'get_deliberations_for_deliberator',
+              payload: client.myPubKey,
+          });
+
+          if (records.length > 0) {
+              navigate('dashboard');
+          } else {
+              navigate('instructions');
+          }
+
+          console.log(records);
+
+      } catch (e) {
+          console.log(e)
+      }
+      loading = false;
+  }
 
   async function initialize() : Promise<void> {
     console.log(import.meta.env)
@@ -176,6 +205,10 @@ import type { Deliberation, ConvergeSignal } from './converge/converge/types';
   onMount(async () => {
     await initialize()
 
+    if (currentView == "home") {
+      await checkIfNew()
+    }
+
     try {
       dna = await client
         .callZome({
@@ -267,26 +300,42 @@ import type { Deliberation, ConvergeSignal } from './converge/converge/types';
       {:else}
         <main class="converge-container">
           <Header />
-          <div class="white-container">
-            {#if loading}
-            <div style="display: flex; flex: 1; align-items: center; justify-content: center">
-              <mwc-circular-progress indeterminate />
-            </div>
-            {:else if currentView == "deliberation"}
-            <DeliberationDetail deliberationHash={currentHash} />
-            {:else if currentView == "proposal"}
-            <ProposalDetail proposalHash={currentHash} />
-            {:else if currentView == "create-deliberation"}
-            <CreateDeliberation />
-            {:else if currentView == "dashboard"}
-            <DeliberationsForDeliberator deliberator={client.myPubKey} />
-            {:else}
-            <div id="content" style="display: flex; flex-direction: column; flex: 1;">
-              <AllDeliberations />
-              <!-- <button on:click={() => navigate("create-deliberation")}>Create Deliberation</button> -->
-            </div>
-            {/if}
-          </div>
+          {#if currentView == "instructions"}
+            <span in:fade={{duration: 200}} out:fade={{duration: 100}}>
+              <Instructions />
+            </span>
+          {:else}
+              {#if loading}
+              <div style="display: flex; flex: 1; align-items: center; justify-content: center">
+                <mwc-circular-progress indeterminate />
+              </div>
+              {:else if currentView == "deliberation"}
+              <div class="white-container" in:fade={{duration: 300}} out:fade={{duration: 100}}>
+                <DeliberationDetail deliberationHash={currentHash} />
+              </div>
+              {:else if currentView == "proposal"}
+              <div class="white-container" in:fade={{duration: 300}} out:fade={{duration: 100}}>
+                <ProposalDetail proposalHash={currentHash} />
+              </div>
+              {:else if currentView == "create-deliberation"}
+              <div class="white-container" in:fade={{duration: 300}} out:fade={{duration: 100}}>
+                <CreateDeliberation />
+              </div>
+              {:else if currentView == "dashboard"}
+              <div class="whiteless-container" in:fade={{duration: 300}} out:fade={{duration: 100}}>
+                <DeliberationsForDeliberator deliberator={client.myPubKey} />
+              </div>
+              {:else}
+              <div class="whiteless-container" in:fade={{duration: 300}} out:fade={{duration: 100}}>
+              <div id="content" style="display: flex; flex-direction: column; flex: 1;">
+                <AllDeliberations />
+                <!-- <button on:click={() => navigate("create-deliberation")}>Create Deliberation</button> -->
+              </div>
+              </div>
+              {/if}
+          {/if}
+
+          <AllViewed />
         </main>
       {/if}
   </profile-prompt>
@@ -295,14 +344,20 @@ import type { Deliberation, ConvergeSignal } from './converge/converge/types';
 </profiles-context>
 {/if}
 
-{#if dna && !loading && currentView != "instructions" && currentView != "" && (!weClient || weClient.renderInfo.view.type != "attachable")}
 <footer style="margin: 10px;">
+    <!-- feedback button -->
+    <SvgIcon icon="faBug" size="24" color="#000000" />
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSchqUdQWqNCnjV8LfdLwuuJoqvdy2hWKotxKZ2L7TazaEusUQ/viewform" target="_blank" class="feedback-button">
+      <span>Submit feedback</span>
+    </a>
+    :)
+{#if !isWeContext && dna && !loading && currentView != "instructions" && currentView != "" && (!weClient || weClient.renderInfo.view.type != "attachable")}
 <small>
   <img class="holochain-logo" src={Holochain} alt="holochain logo"/>
   Private Holochain network: {dna}
 </small>
-</footer>
 {/if}
+</footer>
 
 <style>
   main {

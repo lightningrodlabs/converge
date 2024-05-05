@@ -8,6 +8,7 @@ import '@material/mwc-snackbar';
 import type { Snackbar } from '@material/mwc-snackbar';
 import '@vaadin/date-time-picker/theme/material/vaadin-date-time-picker.js';
 import '@material/mwc-checkbox';
+import { countViewed, addToViewed } from '../../../store.js';
 import { encodeHashToBase64 } from "@holochain/client";
 
 import '@material/mwc-textfield';
@@ -87,9 +88,12 @@ async function createCriterionComment() {
       payload: criterionCommentEntry,
     });
 
+    addToViewed(record.signed_action.hashed.hash, client);
+
     comment = ''
     commentReference = null;
     commentIsAnObjection = false;
+    console.log('criterion-comment-created', {context: JSON.stringify({criterionCommentHash: encodeHashToBase64(record.signed_action.hashed.hash), criterionHash: encodeHashToBase64(criterionHash)})});
     dispatch('criterion-comment-created', {context: JSON.stringify({criterionCommentHash: encodeHashToBase64(record.signed_action.hashed.hash), criterionHash: encodeHashToBase64(criterionHash)})});
   } catch (e) {
     errorSnackbar.labelText = `Error creating the criterion comment: ${e.data.data}`;
@@ -120,6 +124,8 @@ async function createCriterionCommentCustom(inputComment, comment_reference, obj
         fn_name: 'create_criterion_comment',
         payload: criterionCommentEntry,
       });
+
+      addToViewed(record.signed_action.hashed.hash, client);
 
       comment = ''
       commentReference = null;
@@ -242,6 +248,7 @@ async function createCriterionCommentCustom(inputComment, comment_reference, obj
     ></textarea>
     <button class="send-button" on:click={() => {
       if (commentIsAnObjection) {
+        // check if the user supports the criterion
         addObjection()
       } else {
         createCriterionComment();

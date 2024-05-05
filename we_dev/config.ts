@@ -38,18 +38,18 @@ export default defineConfig({
           registeringAgent: 1,
           joiningAgents: [2],
         },
-        {
-          name: 'gamez',
-          instanceName: 'gamez',
-          registeringAgent: 1,
-          joiningAgents: [2],
-        },
-        {
-          name: 'talking-stickies',
-          instanceName: 'talking-stickies',
-          registeringAgent: 1,
-          joiningAgents: [2],
-        },
+        // {
+        //   name: 'gamez',
+        //   instanceName: 'gamez',
+        //   registeringAgent: 1,
+        //   joiningAgents: [2],
+        // },
+        // {
+        //   name: 'talking-stickies',
+        //   instanceName: 'talking-stickies',
+        //   registeringAgent: 1,
+        //   joiningAgents: [2],
+        // },
       ],
     },
   ],
@@ -60,7 +60,7 @@ export default defineConfig({
       description: '---',
       icon: {
         type: 'filesystem',
-        path: './we_dev/converge.svg',
+        path: './we_dev/converge.png',
       },
       source: {
         type: 'localhost',
@@ -68,31 +68,31 @@ export default defineConfig({
         uiPort: 8888,
       },
     },
-    {
-        name: 'gamez',
-        subtitle: 'play!',
-        description: 'Real-time games based on syn',
-        icon: {
-          type: "https",
-          url: "https://raw.githubusercontent.com/holochain-apps/gamez/main/we_dev/gamez_icon.svg"
-        },
-        source: {
-          type: "https",
-          url: "https://github.com/holochain-apps/gamez/releases/download/v0.4.2/gamez.webhapp"
-        },
-      },
-      {
-      name: 'talking-stickies',
-      subtitle: 'talking stickies',
-      description: 'Real-time stickies based on syn',
-      icon: {
-        type: 'https',
-        url: 'https://raw.githubusercontent.com/holochain-apps/talking-stickies/main/we_dev/talking-stickies_icon.png',
-      },
-      source: {
-        type: 'https',
-        url: 'https://github.com/holochain-apps/talking-stickies/releases/download/v0.9.1/talking-stickies.webhapp',
-      },
-    },
+    // {
+    //     name: 'gamez',
+    //     subtitle: 'play!',
+    //     description: 'Real-time games based on syn',
+    //     icon: {
+    //       type: "https",
+    //       url: "https://raw.githubusercontent.com/holochain-apps/gamez/main/we_dev/gamez_icon.svg"
+    //     },
+    //     source: {
+    //       type: "https",
+    //       url: "https://github.com/holochain-apps/gamez/releases/download/v0.4.2/gamez.webhapp"
+    //     },
+    //   },
+    //   {
+    //   name: 'talking-stickies',
+    //   subtitle: 'talking stickies',
+    //   description: 'Real-time stickies based on syn',
+    //   icon: {
+    //     type: 'https',
+    //     url: 'https://raw.githubusercontent.com/holochain-apps/talking-stickies/main/we_dev/talking-stickies_icon.png',
+    //   },
+    //   source: {
+    //     type: 'https',
+    //     url: 'https://github.com/holochain-apps/talking-stickies/releases/download/v0.9.1/talking-stickies.webhapp',
+    //   },
+    // },
   ],
 });

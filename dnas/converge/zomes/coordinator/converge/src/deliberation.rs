@@ -22,10 +22,17 @@ pub fn create_deliberation(deliberation: Deliberation) -> ExternResult<Record> {
     )?;
     Ok(record)
 }
+#[derive(Serialize, Deserialize, Debug)]
+pub struct RecordWithLinks {
+    pub record: Record,
+    pub criteria: Vec<Link>,
+    pub proposals: Vec<Link>,
+    pub outcomes: Vec<Link>,
+}
 #[hdk_extern]
 pub fn get_deliberation(
     original_deliberation_hash: ActionHash,
-) -> ExternResult<Option<Record>> {
+) -> ExternResult<Option<RecordWithLinks>> {
     let links = get_links(
         link_input(
             original_deliberation_hash.clone(),
@@ -46,7 +53,42 @@ pub fn get_deliberation(
         }
         None => original_deliberation_hash.clone(),
     };
-    get(latest_deliberation_hash, GetOptions::default())
+    let deliberation = get(latest_deliberation_hash.clone(), GetOptions::default());
+    let criteria = get_links(
+        link_input(
+            latest_deliberation_hash.clone(),
+            LinkTypes::DeliberationToCriteria,
+            None,
+        ),
+    )?;
+    let proposals = get_links(
+        link_input(
+            latest_deliberation_hash.clone(),
+            LinkTypes::DeliberationToProposals,
+            None,
+        ),
+    )?;
+    let outcomes = get_links(
+        link_input(
+            latest_deliberation_hash.clone(),
+            LinkTypes::DeliberationToOutcomes,
+            None,
+        ),
+    )?;
+    return Ok(
+        Some(RecordWithLinks {
+            record: deliberation
+                .unwrap()
+                .ok_or(
+                    wasm_error!(
+                        WasmErrorInner::Guest(String::from("Could not find the Deliberation"))
+                    ),
+                )?,
+            criteria,
+            proposals,
+            outcomes,
+        }),
+    );
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UpdateDeliberationInput {

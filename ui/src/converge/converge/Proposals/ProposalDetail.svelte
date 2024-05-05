@@ -16,6 +16,7 @@ import AttachmentsList from '../../../AttachmentsList.svelte';
 import SvgIcon from "../../../SvgIcon.svelte";
 import { getMyDna } from '../../../util';
 import { weClientStored } from '../../../store.js';
+import { countViewed, addToViewed } from '../../../store.js';
 import CreateOutcome from '../Outcomes/CreateOutcome.svelte';
 import OutcomesForProposal from '../Outcomes/OutcomesForProposal.svelte';
 
@@ -64,6 +65,7 @@ onMount(async () => {
   }
   await fetchProposal();
   await fetchDeliberation();
+  addToViewed(proposalHash, client);
 });
 
 async function fetchProposal() {
@@ -157,7 +159,7 @@ async function fetchDeliberation() {
 flex: 1;"> -->
 <!-- {JSON.stringify(proposalHash.join(''))} -->
 
-  <div class="outlined-item list-item criterion-outer" style="width:96%">
+  <div class="outlined-item list-item criterion-outer donthover" style="width:96%">
     {#if convergence > 0 && maxWeight > 0}
     <div style="display: flex; flex-direction: column; font-size: .8em; max-height: 100px;">
       <div class="vertical-progress-bar-container">
@@ -177,15 +179,16 @@ flex: 1;"> -->
             <span style="margin-right: 4px"><strong>{ proposal.title }</strong></span>
             <br>
             <span style="white-space: pre-line; max-height: 56px; overflow: hidden;">
-              <strong>evaluations:</strong> {["userRatings"]?.length || 0},&nbsp;
+              <strong>evaluations:</strong> {["userRatings"]?.length || 0}&nbsp;
             </span>
             <span style="white-space: pre-line">
               <strong>score:</strong> { Math.round(convergence / maxWeight * 100) }%
             </span>
           </div>
           <div>
-            <!-- button to switch to side-by-side view -->
-            <button
+            <div>
+              <!-- button to switch to side-by-side view -->
+              <button
               style="height: 30px; cursor: pointer;"
               on:click={() => {
                 sideBySide = !sideBySide
@@ -194,25 +197,29 @@ flex: 1;"> -->
             <SvgIcon icon="faEye" size="20px"/>
             View { sideBySide ? "vertical" : "side-by-side"}</button>
             <button
-              style="height: 30px; cursor: pointer;"
-              on:click={()=>{
-                outcomeFormPopup = !outcomeFormPopup
-              }}>+ Create outcome</button>
+            style="height: 30px; cursor: pointer;"
+            on:click={()=>{
+              outcomeFormPopup = !outcomeFormPopup
+            }}>+ Create outcome</button>
             <CreateOutcome on:outcome-created={(v) =>{
               dispatch('outcome-created', {
                 outcomeHash: v.detail.outcomeHash
               })
             }
-            } proposalHash={proposalHash} {deliberationHash} {outcomeFormPopup} />
+          } proposalHash={proposalHash} {deliberationHash} {outcomeFormPopup} />
             <button title="Add Board to Pocket" class="attachment-button" style="height: 30px; top: -1px; position: relative; cursor: pointer;" on:click={()=>copyWalToPocket()} >          
               <SvgIcon icon="addToPocket" size="20px"/>
             </button>
-            <OutcomesForProposal proposalHash={proposalHash} />
+          </div>
+          
+          <OutcomesForProposal proposalHash={proposalHash} />
+          
         </div>
       </div>
     </div>
   </div>
 </div>
+
 <div style="display: {sideBySide ? "flex" : "inherit"};">
 
 <div style="display: flex; flex-direction: row; margin-bottom: 16px; width:inherit; padding: 30px 30px 0 0;">
@@ -244,4 +251,3 @@ flex: 1;"> -->
 </div>
 
 {/if}
-

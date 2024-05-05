@@ -38,6 +38,7 @@ export type ConvergeSignal = {
 };
 
 export type EntryTypes =
+ | ({ type: 'Viewed'; } & Viewed)
  | ({ type: 'Settings'; } & Settings)
  | ({ type: 'CriterionComment'; } & CriterionComment)
  | ({ type: 'Proposal'; } & Proposal)
@@ -132,5 +133,14 @@ export interface CriterionComment {
 
 export interface Settings { 
   discussion_app: string;
+}
+
+
+
+
+export interface Viewed { 
+  viewed_hash: ActionHash;
+
+  viewed_date: number;
 }
 

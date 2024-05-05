@@ -256,7 +256,7 @@ async function createDeliberation() {
     </div>
   {/if}
   
-  <label class="instructions">Warning: you will not be able to edit the above details after creating.</label>
+  <label class="instructions">Warning: After creating a deliberation, it belongs to everyone and cannot be edited or deleted.</label>
 
   <mwc-button
     raised

@@ -104,3 +104,23 @@ export async function createSettings(cell: CallableCell, settings = undefined): 
     });
 }
 
+
+
+export async function sampleViewed(cell: CallableCell, partialViewed = {}) {
+    return {
+        ...{
+	  viewed_hash: (await fakeActionHash()),
+	  viewed_date: 1674053334548000,
+        },
+        ...partialViewed
+    };
+}
+
+export async function createViewed(cell: CallableCell, viewed = undefined): Promise<Record> {
+    return cell.callZome({
+      zome_name: "converge",
+      fn_name: "create_viewed",
+      payload: viewed || await sampleViewed(cell),
+    });
+}
+

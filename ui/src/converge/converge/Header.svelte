@@ -1,6 +1,6 @@
 <script lang="ts">
-  // import Logo from "../../assets/logo.png";
-  import Logo from "../../assets/logo.svg";
+  import Logo from "../../assets/logo-svg-6.svg";
+  // import Logo from "../../assets/logo-svg.svg";
   import FaPlusCircle from 'svelte-icons/fa/FaPlusCircle.svelte';
   import FaBell from 'svelte-icons/fa/FaBell.svelte';
   import FaBullhorn from 'svelte-icons/fa/FaBullhorn.svelte';
@@ -17,7 +17,8 @@
   import type { Profile } from "@holochain-open-dev/profiles";
   import { encodeHashToBase64 } from "@holochain/client";
   import Avatar from "./Avatar.svelte";
-  import { WeClient, isWeContext, initializeHotReload, type HrlWithContext, type Hrl } from '@lightningrodlabs/we-applet';
+  import { WeClient, isWeContext } from '@lightningrodlabs/we-applet';
+  import SvgIcon from "./SvgIcon.svelte";
 
   // export let initialized: boolean = false;
 
@@ -41,7 +42,7 @@
   }
   
   async function goToBulletin() {
-    navigate("all-coordinations", {});
+    navigate("all-deliberations", {});
   }
 
   onMount(async () => {
@@ -97,7 +98,7 @@
       <nav class="navbar">
         <div class="container-fluid converge-header">
           <div>
-            {#if !isWeContext()}
+            {#if false && !isWeContext()}
             <a id="logo" class="navbar-brand" on:click={() => navigate("instructions")}>
               <img class="logo-image" src={Logo} alt="whos-in logo"/>
             </a>  
@@ -105,10 +106,10 @@
             <a id="logo" class="navbar-brand" on:click={() => navigate("instructions")}>
 
             <h1 id="converge-title" style="display: flex;
-            align-items: center;
+              align-items: center;
             ">
               <img id="minilogo" class="logo-image small" src={Logo} alt="whos-in logo"/>
-              <span>Converge</span>
+              <!-- <span>Converge</span> -->
               <!-- <small id="subtitle">&nbsp;for Moss</small> -->
             </h1>
             </a>
@@ -121,8 +122,8 @@
         <ul class="nav navbar-nav float-right">
   
         <li class="bulletin" on:click={goToBulletin}>
-          {#if currentView == "all-coordinations"}
-          <div class="bulletin-icon" style="color:#1952bb">
+          {#if currentView == "all-deliberations"}
+          <div class="bulletin-icon" style="color:#d92ed9">
             <FaBullhorn />
           </div>
           {:else}
@@ -134,7 +135,7 @@
   
         <li class="dashboard" on:click={goToDashboard}>
           {#if currentView == "dashboard"}
-          <div class="dashboard-icon" style="color:#1952bb">
+          <div class="dashboard-icon" style="color:#d92ed9">
             <FaList />
           </div>
           {:else}

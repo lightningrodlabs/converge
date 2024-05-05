@@ -1,3 +1,5 @@
+pub mod viewed;
+pub use viewed::*;
 pub mod proposal_to_outcomes;
 pub use proposal_to_outcomes::*;
 pub mod settings;
@@ -43,6 +45,8 @@ pub enum EntryTypes {
     CriterionComment(CriterionComment),
     #[entry_type(name = "Settings", visibility = "private")]
     Settings(Settings),
+    #[entry_type(name = "Viewed", visibility = "private")]
+    Viewed(Viewed),
 }
 #[derive(Serialize, Deserialize)]
 #[hdk_link_types]
@@ -71,6 +75,7 @@ pub enum LinkTypes {
     CriterionToCriterionComments,
     SettingsUpdates,
     ProposalToOutcomes,
+    AllViewed,
 }
 #[hdk_extern]
 pub fn genesis_self_check(
@@ -127,6 +132,12 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 settings,
                             )
                         }
+                        EntryTypes::Viewed(viewed) => {
+                            validate_create_viewed(
+                                EntryCreationAction::Create(action),
+                                viewed,
+                            )
+                        }
                     }
                 }
                 OpEntry::UpdateEntry { app_entry, action, .. } => {
@@ -167,6 +178,12 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 settings,
                             )
                         }
+                        EntryTypes::Viewed(viewed) => {
+                            validate_create_viewed(
+                                EntryCreationAction::Update(action),
+                                viewed,
+                            )
+                        }
                     }
                 }
                 _ => Ok(ValidateCallbackResult::Valid),
@@ -181,6 +198,17 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     action,
                 } => {
                     match (app_entry, original_app_entry) {
+                        (
+                            EntryTypes::Viewed(viewed),
+                            EntryTypes::Viewed(original_viewed),
+                        ) => {
+                            validate_update_viewed(
+                                action,
+                                viewed,
+                                original_action,
+                                original_viewed,
+                            )
+                        }
                         (
                             EntryTypes::Settings(settings),
                             EntryTypes::Settings(original_settings),
@@ -289,6 +317,9 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         EntryTypes::Settings(settings) => {
                             validate_delete_settings(action, original_action, settings)
+                        }
+                        EntryTypes::Viewed(viewed) => {
+                            validate_delete_viewed(action, original_action, viewed)
                         }
                     }
                 }
@@ -489,6 +520,14 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 }
                 LinkTypes::ProposalToOutcomes => {
                     validate_create_link_proposal_to_outcomes(
+                        action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::AllViewed => {
+                    validate_create_link_all_viewed(
                         action,
                         base_address,
                         target_address,
@@ -722,6 +761,15 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         tag,
                     )
                 }
+                LinkTypes::AllViewed => {
+                    validate_delete_link_all_viewed(
+                        action,
+                        original_action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
             }
         }
         FlatOp::StoreRecord(store_record) => {
@@ -762,6 +810,12 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                             validate_create_settings(
                                 EntryCreationAction::Create(action),
                                 settings,
+                            )
+                        }
+                        EntryTypes::Viewed(viewed) => {
+                            validate_create_viewed(
+                                EntryCreationAction::Create(action),
+                                viewed,
                             )
                         }
                     }
@@ -973,6 +1027,37 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 Ok(result)
                             }
                         }
+                        EntryTypes::Viewed(viewed) => {
+                            let result = validate_create_viewed(
+                                EntryCreationAction::Update(action.clone()),
+                                viewed.clone(),
+                            )?;
+                            if let ValidateCallbackResult::Valid = result {
+                                let original_viewed: Option<Viewed> = original_record
+                                    .entry()
+                                    .to_app_option()
+                                    .map_err(|e| wasm_error!(e))?;
+                                let original_viewed = match original_viewed {
+                                    Some(viewed) => viewed,
+                                    None => {
+                                        return Ok(
+                                            ValidateCallbackResult::Invalid(
+                                                "The updated entry type must be the same as the original entry type"
+                                                    .to_string(),
+                                            ),
+                                        );
+                                    }
+                                };
+                                validate_update_viewed(
+                                    action,
+                                    viewed,
+                                    original_action,
+                                    original_viewed,
+                                )
+                            } else {
+                                Ok(result)
+                            }
+                        }
                     }
                 }
                 OpRecord::DeleteEntry { original_action_hash, action, .. } => {
@@ -1067,6 +1152,13 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 original_action,
                                 original_settings,
+                            )
+                        }
+                        EntryTypes::Viewed(original_viewed) => {
+                            validate_delete_viewed(
+                                action,
+                                original_action,
+                                original_viewed,
                             )
                         }
                     }
@@ -1265,6 +1357,14 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         LinkTypes::ProposalToOutcomes => {
                             validate_create_link_proposal_to_outcomes(
+                                action,
+                                base_address,
+                                target_address,
+                                tag,
+                            )
+                        }
+                        LinkTypes::AllViewed => {
+                            validate_create_link_all_viewed(
                                 action,
                                 base_address,
                                 target_address,
@@ -1505,6 +1605,15 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         LinkTypes::ProposalToOutcomes => {
                             validate_delete_link_proposal_to_outcomes(
+                                action,
+                                create_link.clone(),
+                                base_address,
+                                create_link.target_address,
+                                create_link.tag,
+                            )
+                        }
+                        LinkTypes::AllViewed => {
+                            validate_delete_link_all_viewed(
                                 action,
                                 create_link.clone(),
                                 base_address,

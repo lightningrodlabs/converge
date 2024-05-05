@@ -55,10 +55,10 @@ onMount(async () => {
 {:else if error}
 <span>Error fetching outcomes: {error.data.data}.</span>
 {:else if hashes.length === 0}
-<span>No outcomes found for this proposal.</span>
+<!-- <span>No outcomes found for this proposal.</span> -->
 {:else}
   <div style="display:flex; flex-direction:row; align-items:center; margin: 2px;">
-    <div style="font-size: 50px; height: 75px;">→</div>
+    <div style="font-size: 50px; line-height: 12px; margin-bottom: 16px;">→</div>
     {#each hashes as hash}
       <OutcomeLink outcomeHash={hash} />
     {/each}
