@@ -138,7 +138,7 @@ async function deleteDeliberation() {
 </div>
 {:else if error}
 <span>Error fetching the deliberation: {error.data.data}</span>
-{:else if editing}
+<!-- {:else if editing}
 <EditDeliberation
   originalDeliberationHash={ deliberationHash}
   currentRecord={record}
@@ -147,8 +147,8 @@ async function deleteDeliberation() {
     await fetchDeliberation()
   } }
   on:edit-canceled={() => { editing = false; } }
-></EditDeliberation>
-{:else}
+></EditDeliberation> -->
+{:else if deliberators.length > 0}
 
 <div class="dashboard-section">
 

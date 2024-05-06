@@ -9,8 +9,6 @@ pub fn create_viewed(viewed: Viewed) -> ExternResult<Record> {
                 WasmErrorInner::Guest(String::from("Could not find the newly created Viewed"))
             ),
         )?;
-    let path = Path::from(format!("all_viewed_{}", agent_info()?.agent_latest_pubkey));
-    create_link(path.path_entry_hash()?, viewed_hash.clone(), LinkTypes::AllViewed, ())?;
     Ok(record)
 }
 #[hdk_extern]
@@ -29,6 +27,39 @@ pub fn get_viewed(viewed_hash: ActionHash) -> ExternResult<Option<Record>> {
         }
     }
 }
+
+#[hdk_extern]
+pub fn get_all_viewed() -> ExternResult<Vec<Viewed>> {
+    emit_signal("viewed below")?;
+
+    let viewed_entry_type: EntryType = UnitEntryTypes::Viewed.try_into()?;
+    let filter = ChainQueryFilter::new()
+        .entry_type(viewed_entry_type)
+        .include_entries(true);
+    let all_records = query(filter)?;
+
+    emit_signal(all_records.clone())?;
+
+    let all_viewed: Vec<Viewed> = all_records
+        .into_iter()
+        .map(|record| {
+            let viewed: Viewed = record
+                .entry
+                .clone()
+                .into_option()
+                .ok_or(
+                    wasm_error!(WasmErrorInner::Guest(
+                        String::from("Could not find the Viewed entry")
+                    )),
+                )?
+                .try_into()?;
+            Ok(viewed)
+        })
+        .collect::<ExternResult<Vec<Viewed>>>()?;
+    
+    Ok(all_viewed)
+}
+
 #[hdk_extern]
 pub fn delete_viewed(original_viewed_hash: ActionHash) -> ExternResult<ActionHash> {
     let details = get_details(original_viewed_hash.clone(), GetOptions::default())?
@@ -47,18 +78,6 @@ pub fn delete_viewed(original_viewed_hash: ActionHash) -> ExternResult<ActionHas
             )
         }
     }?;
-    let path = Path::from(format!("all_viewed_{}", agent_info()?.agent_latest_pubkey));
-    let links = get_links(
-        GetLinksInputBuilder::try_new(path.path_entry_hash()?, LinkTypes::AllViewed)?
-            .build(),
-    )?;
-    for link in links {
-        if let Some(hash) = link.target.into_action_hash() {
-            if hash.eq(&original_viewed_hash) {
-                delete_link(link.create_link_hash)?;
-            }
-        }
-    }
     delete_entry(original_viewed_hash)
 }
 #[hdk_extern]

@@ -171,11 +171,25 @@ body {
 }
 
 .instructions {
-  background-color: #e7d6ff;
+  background-color: #e7d6ff !important;
   padding: 4px 6px;
   border-radius: 6px;
   width: fit-content;
   margin: 8px 0px;
+  display: flex;
+}
+
+.instructions button {
+  cursor:pointer; border: 0; 
+  background-color: rgb(156, 70, 214);
+  color: white;
+  margin: 0;
+  margin-left: 8px;
+  border-radius: 4px; padding: 4px 8px;
+}
+
+.instructions button:hover {
+  background-color: rgb(178, 116, 220);
 }
 
 .avatar-container {

@@ -598,6 +598,12 @@ function expandSearch2() {
   <br><br>
   <AllOutcomes deliberationHash={deliberationHash} bind:outcomeCount/>
 {/if}
+
+
+{#if deliberators.length == 1 && deliberators[0] == client.myPubKey}
+  <br><br><br><label class="instructions">Since no one else has interacted with this deliberation, you can still hide it from the main page. <button style="padding: 0 10px" on:click={leaveDeliberation}>Hide</button></label>
+{/if}
+
 {/if}
 
 <style lang="css">

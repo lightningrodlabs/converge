@@ -8,6 +8,7 @@ import { decode } from '@msgpack/msgpack';
 import '@material/mwc-snackbar';
 import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-textfield';
+import { encodeHashToBase64 } from "@holochain/client";
 
 export let criterionFormPopup; // Prop to control popup visibility
 export let alternativeTo: ActionHash;
@@ -131,12 +132,14 @@ async function createCriterion() {
         fn_name: 'create_criterion_comment',
         payload: criterionCommentEntry,
       });
+
+      dispatch('criterion-comment-created', {context: JSON.stringify({criterionCommentHash: encodeHashToBase64(record.signed_action.hashed.hash), criterionHash: encodeHashToBase64(criterionHash)})});
     }
 
     title = '';
   } catch (e) {
-    console.log(e)
-    errorSnackbar.labelText = `Error creating the criterion: ${e.data.data}`;
+    console.log("error", e)
+    errorSnackbar.labelText = `Error creating the criterion: ${e}`;
     errorSnackbar.show();
   }
 

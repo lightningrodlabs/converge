@@ -1,4 +1,3 @@
-pub mod all_viewed;
 pub mod viewed;
 pub mod proposal_to_outcomes;
 pub mod settings;

@@ -41,6 +41,7 @@ let criterionPopupBoolean = false;
 let myDiv;
 let commentsNumber;
 let unreadCommentsNumber;
+let commentHashes = [];
 const scoringLevel = 4;
 
 let errorSnackbar: Snackbar;
@@ -167,7 +168,8 @@ async function fetchSupport() {
         });
         commentsNumber = records.length;
         console.log(records, "comments")
-        unreadCommentsNumber = Math.max(0, commentsNumber - countViewed(records.map(r => r.signed_action.hashed.hash)));
+        commentHashes = records.map(r => r.signed_action.hashed.hash)
+        unreadCommentsNumber = Math.max(0, commentsNumber - countViewed(commentHashes));
       } catch (e) {
         error = e;
       }
@@ -428,7 +430,7 @@ async function scrollToDiv() {
     <button style="height: 80%; width: 80px; 
     background-color: transparent;
     border: none;" 
-    on:click={() => {criterionPopupBoolean = !criterionPopupBoolean; console.log(criterionPopupBoolean); scrollToDiv()}}
+    on:click={() => {criterionPopupBoolean = !criterionPopupBoolean; scrollToDiv()}}
     >
     
     {#if criterionPopupBoolean}
@@ -473,6 +475,7 @@ async function scrollToDiv() {
       dispatch('transfer', e.detail);
     }}
     on:criterion-comment-created={(e) => {
+      unreadCommentsNumber = Math.max(0, commentsNumber - countViewed(commentHashes));
       dispatch('criterion-comment-created', e.detail);
     }} />
   <!-- </div> -->

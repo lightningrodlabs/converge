@@ -25,6 +25,7 @@ let numberOfUnsupportedCriteria = 0;
 
 async function sortCriteria() {
 // setTimeout(() => {
+  // sortedCriteria = []
   let sortedCriteriaJoined = Object.values(sortableCriteria).sort((a, b) => {
     if (sort === 'support') {
       return b.support - a.support;
@@ -63,19 +64,31 @@ $: if (sort && sortableCriteria && hashes && Object.values(sortableCriteria).len
   sortCriteria();
 }
 
+async function fetchAndSort() {
+  await fetchCriteria()
+  await sortCriteria()
+  // setTimeout(() => {
+  //   let trueSort = sort
+  //   sort = ""
+  //   setTimeout(() => {
+  //     sort = trueSort
+  //   }, 100)
+  // }, 100)
+}
+
 onMount(async () => {
 
-  await fetchCriteria();
-  await sortCriteria()
+  await fetchAndSort()
+
   client.on('signal', signal => {
     if (signal.zome_name !== 'converge') return;
     const payload = signal.payload as ConvergeSignal;
     if (payload.type !== 'EntryCreated') return;
     if (payload.app_entry.type !== 'Criterion') return;
     // hashes = [...hashes, payload.action.hashed.hash];
-    // sortedCriteria = [...sortedCriteria, payload.action.hashed.hash];
+    sortedCriteria = [...sortedCriteria, payload.action.hashed.hash];
     fetchCriteria()
-    sortCriteria()
+    // fetchAndSort()
   });
 });
 
@@ -91,6 +104,7 @@ async function fetchCriteria() {
     criteriaCount = records.length;
     hashes = records.map(r => r.signed_action.hashed.hash);
     sortedCriteria = hashes;
+    console.log("fetched criteria", sortedCriteria)
   } catch (e) {
     error = e;
   }

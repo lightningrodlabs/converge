@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount, getContext } from 'svelte';
+  import { onMount, getContext, createEventDispatcher } from 'svelte';
   import '@material/mwc-circular-progress';
   import type { Record, EntryHash, ActionHash, AgentPubKey, AppAgentClient, NewEntryAction } from '@holochain/client';
   import { clientContext } from '../../../contexts';
@@ -7,6 +7,7 @@
   import CreateCriterion from './CreateCriterion.svelte';
   // import CriterionDetail from './CriterionDetail.svelte';
   import type { ConvergeSignal, Criterion, CriterionComment } from '../types';
+  import { encodeHashToBase64 } from "@holochain/client";
   
   export let deliberationHash: ActionHash;
   export let criterionHash: ActionHash;
@@ -14,7 +15,10 @@
   // let alternativeCriterionHash: ActionHash;
   export let alternatives: Array<any> | undefined;
   
+  
   let client: AppAgentClient = (getContext(clientContext) as any).getClient();
+
+  const dispatch = createEventDispatcher();
   
   let hashes: Array<ActionHash> | undefined;
   let allCriteria: Array<any> | undefined;
@@ -116,6 +120,8 @@
         fn_name: 'create_criterion_comment',
         payload: criterionCommentEntry,
       });
+
+      dispatch('criterion-comment-created', {context: JSON.stringify({criterionCommentHash: encodeHashToBase64(record.signed_action.hashed.hash), criterionHash: encodeHashToBase64(criterionHash)})});
     } catch (e) {
       console.log(e)
     }
@@ -204,7 +210,11 @@
       </div>
     {/each} -->
   <!-- </div> -->
-  <CreateCriterion deliberationHash={deliberationHash} alternativeTo = {criterionHash} bind:criterionFormPopup />
+  <CreateCriterion deliberationHash={deliberationHash} alternativeTo = {criterionHash} bind:criterionFormPopup 
+  on:criterion-comment-created={(e) => {
+    dispatch('criterion-comment-created', e.detail);
+  }}
+  />
     <!-- {JSON.stringify(alternatives)} -->
     <!-- {JSON.stringify(alternatives.map((a)=>{return a.hash.join(',')}))} -->
     <!-- {#each allCriteria as c}

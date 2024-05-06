@@ -178,7 +178,15 @@ async function removeObjection() {
     margin-top: 2px;">
 
     {#if showSlider}
-      <CreateAlternative {criterionHash} {deliberationHash} {mySupport} {alternatives}></CreateAlternative>
+      <CreateAlternative {criterionHash} {deliberationHash} {mySupport} {alternatives}
+      on:criterion-comment-created={(e) => {
+        console.log("criterioncreated", e.detail)
+        hashes = [...hashes, JSON.parse(e.detail.context).criterionCommentHash];
+        scrollToBottom();
+        dispatch('criterion-comment-created', e.detail);
+        commentReference=undefined
+      }}
+      ></CreateAlternative>
 
       <!-- <div style="flex-align: center; position: relative;
       bottom: -7px;
@@ -213,6 +221,7 @@ async function removeObjection() {
 
   <!-- {#if showSlider} -->
   <CreateCriterionComment on:criterion-comment-created={(e) => {
+    console.log("criterioncreated", e.detail)
     hashes = [...hashes, JSON.parse(e.detail.context).criterionCommentHash];
     scrollToBottom();
     dispatch('criterion-comment-created', e.detail);
