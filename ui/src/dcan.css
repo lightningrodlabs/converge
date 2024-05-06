@@ -335,6 +335,14 @@ h2 {
   text-align: left;
 }
 
+.white-container > h2 {
+  font-size: 1.5rem;
+  font-weight: 200;
+  margin-bottom: 1rem;
+  font-family: "Roboto", "Montserrat", sans-serif;
+  color: #777777;
+}
+
 .participation-progress {
   height: 100%;
   float: left;

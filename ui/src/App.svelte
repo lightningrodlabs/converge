@@ -138,12 +138,12 @@
                   throw new Error("Unknown applet-view block type:"+weClient.renderInfo.view.block);
               }
               break;
-              case "creatable":
-                switch (weClient.renderInfo.view.name) {
-                  case "Deliberation":
-                  currentView = "create-deliberation-mini"
-                }
-                break;  
+            case "creatable":
+              switch (weClient.renderInfo.view.name) {
+                case "Deliberation":
+                currentView = "create-deliberation-mini"
+              }
+              break;  
             case "asset":
               switch (weClient.renderInfo.view.roleName) {
                 case "converge":

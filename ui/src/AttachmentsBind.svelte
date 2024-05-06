@@ -4,7 +4,7 @@
     // import type { GamezSignal, GamezStore } from "./store";
     // import type { Board } from "./board";
     import SvgIcon from "./SvgIcon.svelte";
-    import type { AppletInfo, AttachmentType } from "@lightningrodlabs/we-applet";
+    import type { AppletInfo } from "@lightningrodlabs/we-applet";
     import { HoloHashMap, type EntryHashMap } from "@holochain-open-dev/utils";
     import type { EntryHash } from "@holochain/client";
     import { hashEqual } from "./util";
@@ -19,10 +19,10 @@
         weClient = value;
     });
   
-    type AppletTypes = {
-      appletName: string,
-      attachmentTypes: Record<string,AttachmentType>
-    }
+    // type AppletTypes = {
+    //   appletName: string,
+    //   attachmentTypes: Record<string,AttachmentType>
+    // }
   
     type Groups = {
       logo_src: string,
