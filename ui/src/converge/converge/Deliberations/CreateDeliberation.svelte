@@ -73,8 +73,8 @@ onMount(async() => {
     //   }
     // }
     discussionApps = {...discussionApps}
-    console.log("discussionApps", discussionApps)
-    console.log(selectedDiscussionApp)
+    // console.log("discussionApps", discussionApps)
+    // console.log(selectedDiscussionApp)
 });
 
 async function createDeliberation() {  
@@ -87,7 +87,7 @@ async function createDeliberation() {
     // discussionApp: selectedDiscussionApp.appletName
   };
 
-  console.log("createDeliberation", deliberationEntry)
+  // console.log("createDeliberation", deliberationEntry)
   
   try {
     const record: Record = await client.callZome({
@@ -220,9 +220,9 @@ async function createDeliberation() {
       <AttachmentsDialog bind:this={attachmentsDialog} attachmentsLimit={1} bind:attachments={discussionAttachments} 
       on:add-attachments={
         (e) => {
-          console.log("add-attachments", e.detail)
+          // console.log("add-attachments", e.detail)
           discussionWALUrl = weaveUrlFromWal(e.detail.attachments[0])
-          console.log(discussionWALUrl)
+          // console.log(discussionWALUrl)
           // props.attachments = e.detail.attachments
           // bind.refresh()
         }
@@ -247,7 +247,7 @@ async function createDeliberation() {
     
     <AttachmentsDialog bind:this={attachmentsDialog} bind:attachments on:add-attachments={
       (e) => {
-        console.log("add-attachments", e.detail)
+        // console.log("add-attachments", e.detail)
         attachments = e.detail.attachments
         // props.attachments = e.detail.attachments
         // bind.refresh()

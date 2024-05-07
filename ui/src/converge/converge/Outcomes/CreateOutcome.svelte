@@ -71,8 +71,6 @@ async function createOutcome() {
     outcome: outcomeEntry,
     deliberation: deliberationHash,
   };
-
-  console.log("createOutcomeInput", createOutcomeInput)
   
   try {
     const record: Record = await client.callZome({

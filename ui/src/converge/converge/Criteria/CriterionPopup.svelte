@@ -87,11 +87,11 @@
         },
       });
       // openSupport = false;
-      if (record) {
-        console.log("record: ")
-        console.log(record)
-        // openSupport = false;
-      }
+      // if (record) {
+      //   console.log("record: ")
+      //   console.log(record)
+      //   // openSupport = false;
+      // }
     } catch (e) {
       error = e;
     }
@@ -175,7 +175,7 @@
           comment: objection
         },
       });
-      console.log(res)
+      // console.log(res)
       // let s = decode(res) as
       // let s = decode((record.entry as any).Present.entry) as Criterion;
       // console.log(s)

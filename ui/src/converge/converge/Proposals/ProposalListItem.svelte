@@ -94,14 +94,12 @@ function checkKey(e) {
 }
 
 function moveRight() {
-  console.log(proposalDetailHash)
   // find next hash
   if (hashes.length > hashes.indexOf(proposalDetailHash) + 1) {
     let nextHash = hashes[hashes.indexOf(proposalDetailHash) + 1]
     if (nextHash) {
       proposalDetailHash = nextHash
     }
-    console.log(proposalDetailHash)
     proposalPopup = false;
     anyProposalPopup = false;
     setTimeout(function () {
@@ -112,7 +110,6 @@ function moveRight() {
 }
 
 function moveLeft() {
-  console.log(proposalDetailHash)
   // find next hash
   if (hashes.indexOf(proposalDetailHash) > 0) {
     let nextHash = hashes[hashes.indexOf(proposalDetailHash) - 1]
@@ -155,7 +152,6 @@ async function fetchProposal() {
 }
 
 async function rateAlert() {
-  console.log('proposal-rated-3')
   dispatch('proposal-rated');
   // For kangaroo
   // proposalPopup = false;

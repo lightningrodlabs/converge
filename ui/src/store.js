@@ -32,7 +32,7 @@ async function createViewed(viewedHash, client) {
         viewed_date: new Date().getSeconds() * 1000,
     };
     
-    console.log("viewedEntry", viewedEntry)
+    // console.log("viewedEntry", viewedEntry)
     
     try {
         await client.callZome({

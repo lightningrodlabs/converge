@@ -39,7 +39,7 @@ async function scrollToBottom() {
     chatWindow.scrollTop = chatWindow.scrollHeight;
     await new Promise(res => setTimeout(res, 500));
     chatWindow.scrollTop = chatWindow.scrollHeight;
-    console.log(chatWindow.scrollTop, chatWindow.scrollHeight, chatWindow)
+    // console.log(chatWindow.scrollTop, chatWindow.scrollHeight, chatWindow)
   }
 }
 
@@ -75,12 +75,12 @@ onMount(async () => {
   // });
 
   client.on('signal', signal => {
-    console.log("signal", signal)
+    // console.log("signal", signal)
     if (signal.zome_name !== 'converge') return;
     const payload = signal.payload as ConvergeSignal;
     if (payload.message == "criterion-comment-created") {
       hashes = [...hashes, decodeHashFromBase64(JSON.parse(payload.context).criterionCommentHash)];
-      console.log("hashes", hashes)
+      // console.log("hashes", hashes)
       scrollToBottom();
     }
   });
@@ -180,7 +180,7 @@ async function removeObjection() {
     {#if showSlider}
       <CreateAlternative {criterionHash} {deliberationHash} {mySupport} {alternatives}
       on:criterion-comment-created={(e) => {
-        console.log("criterioncreated", e.detail)
+        // console.log("criterioncreated", e.detail)
         hashes = [...hashes, JSON.parse(e.detail.context).criterionCommentHash];
         scrollToBottom();
         dispatch('criterion-comment-created', e.detail);
@@ -221,7 +221,6 @@ async function removeObjection() {
 
   <!-- {#if showSlider} -->
   <CreateCriterionComment on:criterion-comment-created={(e) => {
-    console.log("criterioncreated", e.detail)
     hashes = [...hashes, JSON.parse(e.detail.context).criterionCommentHash];
     scrollToBottom();
     dispatch('criterion-comment-created', e.detail);

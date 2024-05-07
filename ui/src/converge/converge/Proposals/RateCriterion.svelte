@@ -226,10 +226,7 @@ async function fetchObjections() {
 // }
 async function removeRatingAndFetch() {
   await removeRating()
-  console.log("ASDFASDFASDF" + JSON.stringify(supporters))
-  console.log(client.myPubKey.join(","))
   supporters = supporters.filter(item => item.agent !== client.myPubKey.join(","));
-  console.log("ASDFASDFASDF" + JSON.stringify(supporters))
   let objectionCount;
   if (objections) {
     objectionCount = objections.length;
@@ -247,7 +244,6 @@ async function removeRatingAndFetch() {
     sponsored = supporters.some(item => item["agent"] === client.myPubKey.join(","));
   }
   allSupport[criterionHash.join(',')] = averageSupport;
-  console.log(allSupport)
   dispatch('proposal-rated')
 }
 
@@ -285,7 +281,6 @@ async function addRating() {
         percentage: String(addEvaluationPercentage / scoringLevel),
       },
     });
-    console.log('proposal-rated-1')
     dispatch('proposal-rated')
     if (record) {
       console.log(record)

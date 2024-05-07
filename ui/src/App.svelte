@@ -77,7 +77,7 @@
               navigate('instructions');
           }
 
-          console.log(records);
+          // console.log(records);
 
       } catch (e) {
           console.log(e)
@@ -220,7 +220,7 @@
             fn_name: 'get_dna_hash',
             payload: null,
         });
-        console.log("dna")
+        // console.log("dna")
       console.log(dna)
     } catch (e) {
       console.log("no dna")
@@ -232,7 +232,7 @@
     loading = false;
 
     client.on('signal', signal => {
-      console.log("signalll", signal)
+      // console.log("signalll", signal)
       if (signal.zome_name !== 'converge') return;
       const payload = signal.payload as ConvergeSignal;
       const urgentMessages = ['criterion-created', 'proposal-created', 'deliberation-created']
@@ -247,7 +247,7 @@
         'deliberation-created': "New deliberation"
       }
       if (urgentMessages.includes(payload.message)) {
-        console.log("activity received", payload)
+        // console.log("activity received", payload)
         
         weClient.notifyFrame([{
           title: messagesShort[payload.message],

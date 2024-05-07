@@ -39,7 +39,6 @@ $: if (allRatings) {
     }
     // if (Object.keys(allWeight).length > 0) {
       convergence = calculateAverage(allWeight)
-      console.log("convergence", convergence)
     // }
   }
 
@@ -96,9 +95,7 @@ async function fetchCriteria() {
 }
 
 async function rateAlert() {
-  console.log('proposal-rated-2')
   dispatch('proposal-rated')
-  console.log('lkjkl')
 }
 
 async function fetchRatings() {

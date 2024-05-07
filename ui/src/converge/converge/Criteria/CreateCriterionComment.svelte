@@ -60,7 +60,7 @@ function checkKey(e) {
 
 async function createCriterionComment() {
   // commentReference = null;
-  console.log(commentReference)
+  // console.log(commentReference)
   let cr: ActionHash | undefined = undefined;
   if (commentReference && commentReference.hash) {
     cr = commentReference.hash!;
@@ -93,7 +93,7 @@ async function createCriterionComment() {
     comment = ''
     commentReference = null;
     commentIsAnObjection = false;
-    console.log('criterion-comment-created', {context: JSON.stringify({criterionCommentHash: encodeHashToBase64(record.signed_action.hashed.hash), criterionHash: encodeHashToBase64(criterionHash)})});
+    // console.log('criterion-comment-created', {context: JSON.stringify({criterionCommentHash: encodeHashToBase64(record.signed_action.hashed.hash), criterionHash: encodeHashToBase64(criterionHash)})});
     dispatch('criterion-comment-created', {context: JSON.stringify({criterionCommentHash: encodeHashToBase64(record.signed_action.hashed.hash), criterionHash: encodeHashToBase64(criterionHash)})});
   } catch (e) {
     errorSnackbar.labelText = `Error creating the criterion comment: ${e.data.data}`;
@@ -168,7 +168,7 @@ async function createCriterionCommentCustom(inputComment, comment_reference, obj
           comment: comment
         },
       });
-      console.log(res)
+      // console.log(res)
       // let s = decode(res) as
       // let s = decode((record.entry as any).Present.entry) as Criterion;
       // console.log(s)

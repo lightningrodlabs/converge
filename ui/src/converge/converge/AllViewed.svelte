@@ -36,7 +36,7 @@ async function fetchVieweds() {
       fn_name: 'get_all_viewed',
       payload: null,
     });
-    console.log("all viewed records: ", records)
+    // console.log("all viewed records: ", records)
     setViewed(records.map(r => 
       encodeHashToBase64(r.viewed_hash)
     ));

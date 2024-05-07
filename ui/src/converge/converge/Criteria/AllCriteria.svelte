@@ -55,7 +55,7 @@ async function sortCriteria() {
     }
   });
   sortedCriteria = sortedCriteriaJoined.map((c) => c.hash);
-  console.log(sort, sortedCriteriaJoined)
+  // console.log(sort, sortedCriteriaJoined)
   // }, 4000)
 }
 
@@ -104,7 +104,7 @@ async function fetchCriteria() {
     criteriaCount = records.length;
     hashes = records.map(r => r.signed_action.hashed.hash);
     sortedCriteria = hashes;
-    console.log("fetched criteria", sortedCriteria)
+    // console.log("fetched criteria", sortedCriteria)
   } catch (e) {
     error = e;
   }
@@ -132,7 +132,7 @@ async function joinSignal() {
   {#if sort == "support"}
     {#each sortedCriteria as hash}
       <Criterion on:criterion-rated={joinSignal} criterionHash={hash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}  on:transfer={(e) => {
-        console.log("transfer", e.detail)
+        // console.log("transfer", e.detail)
         // scroll to e.detail.to
         
       }}

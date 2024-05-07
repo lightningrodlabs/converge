@@ -56,12 +56,9 @@ $: hashes, loading, error, allProposalScores, sortableProposals, sortedProposals
 // }
 
 async function sortProposals() {
-  console.log(sortableProposals)
+  // console.log(sortableProposals)
   // if ((anyProposalPopup == false) && sort && sortableProposals && hashes && Object.values(sortableProposals).length == hashes.length) {
-    console.log('hello')
-    console.log(JSON.stringify(sortableProposals))
     let sortedProposalsJoined = Object.values(sortableProposals).sort((a, b) => {
-      console.log(a.score, b.score)
       if (sort === 'score') {
         return b.score - a.score;
       } else if (sort === 'respondants') {
@@ -78,9 +75,6 @@ async function sortProposals() {
     // for (let i = 0; i < sortedProposalsJoined.length; i++) {
     //   x[i] = sortedProposalsJoined[i].hash.join('');
     // }
-    console.log(sortedProposals)
-    console.log(sortedProposalsJoined)
-    console.log(x)
   // }
   sortedProposals = [...sortedProposals]
 }
@@ -121,7 +115,6 @@ async function fetchProposals() {
 } 
 
 async function rateAlert() {
-  console.log('rate-alert-5')
   dispatch('proposal-rated');
 }
 

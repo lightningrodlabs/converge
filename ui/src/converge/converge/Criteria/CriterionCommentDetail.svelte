@@ -129,18 +129,18 @@ async function fetchCriterionComment() {
       criterionComment = decode((record.entry as any).Present.entry) as CriterionComment;
 
       await profilesStore.profiles.get(criterionComment.author).subscribe((profile) => {
-        console.log("profile: ", profile)
+        // console.log("profile: ", profile)
         if (profile.status == "complete") {
           nickName = profile.value.entry.nickname
         }
       })
 
       if (criterionComment.objection_reference) {
-        console.log('fetching objection')
+        // console.log('fetching objection')
         objection = await fetchObjection(criterionComment.objection_reference)
       }
       else if (criterionComment.alternative_reference) {
-        console.log('fetching alternative')
+        // console.log('fetching alternative')
         alternative = await fetchAlternative(criterionComment.alternative_reference)
       }
       else if (criterionComment.comment_reference) {

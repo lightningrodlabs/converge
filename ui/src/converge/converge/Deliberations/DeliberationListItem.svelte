@@ -82,7 +82,6 @@ async function fetchDeliberation() {
       payload: deliberationHash,
     });
     if (record) {
-      console.log('record', record);
       deliberation = decode((record.record.entry as any).Present.entry) as Deliberation;
       proposals = record.proposals.map(l => l.target);
       criteria = record.criteria.map(l => l.target);
@@ -93,7 +92,7 @@ async function fetchDeliberation() {
   }
 
   try {
-    console.log("trying to get deliberators")
+    // console.log("trying to get deliberators")
     const records = await client.callZome({
       cap_secret: null,
       role_name: 'converge',

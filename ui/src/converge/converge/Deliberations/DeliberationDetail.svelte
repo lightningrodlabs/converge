@@ -92,7 +92,7 @@ onMount(async () => {
   await fetchDeliberation();
 
   client.on('signal', signal => {
-    console.log("signal", signal)
+    // console.log("signal", signal)
     if (signal.zome_name !== 'converge') return;
     const payload = signal.payload as ConvergeSignal;
     const updateMessages = ['new-join', 'criterion-created', 'proposal-rated', 'proposal-created', 'criterion-rated']
@@ -105,7 +105,7 @@ onMount(async () => {
       'criterion-rated': "A criterion has been rated",
     }
     if (updateMessages.includes(payload.message) && (payload.deliberation_hash.join(',') == deliberationHash.join(','))) {
-      console.log("activity received", payload)
+      // console.log("activity received", payload)
       outdated = true;
 
       weClient.notifyFrame([{
@@ -119,7 +119,7 @@ onMount(async () => {
 
       lastMessage = messagesFull[payload.message];
     } else if (payload.message == "criterion-comment-created") {
-      console.log("this is a new message", payload)
+      // console.log("this is a new message", payload)
     }
     // console.log(payload)
   });
@@ -203,7 +203,7 @@ async function fetchDeliberation() {
   }
 
   try {
-    console.log("trying to get deliberators")
+    // console.log("trying to get deliberators")
     const records = await client.callZome({
       cap_secret: null,
       role_name: 'converge',
@@ -240,13 +240,13 @@ async function deleteDeliberation() {
 }
 
 async function newActivity(event, context = "") {
-  console.log("new activity", event)
+  // console.log("new activity", event)
   joinDeliberation()
   sendActivityNotice(event, context)
 }
 
 async function sendActivityNotice(event, context = "") {
-  console.log("send activity notice", event)
+  // console.log("send activity notice", event)
   try {
     await client.callZome({
       cap_secret: null,
@@ -326,8 +326,6 @@ async function completeDeliberation() {
     deliberators = deliberators.filter(item => item !== client.myPubKey.join(','));
     // await new Promise(r => setTimeout(r, 10));
     completedDeliberators = [...completedDeliberators, client.myPubKey.join(',')]
-    console.log("completedDeliberators", completedDeliberators)
-    console.log("deliberators", deliberators)
     deliberatorsRaw = [...deliberatorsRaw, client.myPubKey]
   } catch (e: any) {
     errorSnackbar.labelText = `Error completing the deliberation: ${e.data.data}`;
@@ -348,7 +346,6 @@ async function rejoinDeliberation() {
     completedDeliberators = completedDeliberators.filter(item => item !== client.myPubKey.join(','));
     deliberators = deliberators.filter(item => item !== client.myPubKey.join(','));
     deliberatorsRaw = deliberatorsRaw.filter(item => item.join(',') !== client.myPubKey.join(','));
-    console.log("test", completedDeliberators, deliberators)
     await new Promise(r => setTimeout(r, 200));
     await joinDeliberation();
   } catch (e: any) {
@@ -549,7 +546,7 @@ function expandSearch2() {
 
 
   <!-- <div class="search-button"><FaSearch/></div> -->
-  <div raised on:click={() => {criterionFormPopup = true; console.log(criterionFormPopup)}} class="add-button">{window.innerWidth < 768 ? "+" : "Add a criterion"}</div>
+  <div raised on:click={() => {criterionFormPopup = true;}} class="add-button">{window.innerWidth < 768 ? "+" : "Add a criterion"}</div>
   <!-- <mwc-button dense outlined>Add criterion</mwc-button> -->
   <!-- {#if criterionForm} -->
   <CreateCriterion on:criterion-created={() => {newActivity("criterion-created")}} deliberationHash={deliberationHash} alternativeTo={null} bind:criterionFormPopup />

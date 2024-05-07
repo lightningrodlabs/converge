@@ -55,7 +55,7 @@
   } 
 
   async function rateAlert() {
-    console.log('rate-alert-5')
+    // console.log('rate-alert-5')
     dispatch('outcome-rated');
   }
 

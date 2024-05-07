@@ -56,7 +56,7 @@ onMount(async () => {
   await addToViewed(criterionHash, client);
   await fetchSupport();
   await fetchObjections();
-  console.log(objections)
+  // console.log(objections)
   let criterionHashKey = criterionHash.join(',')
   if (showSlider) {
     sortableCriteria[criterionHashKey] = {
@@ -167,7 +167,7 @@ async function fetchSupport() {
           payload: criterionHash,
         });
         commentsNumber = records.length;
-        console.log(records, "comments")
+        // console.log(records, "comments")
         commentHashes = records.map(r => r.signed_action.hashed.hash)
         unreadCommentsNumber = Math.max(0, commentsNumber - countViewed(commentHashes));
       } catch (e) {
@@ -205,14 +205,14 @@ async function removeSupport() {
 async function addSupport() {
   await removeSupport()
   try {
-    console.log(addSupportPercentage)
-    console.log(scoringLevel)
+    // console.log(addSupportPercentage)
+    // console.log(scoringLevel)
     let tag = {
       percentage: String(addSupportPercentage / scoringLevel),
       transferedFrom: null
     }
 
-    console.log(tag)
+    // console.log(tag)
 
     record = await client.callZome({
       cap_secret: null,
@@ -227,11 +227,11 @@ async function addSupport() {
     });
     dispatch('criterion-rated', { criterionHash: criterionHash });
     // openSupport = false;
-    if (record) {
-      console.log("record: ")
-      console.log(record)
-      // openSupport = false;
-    }
+    // if (record) {
+    //   console.log("record: ")
+    //   console.log(record)
+    //   // openSupport = false;
+    // }
   } catch (e) {
     error = e;
   }
@@ -257,7 +257,7 @@ async function scrollToDiv() {
   if (!criterionPopupBoolean) return;
   await new Promise(res => setTimeout(res, 200));
   myDiv.scrollIntoView({ behavior: 'smooth' });
-  console.log(myDiv)
+  // console.log(myDiv)
 }
 </script>
 
@@ -351,7 +351,7 @@ async function scrollToDiv() {
               on:change={e => {
                 addSupportPercentage = e.detail.value
                 mySupport = addSupportPercentage / scoringLevel;
-                console.log(addSupportPercentage, mySupport)
+                // console.log(addSupportPercentage, mySupport)
                 if (addSupportPercentage == 0) {
                   removeSupport()
                 } else {
