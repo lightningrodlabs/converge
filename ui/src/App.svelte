@@ -68,8 +68,10 @@
               fn_name: 'get_deliberations_for_deliberator',
               payload: client.myPubKey,
           });
-
-          if (records.length > 0) {
+        
+          let all_records = [...records.completed, ...records.uncompleted]
+          
+          if (all_records.length > 0) {
               navigate('dashboard');
           } else {
               navigate('instructions');
