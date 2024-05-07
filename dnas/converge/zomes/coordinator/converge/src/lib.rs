@@ -56,6 +56,14 @@ pub struct ActivityPayload {
     title: String,
     context: Option<String>,
 }
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct DeliberatorsWithCompleted {
+    pub deliberator: AgentPubKey,
+    pub completed: bool,
+}
+
+
 #[hdk_extern]
 pub fn new_activity_sender(data: ActivityPayload) -> ExternResult<InitCallbackResult> {
     let zome_call_response = call(
@@ -69,12 +77,13 @@ pub fn new_activity_sender(data: ActivityPayload) -> ExternResult<InitCallbackRe
     match zome_call_response {
         ZomeCallResponse::Ok(result) => {
             debug!("result: {:?}", result);
-            let all_agents: Vec<AgentPubKey> = result.decode().ok().unwrap();
+            let all_agents: Vec<DeliberatorsWithCompleted> = result.decode().ok().unwrap();
             debug!("all_agents: {:?}", all_agents);
             for agent in all_agents {
-                if agent != agent_info()?.agent_latest_pubkey.into() {
+                let agent_only = agent.deliberator;
+                if agent_only != agent_info()?.agent_latest_pubkey.into() {
                     let zome_call_response = call_remote(
-                        agent.clone(),
+                        agent_only.clone(),
                         "converge",
                         FunctionName(String::from("new_activity_receiver")),
                         None,
