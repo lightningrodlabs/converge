@@ -2,7 +2,7 @@
 import { createEventDispatcher, onMount, getContext } from 'svelte';
 import '@material/mwc-circular-progress';
 import { decode } from '@msgpack/msgpack';
-import type { Record, ActionHash, AppAgentClient, EntryHash, AgentPubKey, DnaHash } from '@holochain/client';
+import type { Record, ActionHash, AppClient, EntryHash, AgentPubKey, DnaHash } from '@holochain/client';
 import { clientContext } from '../../../contexts';
 import type { Criterion, ConvergeSignal } from '../types';
 import '@material/mwc-circular-progress';
@@ -23,9 +23,9 @@ export let sortableCriteria;
 export let filter;
 export let reference;
 export let showUnsupportedCriteria = false;
-export let unsupportedCriteria;
+export let unsupportedCriteria = [];
 
-let client: AppAgentClient = (getContext(clientContext) as any).getClient();
+let client: AppClient = (getContext(clientContext) as any).getClient();
 
 let loading = true;
 let error: any = undefined;
@@ -273,7 +273,7 @@ async function scrollToDiv() {
   <mwc-circular-progress indeterminate></mwc-circular-progress>
 </div>
 {:else if error}
-<span>Error fetching the criterion: {error.data.data}</span>
+<span>Error fetching the criterion: {error}</span>
 {:else}
 <!-- {criterionHash}
 {criterion.title} -->
