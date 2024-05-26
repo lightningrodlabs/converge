@@ -264,7 +264,7 @@ async function scrollToDiv() {
 }
 </script>
 
-{#if !unsupportedCriteria.includes(criterionHash) || showUnsupportedCriteria}
+{#if !unsupportedCriteria?.includes(criterionHash) || showUnsupportedCriteria}
 <!-- <button on:click={myDiv.scrollIntoView({ behavior: 'smooth' })}>Scroll to Div</button> -->
 <mwc-snackbar bind:this={errorSnackbar} leading>
 </mwc-snackbar>

@@ -465,7 +465,7 @@ function expandSearch2() {
           <button class="discussion-button"
             on:click={(e)=>{
               e.stopPropagation()
-              activeTab = "discussion"
+              // activeTab = "discussion"
               weClient.openWal(conversation)
               // weClient.openAppletBlock(hrlWithContext.hrl[0], "active_boards", hrlWithContext.context)
             }} >
