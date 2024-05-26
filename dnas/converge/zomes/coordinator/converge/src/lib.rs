@@ -19,6 +19,7 @@ pub mod proposal;
 pub mod outcome;
 pub mod criterion;
 pub mod deliberation;
+pub mod utils;
 use hdk::prelude::{*, tracing::field::debug};
 use converge_integrity::*;
 use serde::de;

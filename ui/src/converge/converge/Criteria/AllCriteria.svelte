@@ -1,7 +1,7 @@
 <script lang="ts">
 import { createEventDispatcher, onMount, getContext } from 'svelte';
 import '@material/mwc-circular-progress';
-import type { EntryHash, Record, AgentPubKey, ActionHash, AppAgentClient, NewEntryAction } from '@holochain/client';
+import type { EntryHash, Record, AgentPubKey, ActionHash, AppClient, NewEntryAction } from '@holochain/client';
 import { clientContext } from '../../../contexts';
 import Criterion from './Criterion.svelte';
 import type { ConvergeSignal } from '../types';
@@ -14,59 +14,67 @@ export let sort;
 
 const dispatch = createEventDispatcher();
 
-let client: AppAgentClient = (getContext(clientContext) as any).getClient();
+let client: AppClient = (getContext(clientContext) as any).getClient();
 
 let hashes: Array<ActionHash> | undefined;
 let loading = true;
 let error: any = undefined;
 let sortableCriteria = {};
 let showUnsupportedCriteria = false;
-let numberOfUnsupportedCriteria = 0;
+// let numberOfUnsupportedCriteria = 0;
+let unsupportedCriteria = [];
 
-async function sortCriteria() {
+export const sortCriteria = async () => {
 // setTimeout(() => {
   // sortedCriteria = []
-  let sortedCriteriaJoined = Object.values(sortableCriteria).sort((a, b) => {
-    if (sort === 'support') {
-      return b.support - a.support;
-    } else if (sort === 'objections') {
-      return b.objections - a.objections;
-    } else if (sort === 'comments') {
-      return b.comments - a.comments;
-    } else if (sort === 'weight') {
-      return b.weight - a.weight;
-    } else if (sort === 'my support') {
-      return b.mySupport - a.mySupport;
-    } else if (sort === 'my objections') {
-      return b.myObjections - a.myObjections;
-    }
-  });
-  numberOfUnsupportedCriteria = 0;
-  sortedCriteriaJoined = sortedCriteriaJoined.filter((c) => {
-    if (c.supporters > 0) {
-      return true;
-    } else {
-      numberOfUnsupportedCriteria++;
-      if (showUnsupportedCriteria) {
-        return true;
-      } else {
-        return false;
-      }
-    }
-  });
-  sortedCriteria = sortedCriteriaJoined.map((c) => c.hash);
+  // console.log("sorting criteria", sortedCriteria)
+  // let sortedCriteriaJoined = Object.values(sortableCriteria).sort((a, b) => {
+  //   if (sort === 'support') {
+  //     return b.support - a.support;
+  //   } else if (sort === 'objections') {
+  //     return b.objections - a.objections;
+  //   } else if (sort === 'comments') {
+  //     return b.comments - a.comments;
+  //   } else if (sort === 'weight') {
+  //     return b.weight - a.weight;
+  //   } else if (sort === 'my support') {
+  //     return b.mySupport - a.mySupport;
+  //   } else if (sort === 'my objections') {
+  //     return b.myObjections - a.myObjections;
+  //   }
+  // });
+  // console.log("sortedCriteriaJoined 1", sortedCriteriaJoined)
+  // numberOfUnsupportedCriteria = 0;
+  // sortedCriteriaJoined = sortedCriteriaJoined.filter((c) => {
+  //   if (c.supporters > 0) {
+  //     return true;
+  //   } else {
+  //     numberOfUnsupportedCriteria++;
+  //     if (showUnsupportedCriteria) {
+  //       return true;
+  //     } else {
+  //       return false;
+  //     }
+  //   }
+  // });
+  // console.log("sortedCriteriaJoined 2", sortedCriteriaJoined)
+  // sortedCriteria = sortedCriteriaJoined.map((c) => c.hash);
   // console.log(sort, sortedCriteriaJoined)
   // }, 4000)
 }
 
-$: hashes, loading, error, sortedCriteria, sortableCriteria, sort, filter, numberOfUnsupportedCriteria;
-$: if (sort && sortableCriteria && hashes && Object.values(sortableCriteria).length == hashes.length) {
-  sortCriteria();
-}
+$: hashes, loading, error, sortedCriteria, sortableCriteria, sort, filter, unsupportedCriteria;
+// $: if (sort && sortableCriteria && hashes && Object.values(sortableCriteria).length == hashes.length) {
+//   sortCriteria();
+// }
 
 async function fetchAndSort() {
   await fetchCriteria()
-  await sortCriteria()
+  // wait a second
+  // await new Promise(r => setTimeout(r, 5000));
+  // await sortCriteria()
+  // if (sortableCriteria.length > 0) {
+  // }
   // setTimeout(() => {
   //   let trueSort = sort
   //   sort = ""
@@ -81,14 +89,15 @@ onMount(async () => {
   await fetchAndSort()
 
   client.on('signal', signal => {
+    console.log("signal", signal)
     if (signal.zome_name !== 'converge') return;
     const payload = signal.payload as ConvergeSignal;
     if (payload.type !== 'EntryCreated') return;
     if (payload.app_entry.type !== 'Criterion') return;
     // hashes = [...hashes, payload.action.hashed.hash];
-    sortedCriteria = [...sortedCriteria, payload.action.hashed.hash];
-    fetchCriteria()
-    // fetchAndSort()
+    // sortedCriteria = [...sortedCriteria, payload.action.hashed.hash];
+    // fetchCriteria()
+    fetchAndSort()
   });
 });
 
@@ -104,7 +113,8 @@ async function fetchCriteria() {
     criteriaCount = records.length;
     hashes = records.map(r => r.signed_action.hashed.hash);
     sortedCriteria = hashes;
-    // console.log("fetched criteria", sortedCriteria)
+    sortedCriteria.reverse()
+    console.log("fetched criteria", sortedCriteria)
   } catch (e) {
     error = e;
   }
@@ -129,39 +139,47 @@ async function joinSignal() {
 <span>Add some criteria.</span>
 {:else}
 <div style="display: flex; flex-direction: column" class="criterion-outer-all">
-  {#if sort == "support"}
-    {#each sortedCriteria as hash}
-      <Criterion on:criterion-rated={joinSignal} criterionHash={hash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}  on:transfer={(e) => {
-        // console.log("transfer", e.detail)
-        // scroll to e.detail.to
-        
+  {#each sortedCriteria as criterionHash (criterionHash)}
+  <!-- {JSON.stringify(criterionHash)} -->
+    <Criterion on:criterion-rated={joinSignal} {showUnsupportedCriteria} bind:unsupportedCriteria criterionHash={criterionHash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}  on:transfer={(e) => {
+      
+    }}
+    on:criterion-comment-created={(e) => {
+      dispatch('criterion-comment-created', e.detail);
+    }} />
+  {/each}
+
+  <!-- {#if sort == "support"}
+  {#each sortedCriteria as criterion (criterion.hash)}
+    <Criterion on:criterion-rated={joinSignal} criterionHash={criterion.hash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}  on:transfer={(e) => {
+       
       }}
       on:criterion-comment-created={(e) => {
         dispatch('criterion-comment-created', e.detail);
       }} />
     {/each}
   {:else if sort == "objections"}
-    {#each sortedCriteria as hash}
-      <Criterion on:criterion-rated={joinSignal} criterionHash={hash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}></Criterion>
+  {#each sortedCriteria as criterion (criterion.hash)}
+      <Criterion on:criterion-rated={joinSignal} criterionHash={criterion.hash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}></Criterion>
     {/each}
   {:else if sort == "comments"}
-    {#each sortedCriteria as hash}
-      <Criterion on:criterion-rated={joinSignal} criterionHash={hash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}></Criterion>
+  {#each sortedCriteria as criterion (criterion.hash)}
+      <Criterion on:criterion-rated={joinSignal} criterionHash={criterion.hash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}></Criterion>
     {/each}
   {:else if sort == "weight"}
-    {#each sortedCriteria as hash}
-      <Criterion on:criterion-rated={joinSignal} criterionHash={hash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}></Criterion>
+  {#each sortedCriteria as criterion (criterion.hash)}
+      <Criterion on:criterion-rated={joinSignal} criterionHash={criterion.hash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}></Criterion>
     {/each}
   {:else if sort == "my support"}
-    {#each sortedCriteria as hash}
-      <Criterion on:criterion-rated={joinSignal} criterionHash={hash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}></Criterion>
+  {#each sortedCriteria as criterion (criterion.hash)}
+      <Criterion on:criterion-rated={joinSignal} criterionHash={criterion.hash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}></Criterion>
     {/each}
   {:else if sort == "my objections"}
-    {#each sortedCriteria as hash}
-      <Criterion on:criterion-rated={joinSignal} criterionHash={hash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}></Criterion>
+  {#each sortedCriteria as criterion (criterion.hash)}
+      <Criterion on:criterion-rated={joinSignal} criterionHash={criterion.hash} {deliberationHash} {filter} bind:sortableCriteria on:criterion-deleted={() => fetchCriteria()}></Criterion>
     {/each}
-  {/if}
-  {#if numberOfUnsupportedCriteria > 0}
+  {/if} -->
+  {#if unsupportedCriteria?.length > 0}
     {#if showUnsupportedCriteria}
       <button
         class="show-more-button"
@@ -169,7 +187,7 @@ async function joinSignal() {
           showUnsupportedCriteria = false;
           sortCriteria();
         }}
-      >Hide {numberOfUnsupportedCriteria} unsupported criteria?</button>
+      >Hide {unsupportedCriteria?.length} unsupported criteria?</button>
     {:else}
       <button
         class="show-more-button"
@@ -177,7 +195,7 @@ async function joinSignal() {
           showUnsupportedCriteria = true;
           sortCriteria();
         }}
-      >Show {numberOfUnsupportedCriteria} unsupported criteria?</button>
+      >Show {unsupportedCriteria?.length} unsupported criteria?</button>
     {/if}
   {/if}
 </div>

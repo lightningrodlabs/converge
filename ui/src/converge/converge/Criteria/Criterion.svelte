@@ -22,6 +22,8 @@ export let criterionHash: ActionHash;
 export let sortableCriteria;
 export let filter;
 export let reference;
+export let showUnsupportedCriteria = false;
+export let unsupportedCriteria;
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
@@ -46,7 +48,7 @@ const scoringLevel = 4;
 
 let errorSnackbar: Snackbar;
   
-$:  error, loading, record, criterion, supporters, sponsored, criterionPopupBoolean, filter;
+$:  error, loading, record, criterion, supporters, sponsored, criterionPopupBoolean, filter, unsupportedCriteria;
 
 onMount(async () => {
   if (criterionHash === undefined) {
@@ -139,17 +141,18 @@ async function fetchSupport() {
           return map;
         }, new Map()).values()
       );
-      // console.log(JSON.parse(supporters[0].tag))
+
+      // add to unsupported if no supporters
+      if (supporters.length === 0) {
+        unsupportedCriteria = Array.from(new Set([...unsupportedCriteria, criterionHash]));
+      }
+
       support = supporters.reduce((sum, item) => {
         let percentage = Number(JSON.parse(item["tag"]).percentage);
         return isNaN(percentage) ? sum : sum + percentage;
       }, 0);
-      // average support
-      // support = support / supporters.length;
       sponsored = supporters.some(item => item["agent"] === client.myPubKey.join(","));
-      // console.log(sponsored, criterionHash, support)
       if (sponsored) {
-        // console.log(supporters)
         mySupport = JSON.parse(supporters.find(item => item["agent"] === client.myPubKey.join(","))["tag"]).percentage;
         addSupportPercentage = mySupport * scoringLevel;
       } else {
@@ -261,6 +264,7 @@ async function scrollToDiv() {
 }
 </script>
 
+{#if !unsupportedCriteria.includes(criterionHash) || showUnsupportedCriteria}
 <!-- <button on:click={myDiv.scrollIntoView({ behavior: 'smooth' })}>Scroll to Div</button> -->
 <mwc-snackbar bind:this={errorSnackbar} leading>
 </mwc-snackbar>
@@ -481,5 +485,6 @@ async function scrollToDiv() {
   <!-- </div> -->
   <!-- {/if} -->
 </div>
+{/if}
 {/if}
 {/if}

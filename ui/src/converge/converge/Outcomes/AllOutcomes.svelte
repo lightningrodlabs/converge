@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher, onMount, getContext } from 'svelte';
   import '@material/mwc-circular-progress';
-  import type { EntryHash, Record, AgentPubKey, ActionHash, AppAgentClient, NewEntryAction } from '@holochain/client';
+  import type { EntryHash, Record, AgentPubKey, ActionHash, AppClient, NewEntryAction } from '@holochain/client';
   import { clientContext } from '../../../contexts';
   import type { ConvergeSignal } from '../types';
   import Outcome from './Outcome.svelte';
@@ -18,7 +18,7 @@
   
   const dispatch = createEventDispatcher();
   
-  let client: AppAgentClient = (getContext(clientContext) as any).getClient();
+  let client: AppClient = (getContext(clientContext) as any).getClient();
 
 
   onMount(async () => {

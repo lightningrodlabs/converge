@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount, setContext } from 'svelte';
-  import type { ActionHash, AppAgentClient } from '@holochain/client';
-  import { AppWebsocket, AppAgentWebsocket, AdminWebsocket } from '@holochain/client';
-  import { view, viewHash, navigate, setWeClient } from './store.js';
+  import type { ActionHash, AppClient } from '@holochain/client';
+  import { AppWebsocket, AdminWebsocket } from '@holochain/client';
+  import { view, viewHash, navigate, setWeaveClient } from './store.js';
   import { clientContext, profilesStoreContext } from './contexts';
   import { ProfilesStore, ProfilesClient } from "@holochain-open-dev/profiles";
   import { encodeHashToBase64, type AgentPubKey } from "@holochain/client";
@@ -23,7 +23,7 @@
   import Header from './converge/converge/Header.svelte';
   import DeliberationsForDeliberator from './converge/converge/Deliberations/DeliberationsForDeliberator.svelte';
   import { MyProfile } from '@holochain-open-dev/profiles/dist/elements/my-profile.js';
-  import { WeClient, isWeContext, initializeHotReload, type WAL, type Hrl } from '@lightningrodlabs/we-applet';  
+  import { WeaveClient, isWeContext, initializeHotReload, type WAL, type Hrl } from '@lightningrodlabs/we-applet';  
   import Holochain from "./assets/holochain.png";
   import type { Deliberation, ConvergeSignal } from './converge/converge/types';
   import { appletServices } from './we';
@@ -43,7 +43,7 @@
   const adminPort = import.meta.env.VITE_ADMIN_PORT
   const url = `ws://localhost:${appPort}`;
 
-  let client: AppAgentClient | undefined;
+  let client: AppClient | undefined;
   let loading = true;
   let store = undefined;
   let currentHash: ActionHash | undefined;
@@ -55,7 +55,7 @@
   let connected = false
 
   // let hrlWithContext: HrlWithContext
-  let weClient: WeClient
+  let weClient: WeaveClient
 
   $: client, loading, store, profilesStore, initialized, dna, weClient
 
@@ -110,7 +110,7 @@
 
       }
       console.log("appPort and Id is", appPort, appId)
-      client = await AppAgentWebsocket.connect(appId,{url: new URL(url)})
+      client = await AppWebsocket.connect(appId,{url: new URL(url)})
       profilesClient = new ProfilesClient(client, appId);
     
       // client = await AppAgentWebsocket.connect('', 'dcan');
@@ -120,11 +120,11 @@
       // });
     }
     else {
-      // const weClient = await WeClient.connect();
-      weClient = await WeClient.connect(appletServices);
+      // const weClient = await WeaveClient.connect();
+      weClient = await WeaveClient.connect(appletServices);
       // store set
-      setWeClient(weClient)
-      // weClient = await WeClient.connect();
+      setWeaveClient(weClient)
+      // weClient = await WeaveClient.connect();
 
       switch (weClient.renderInfo.type) {
         case "applet-view":
@@ -148,11 +148,12 @@
               }
               break;  
             case "asset":
-              switch (weClient.renderInfo.view.roleName) {
+              console.log("wal", weClient.renderInfo.view)
+              switch (weClient.renderInfo.view.recordInfo.roleName) {
                 case "converge":
-                  switch (weClient.renderInfo.view.integrityZomeName) {
+                  switch (weClient.renderInfo.view.recordInfo.integrityZomeName) {
                     case "converge_integrity":
-                      switch (weClient.renderInfo.view.entryType) {
+                      switch (weClient.renderInfo.view.recordInfo.entryType) {
                         case "deliberation":
                           currentView = "deliberation-asset"
                           currentHash = weClient.renderInfo.view.wal.hrl[1]
@@ -164,15 +165,15 @@
                           currentHash = weClient.renderInfo.view.wal.hrl[1]
                           break;
                         default:
-                          throw new Error("Unknown entry type:"+weClient.renderInfo.view.entryType);
+                          throw new Error("Unknown entry type:"+weClient.renderInfo.view.recordInfo.entryType);
                       }
                       break;
                     default:
-                      throw new Error("Unknown integrity zome:"+weClient.renderInfo.view.integrityZomeName);
+                      throw new Error("Unknown integrity zome:"+weClient.renderInfo.view.recordInfo.integrityZomeName);
                   }
                   break;
                 default:
-                  throw new Error("Unknown role name:"+weClient.renderInfo.view.roleName);
+                  throw new Error("Unknown role name:"+weClient.renderInfo.view.recordInfo.roleName);
               }
               break;
             default:

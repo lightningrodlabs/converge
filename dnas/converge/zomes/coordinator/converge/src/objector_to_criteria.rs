@@ -1,7 +1,7 @@
 use std::ptr::null;
 use hdk::prelude::{*, tracing::field::debug};
 use converge_integrity::*;
-use zome_utils::*;
+use crate::utils::link_input;
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AddCriterionForObjectorInput {
     pub base_objector: AgentPubKey,

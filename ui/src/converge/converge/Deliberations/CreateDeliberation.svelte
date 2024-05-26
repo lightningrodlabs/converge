@@ -13,13 +13,13 @@ import '@material/mwc-textarea';
 import { view, viewHash, navigate } from '../../../store.js';
 import AttachmentsDialog from "../../../AttachmentsDialog.svelte"
 import SvgIcon from "../../../SvgIcon.svelte";
-import { WeClient, isWeContext, initializeHotReload, type WAL, type Hrl, weaveUrlFromWal } from '@lightningrodlabs/we-applet';
+import { WeaveClient, isWeContext, initializeHotReload, type WAL, type Hrl, weaveUrlFromWal } from '@lightningrodlabs/we-applet';
 import AttachmentsBind from '../../../AttachmentsBind.svelte';
 import { HoloHashMap, type EntryHashMap } from "@holochain-open-dev/utils";
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 import { weClientStored } from '../../../store.js';
 import app from '../../../main';
-import { hrlB64WithContextToRaw, hrlWithContextToB64, getMyDna, type WALUrl } from '../../../util';
+import type { WALUrl } from '../../../util';
 
 const dispatch = createEventDispatcher();
 

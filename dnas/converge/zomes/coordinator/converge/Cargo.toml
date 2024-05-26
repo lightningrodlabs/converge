@@ -12,6 +12,4 @@ hdk = { workspace = true }
 
 serde = { workspace = true }
 
-zome_utils.workspace = true
-
 converge_integrity = { workspace = true } 

@@ -33,6 +33,8 @@ import CreateOutcome from '../Outcomes/CreateOutcome.svelte';
 
 const dispatch = createEventDispatcher();
 
+let sortCriteria;
+
 export let deliberationHash: ActionHash;
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
@@ -530,11 +532,15 @@ function expandSearch2() {
     <!-- <SvgIcon icon="questionMark" size="16px"/> -->
     What should to be true about any solution addressing this issue?</p>
     {#if criteriaCount > 1}
-      <select class="sort-dropdown" bind:value={criteriaSort}>
+      <!-- <select class="sort-dropdown" bind:value={criteriaSort}
+        on:change={() => {
+          sortCriteria()
+        }}
+      >
         {#each sortByOptions as option}
         <option value={option}>  Sort by: {option}</option>
         {/each}
-      </select>
+      </select> -->
       
       <div class="search-container">
         <div class="search-button" on:click={expandSearch}><FaSearch/></div>
@@ -546,7 +552,7 @@ function expandSearch2() {
 
 
   <!-- <div class="search-button"><FaSearch/></div> -->
-  <div raised on:click={() => {criterionFormPopup = true;}} class="add-button">{window.innerWidth < 768 ? "+" : "Add a criterion"}</div>
+  <div on:click={() => {criterionFormPopup = true;}} class="add-button">{window.innerWidth < 768 ? "+" : "Add a criterion"}</div>
   <!-- <mwc-button dense outlined>Add criterion</mwc-button> -->
   <!-- {#if criterionForm} -->
   <CreateCriterion on:criterion-created={() => {newActivity("criterion-created")}} deliberationHash={deliberationHash} alternativeTo={null} bind:criterionFormPopup />
@@ -556,7 +562,7 @@ function expandSearch2() {
   
   <AllCriteria on:criterion-rated={() => {newActivity("criterion-rated")}} deliberationHash={deliberationHash} 
     on:criterion-comment-created={(e) => {newActivity("criterion-comment-created", e.detail.context)}}
-    filter={criteriaFilter} sort={criteriaSort} bind:sortedCriteria bind:criteriaCount />
+    filter={criteriaFilter} sort={criteriaSort} bind:sortedCriteria bind:criteriaCount bind:sortCriteria  />
   <!-- {:else if criteriaSort == "objections"}
   <AllCriteria deliberationHash={deliberationHash} filter={criteriaFilter} sort="objections" bind:criteriaCount />
   {/if} -->

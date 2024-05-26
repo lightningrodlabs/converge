@@ -1,6 +1,6 @@
 use hdk::prelude::*;
 use converge_integrity::*;
-use zome_utils::*;
+use crate::utils::link_input;
 use std::collections::HashSet;
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AddCriterionForCriterionInput {

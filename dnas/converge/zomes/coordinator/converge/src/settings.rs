@@ -1,6 +1,6 @@
 use hdk::prelude::*;
 use converge_integrity::*;
-use zome_utils::*;
+use crate::utils::link_input;
 #[hdk_extern]
 pub fn create_settings(settings: Settings) -> ExternResult<Record> {
     let settings_hash = create_entry(&EntryTypes::Settings(settings.clone()))?;

@@ -1,6 +1,6 @@
 use hdk::prelude::*;
 use converge_integrity::*;
-use zome_utils::*;
+use crate::utils::link_input;
 #[hdk_extern]
 pub fn create_deliberation(deliberation: Deliberation) -> ExternResult<Record> {
     debug!("create_deliberation: {:?}", deliberation);

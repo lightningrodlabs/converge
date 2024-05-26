@@ -17,7 +17,7 @@ export function notifications_update(new_notifications) {
     notifications.update(v => ordered)
 }
 
-export function setWeClient(client) {
+export function setWeaveClient(client) {
     weClientStored.update(v => client);
 }
 

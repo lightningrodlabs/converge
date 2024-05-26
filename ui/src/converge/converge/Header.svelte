@@ -17,7 +17,7 @@
   import type { Profile } from "@holochain-open-dev/profiles";
   import { encodeHashToBase64 } from "@holochain/client";
   import Avatar from "./Avatar.svelte";
-  import { WeClient, isWeContext } from '@lightningrodlabs/we-applet';
+  import { WeaveClient, isWeContext } from '@lightningrodlabs/we-applet';
   import SvgIcon from "./SvgIcon.svelte";
 
   // export let initialized: boolean = false;

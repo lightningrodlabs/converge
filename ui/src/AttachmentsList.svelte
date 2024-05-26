@@ -4,8 +4,6 @@
   import { weaveUrlToWAL } from "@lightningrodlabs/we-applet";
   import { clientContext } from './contexts';
   import { weClientStored } from './store.js';
-  import type { EntryHash, Record, AgentPubKey, ActionHash, AppAgentClient, NewEntryAction } from '@holochain/client';
-  import type { AppletHash, AppletServices, AssetInfo, WAL, WeServices } from '@lightningrodlabs/we-applet';
   import SvgIcon from "./SvgIcon.svelte";
   import type { WALUrl } from "./util";
 

@@ -2,7 +2,7 @@
   import { createEventDispatcher, onMount, getContext } from 'svelte';
   import '@material/mwc-circular-progress';
   import { decode } from '@msgpack/msgpack';
-  import type { Record, ActionHash, AppAgentClient, EntryHash, AgentPubKey, DnaHash } from '@holochain/client';
+  import type { Record, ActionHash, AppClient, EntryHash, AgentPubKey, DnaHash } from '@holochain/client';
   import { clientContext } from '../../../contexts';
   import type { Outcome } from '../types';
   import '@material/mwc-circular-progress';
@@ -29,7 +29,7 @@
     weClient = value;
   });
 
-  let client: AppAgentClient = (getContext(clientContext) as any).getClient();
+  let client: AppClient = (getContext(clientContext) as any).getClient();
 
   
   let loading = true;
