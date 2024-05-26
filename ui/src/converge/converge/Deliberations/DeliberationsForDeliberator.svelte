@@ -102,7 +102,7 @@ async function fetchDeliberations() {
       fn_name: 'get_deliberations_for_deliberator',
       payload: deliberator,
     });
-    console.log("reco", records)
+    // console.log("reco", records)
     hashes = records.uncompleted.map(r => r.signed_action.hashed.hash);
     completedHashes = records.completed.map(r => r.signed_action.hashed.hash);
   } catch (e) {

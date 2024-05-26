@@ -32,6 +32,7 @@
   import SvgIcon from './SvgIcon.svelte';
   import AllViewed from './converge/converge/AllViewed.svelte';
   import { fade } from 'svelte/transition';
+  import NetworkInfo from './NetworkInfo.svelte';
 // import AttachmentsList from './AttachmentsList.svelte';
   // import AttachmentsBind from './AttachmentsBind.svelte';
   // import AttachmentsDialog from './AttachmentsDialog.svelte';
@@ -56,7 +57,7 @@
   // let hrlWithContext: HrlWithContext
   let weClient: WeClient
 
-  $: client, loading, store, profilesStore, initialized, dna;
+  $: client, loading, store, profilesStore, initialized, dna, weClient
 
   async function checkIfNew() {
       try {
@@ -347,6 +348,10 @@
 {/if}
 
 <footer style="margin: 10px;">
+    {#if weClient}
+      <!-- {JSON.stringify(weClient.renderInfo)} -->
+      <!-- <NetworkInfo {weClient} /> -->
+    {/if}
     <!-- feedback button -->
     <SvgIcon icon="faBug" size="24" color="#000000" />
     <a href="https://docs.google.com/forms/d/e/1FAIpQLSchqUdQWqNCnjV8LfdLwuuJoqvdy2hWKotxKZ2L7TazaEusUQ/viewform" target="_blank" class="feedback-button">

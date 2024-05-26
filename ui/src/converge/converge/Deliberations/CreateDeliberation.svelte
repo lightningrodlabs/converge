@@ -216,7 +216,7 @@ async function createDeliberation() {
     </div>
     {/if}
     <div style="display:flex; flex-wrap:wrap; align-items: center; margin-bottom:10px;">
-      <label style="margin-top:5px">Discussion&nbsp;</label>
+      <label style="margin-top:5px">Link a discussion (e.g. a Vines thread)&nbsp;</label>
       <AttachmentsDialog bind:this={attachmentsDialog} attachmentsLimit={1} bind:attachments={discussionAttachments} 
       on:add-attachments={
         (e) => {
