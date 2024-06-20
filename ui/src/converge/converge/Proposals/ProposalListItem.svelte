@@ -12,7 +12,7 @@ import '@material/mwc-icon-button';
 import RateCriteria from './RateCriteria.svelte';
 import '@material/mwc-linear-progress';
 import '@material/mwc-icon-button'
-import { countViewed, addToViewed } from '../../../store.js';
+import { countViewed, addToViewed } from '../../../viewed.js';
 import ProposalDetail from './ProposalDetail.svelte';
 import OutcomesForProposal from '../Outcomes/OutcomesForProposal.svelte';
 

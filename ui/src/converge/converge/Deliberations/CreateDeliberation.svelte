@@ -20,6 +20,7 @@ let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 import { weClientStored } from '../../../store.js';
 import app from '../../../main';
 import type { WALUrl } from '../../../util';
+import { createDeliberation } from '../../../publish';
 
 const dispatch = createEventDispatcher();
 
@@ -77,96 +78,16 @@ onMount(async() => {
     // console.log(selectedDiscussionApp)
 });
 
-async function createDeliberation() {  
+async function submitDeliberation() {
   const deliberationEntry: Deliberation = { 
     title: title!,
     description: description!,
     settings: JSON.stringify(settings!),
     attachments: attachments,
     discussion: discussionAttachments[0] ? discussionAttachments[0] : null,
-    // discussionApp: selectedDiscussionApp.appletName
   };
-
-  // console.log("createDeliberation", deliberationEntry)
-  
-  try {
-    const record: Record = await client.callZome({
-      cap_secret: null,
-      role_name: 'converge',
-      zome_name: 'converge',
-      fn_name: 'create_deliberation',
-      payload: deliberationEntry,
-    });
-    dispatch('deliberation-created', { deliberationHash: record.signed_action.hashed.hash });
-
-    // join deliberation
-    await client.callZome({
-      cap_secret: null,
-      role_name: 'converge',
-      zome_name: 'converge',
-      fn_name: 'add_deliberation_for_deliberator',
-      payload: {
-        base_deliberator: client.myPubKey,
-        target_deliberation_hash: record.signed_action.hashed.hash
-      },
-    });
-
-    // if (selectedDiscussionApp != "none") {
-    //   // add discussion
-    //   const appletHash = discussionApps[selectedDiscussionApp][0]
-    //   const appletInfo = await weClient.appletInfo(appletHash)
-    //   console.log("appletInfo2", appletInfo)
-    //   const aType = discussionApps[selectedDiscussionApp][1]
-    //   console.log("aType", aType)
-    //   const threadsCreate = {hrl:[dna, record.signed_action.hashed.hash], attachmentType:"{}"}
-    //   console.log("threadsCreate", threadsCreate)
-    //   const hrlWithContext = await aType.create(threadsCreate)
-    //   console.log("hrl", hrlWithContext)
-    //   console.log("b64", hrlWithContextToB64(hrlWithContext))
-      
-    //   const hrlB64 = hrlWithContextToB64(hrlWithContext)
-    //   const deliberationUpdate = {
-    //     original_deliberation_hash: record.signed_action.hashed.hash,
-    //     previous_deliberation_hash: record.signed_action.hashed.hash,
-    //     updated_deliberation: {
-    //       ...deliberationEntry,
-    //       discussion: {
-    //         hrl: JSON.stringify(hrlB64.hrl),
-    //         context: hrlB64.context,
-    //       }
-    //     }
-    //   }
-      
-    //   console.log("deliberationUpdate", deliberationUpdate)
-      
-    //   // update deliberation to include newly created discussion
-    //   await client.callZome({
-    //     cap_secret: null,
-    //     role_name: 'converge',
-    //     zome_name: 'converge',
-    //     fn_name: 'update_deliberation',
-    //     payload: deliberationUpdate,
-    //   });
-    // }
-
-    // await client.callZome({
-    //   cap_secret: null,
-    //   role_name: 'converge',
-    //   zome_name: 'converge',
-    //   fn_name: 'new_activity_sender',
-    //   payload: {
-    //     deliberation_hash: record.signed_action.hashed.hash,
-    //     message: "deliberation-created",
-    //     title: title,
-    //   },
-    // });
-
-    navigate("deliberation", record.signed_action.hashed.hash)
-  } catch (e) {
-    console.log(e)
-    // errorSnackbar.labelText = `Error creating the deliberation: ${e}`;
-    // errorSnackbar.show();
-  }
+  let newDeliberationHash = await createDeliberation(deliberationEntry, client)
+  navigate("deliberation", newDeliberationHash)
 }
 
 </script>
@@ -262,6 +183,8 @@ async function createDeliberation() {
     raised
     label="Create Deliberation"
     disabled={!isDeliberationValid}
-    on:click={() => createDeliberation()}
+    on:click={() => {
+      submitDeliberation()
+    }}
   ></mwc-button>
 </div>

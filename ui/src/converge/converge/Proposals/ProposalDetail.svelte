@@ -16,7 +16,7 @@ import AttachmentsList from '../../../AttachmentsList.svelte';
 import SvgIcon from "../../../SvgIcon.svelte";
 import { getMyDna } from '../../../util';
 import { weClientStored } from '../../../store.js';
-import { countViewed, addToViewed } from '../../../store.js';
+import { countViewed, addToViewed } from '../../../viewed.js';
 import CreateOutcome from '../Outcomes/CreateOutcome.svelte';
 import OutcomesForProposal from '../Outcomes/OutcomesForProposal.svelte';
 

@@ -1,24 +1,20 @@
 <script lang="ts">
   import { onMount, setContext } from 'svelte';
   import type { NetworkInfoRequest } from '@holochain/client';
+  // import { ReadonlyPeerStatusStore } from '@lightningrodlabs/we-applet'
+  import { StoreSubscriber } from '@holochain-open-dev/stores';
 
   export let weClient;
   let networkInfo;
   $: networkInfo;
+  // let peerStatusStore: ReadonlyPeerStatusStore;
 
   async function refresh() {
-    console.log("1")
-    // let x = weClient.renderInfo
-    console.log(weClient?.renderInfo.appletClient.cachedAppInfo.cell_info.converge[0].provisioned.cell_id[0])
-    console.log(weClient?.renderInfo.appletClient.cachedAppInfo.cell_info.converge.map((cell) => cell.provisioned.cell_id[0]))
     let networkInfoRequest: NetworkInfoRequest = {
       agent_pub_key: weClient?.renderInfo.appletClient.myPubKey,
       dnas: weClient?.renderInfo.appletClient.cachedAppInfo.cell_info.converge.map((cell) => cell.provisioned.cell_id[0])
     }
-    console.log(networkInfoRequest)
-    let x = await weClient?.renderInfo.appletClient.appWebsocket.networkInfo(networkInfoRequest)
-    console.log(x)
-
+    let x = await weClient?.renderInfo.appletClient.networkInfoRequester(networkInfoRequest)
     networkInfo = x
   }
 
@@ -35,4 +31,6 @@
     }
   }
 >refresh network</button>
-{JSON.stringify(networkInfo)}
+<!-- --{JSON.stringify(ReadablePeerStatusStore)}-- -->
+<br>
+--{JSON.stringify(networkInfo)}--

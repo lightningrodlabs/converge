@@ -12,7 +12,7 @@ import AttachmentsDialog from "../../../AttachmentsDialog.svelte"
 import Criterion from '../Criteria/Criterion.svelte';
 import type { WALUrl } from '../../../util';
 import AttachmentsList from "../../../AttachmentsList.svelte";
-import { countViewed, addToViewed } from '../../../store.js';
+import { countViewed, addToViewed } from '../../../viewed.js';
 import { weaveUrlToWAL } from "@lightningrodlabs/we-applet";
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();

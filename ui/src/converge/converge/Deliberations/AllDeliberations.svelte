@@ -5,45 +5,53 @@ import type { EntryHash, Record, AgentPubKey, ActionHash, AppAgentClient, NewEnt
 import { clientContext } from '../../../contexts';
 import DeliberationDetail from './DeliberationDetail.svelte';
 import type { ConvergeSignal } from '../types';
+import { refetchDeliberations } from '../../../refetch';
 import { view, viewHash, navigate } from '../../../store.js';
 import DeliberationListItem from './DeliberationListItem.svelte';
+import { allDeliberations } from '../../../store.js';
 
+let deliberations = [];
+allDeliberations.subscribe(value => {
+  console.log('allDeliberations', value);
+  deliberations = value;
+});
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
-let hashes: Array<ActionHash> | undefined;
+// let hashes: Array<ActionHash> | undefined;
 let loading = true;
 let error: any = undefined;
 
-$: hashes, loading, error;
+$: deliberations, loading, error;
 
 onMount(async () => {
-
-  await fetchDeliberations();
-  client.on('signal', signal => {
-    if (signal.zome_name !== 'converge') return;
-    const payload = signal.payload as ConvergeSignal;
-    if (payload.type !== 'EntryCreated') return;
-    if (payload.app_entry.type !== 'Deliberation') return;
-    hashes = [...hashes, payload.action.hashed.hash];
-  });
+  await refetchDeliberations(client);
+  loading = false;
+  // await fetchDeliberations();
+  // client.on('signal', signal => {
+  //   if (signal.zome_name !== 'converge') return;
+  //   const payload = signal.payload as ConvergeSignal;
+  //   if (payload.type !== 'EntryCreated') return;
+  //   if (payload.app_entry.type !== 'Deliberation') return;
+  //   hashes = [...hashes, payload.action.hashed.hash];
+  // });
 });
 
-async function fetchDeliberations() {
-  try {
-    const records = await client.callZome({
-      cap_secret: null,
-      role_name: 'converge',
-      zome_name: 'converge',
-      fn_name: 'get_all_deliberations',
-      payload: null,
-    });
-    hashes = records.map(r => r.signed_action.hashed.hash);
-  } catch (e) {
-    error = e;
-  }
-  loading = false;
-}
+// async function fetchDeliberations() {
+//   try {
+//     const records = await client.callZome({
+//       cap_secret: null,
+//       role_name: 'converge',
+//       zome_name: 'converge',
+//       fn_name: 'get_all_deliberations',
+//       payload: null,
+//     });
+//     hashes = records.map(r => r.signed_action.hashed.hash);
+//   } catch (e) {
+//     error = e;
+//   }
+//   loading = false;
+// }
 
 </script>
 
@@ -55,14 +63,18 @@ async function fetchDeliberations() {
 </div>
 {:else if error}
 <span>Error fetching the deliberations: {error.data.data}.</span>
-{:else if hashes.length === 0}
+{:else if deliberations.length === 0}
 <span>No deliberations found.</span>
-{:else}
-<!-- <div style="display: flex; flex-direction: column"> -->
-  {#each hashes.reverse() as hash}
+{:else if deliberations.length > 0}
+  {JSON.stringify(deliberations)}
+  {#each deliberations as deliberation}
+    <span on:click={() => navigate('deliberation', deliberation.action_hash)}>
+      <DeliberationListItem {deliberation}  on:deliberation-deleted={() => fetchDeliberations()}></DeliberationListItem>
+    </span>
+  {/each}
+  <!-- {#each hashes.reverse() as hash}
     <span on:click={() => navigate('deliberation', hash)}>
       <DeliberationListItem deliberationHash={hash}  on:deliberation-deleted={() => fetchDeliberations()}></DeliberationListItem>
     </span>
-  {/each}
-<!-- </div> -->
+  {/each} -->
 {/if}

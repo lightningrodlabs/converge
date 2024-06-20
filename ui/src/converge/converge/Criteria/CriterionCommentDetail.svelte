@@ -14,7 +14,7 @@ import EditCriterionComment from './EditCriterionComment.svelte';
 import ObjectionMini from './Objection.svelte'
 import AlternativeMini from './Alternative.svelte'
 import { encodeHashToBase64 } from "@holochain/client";
-import { countViewed, addToViewed } from '../../../store.js';
+import { countViewed, addToViewed } from '../../../viewed.js';
 import type { AsyncStatus } from "@holochain-open-dev/stores";
 import type { Profile } from "@holochain-open-dev/profiles";
 import Avatar from '../Avatar.svelte';

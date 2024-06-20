@@ -11,7 +11,8 @@ import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
 import CriterionPopup from './CriterionPopup.svelte';
-import { countViewed, addToViewed, navigate } from '../../../store.js';
+import { countViewed, addToViewed } from '../../../viewed.js';
+import { navigate } from '../../../store.js';
 import SvgIcon from "../SvgIcon.svelte";
 
 const dispatch = createEventDispatcher();

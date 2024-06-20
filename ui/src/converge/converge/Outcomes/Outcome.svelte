@@ -16,7 +16,7 @@
   import ProposalListItem from '../Proposals/ProposalListItem.svelte';
   import '@lightningrodlabs/we-elements/dist/elements/wal-embed.js';
   import { weClientStored } from '../../../store.js';
-  import { countViewed, addToViewed } from '../../../store.js';
+  import { countViewed, addToViewed } from '../../../viewed.js';
   import SvgIcon from '../SvgIcon.svelte';
   import { getMyDna } from '../../../util';
 

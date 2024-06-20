@@ -5,7 +5,7 @@ import { type EntryHash, type Record, type AgentPubKey, type ActionHash, type Ap
 import { clientContext } from '../../contexts';
 import ViewedDetail from './ViewedDetail.svelte';
 import type { ConvergeSignal } from './types';
-import { viewed, setViewed, addToViewed } from '../../store.js';
+import { viewed, setViewed, addToViewed } from '../../viewed.js';
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 

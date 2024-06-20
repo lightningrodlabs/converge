@@ -33,9 +33,6 @@
   import AllViewed from './converge/converge/AllViewed.svelte';
   import { fade } from 'svelte/transition';
   import NetworkInfo from './NetworkInfo.svelte';
-// import AttachmentsList from './AttachmentsList.svelte';
-  // import AttachmentsBind from './AttachmentsBind.svelte';
-  // import AttachmentsDialog from './AttachmentsDialog.svelte';
 
   const appId = import.meta.env.VITE_APP_ID ? import.meta.env.VITE_APP_ID : 'converge'
   const roleName = 'converge'
@@ -359,7 +356,7 @@
       <span>Submit feedback</span>
     </a>
     :)
-{#if !isWeContext && dna && !loading && currentView != "instructions" && currentView != "" && (!weClient || weClient.renderInfo.view.type != "attachable")}
+{#if !isWeContext && dna && !loading && currentView != "instructions" && currentView != "" && (!weClient || weClient.renderInfo.view.type != "asset")}
 <small>
   <img class="holochain-logo" src={Holochain} alt="holochain logo"/>
   Private Holochain network: {dna}
