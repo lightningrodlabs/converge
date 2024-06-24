@@ -234,6 +234,7 @@
       // console.log("signalll", signal)
       if (signal.zome_name !== 'converge') return;
       const payload = signal.payload as ConvergeSignal;
+      console.log("activity received", payload)
       const urgentMessages = ['criterion-created', 'proposal-created', 'deliberation-created']
       const messagesFull = {
         'criterion-created': "A new criterion has been added to the deliberation " + payload.title,

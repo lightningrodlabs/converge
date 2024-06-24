@@ -5,61 +5,33 @@ import type { Record, EntryHash, ActionHash, AgentPubKey, AppAgentClient, NewEnt
 import { clientContext } from '../../../contexts';
 import DeliberationDetail from './DeliberationDetail.svelte';
 import type { ConvergeSignal } from '../types';
-    import DeliberationListItem from './DeliberationListItem.svelte';
-    import { view, viewHash, navigate } from '../../../store.js';
+import DeliberationListItem from './DeliberationListItem.svelte';
+import { view, viewHash, navigate } from '../../../store.js';
+import { joinDeliberation, leaveDeliberation } from '../../../publish';
+import { refetchDeliberations } from '../../../refetch';
+import { allDeliberations } from '../../../store.js';
+import { decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
 
 export let deliberator: AgentPubKey;
+let completedHashes: Array<ActionHash> = [];
+
+let deliberations = [];
+allDeliberations.subscribe(value => {
+  deliberations = value.filter(d => d.deliberators.filter(d => encodeHashToBase64(d.deliberator) === encodeHashToBase64(deliberator)).length > 0);
+  completedHashes = deliberations.filter(d => d.deliberators.filter(d => d.completed).length > 0).map(d => d.action_hash);
+});
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
-
-let hashes: Array<ActionHash> | undefined;
-let completedHashes: Array<ActionHash> | undefined;
 
 let loading = true;
 let error: any = undefined;
 
-$: hashes, completedHashes, loading, error;
-
-
-
-async function joinDeliberation(deliberationHash: ActionHash) {
-  try {
-    await client.callZome({
-      cap_secret: null,
-      role_name: 'converge',
-      zome_name: 'converge',
-      fn_name: 'add_deliberation_for_deliberator',
-      payload: {
-        base_deliberator: client.myPubKey,
-        target_deliberation_hash: deliberationHash
-      },
-    });
-  } catch (e: any) {
-    console.log("error", e)
-  }
-}
-
-async function leaveDeliberation(deliberationHash: ActionHash) {
-  try {
-    await client.callZome({
-      cap_secret: null,
-      role_name: 'converge',
-      zome_name: 'converge',
-      fn_name: 'remove_deliberation_for_deliberator',
-      payload: {
-        base_deliberator: client.myPubKey,
-        target_deliberation_hash: deliberationHash
-      },
-    });
-  } catch (e: any) {
-    console.log("error", e)
-  }
-}
+$: completedHashes, loading, error;
 
 async function completeDeliberation(deliberationHash: ActionHash) {
   completedHashes = [...completedHashes, deliberationHash];
-  hashes = hashes.filter(h => h !== deliberationHash);
-  await leaveDeliberation(deliberationHash);
+  // hashes = hashes.filter(h => h !== deliberationHash);
+  await leaveDeliberation(deliberationHash, client);
   try {
     await client.callZome({
       cap_secret: null,
@@ -75,7 +47,7 @@ async function completeDeliberation(deliberationHash: ActionHash) {
 
 async function rejoinDeliberation(deliberationHash: ActionHash) {
   completedHashes = completedHashes.filter(h => h !== deliberationHash);
-  hashes = [...hashes, deliberationHash];
+  // hashes = [...hashes, deliberationHash];
   await new Promise(r => setTimeout(r, 200));
   try {
     await client.callZome({
@@ -86,27 +58,10 @@ async function rejoinDeliberation(deliberationHash: ActionHash) {
       payload: deliberationHash,
     });
     await new Promise(r => setTimeout(r, 200));
-    await joinDeliberation(deliberationHash);
+    await joinDeliberation(deliberationHash, client);
     // await fetchDeliberations();
   } catch (e: any) {
     console.log("error", e)
-  }
-}
-
-async function fetchDeliberations() {
-  try {
-    const records = await client.callZome({
-      cap_secret: null,
-      role_name: 'converge',
-      zome_name: 'converge',
-      fn_name: 'get_deliberations_for_deliberator',
-      payload: deliberator,
-    });
-    // console.log("reco", records)
-    hashes = records.uncompleted.map(r => r.signed_action.hashed.hash);
-    completedHashes = records.completed.map(r => r.signed_action.hashed.hash);
-  } catch (e) {
-    error = e;
   }
 }
 
@@ -115,7 +70,7 @@ onMount(async () => {
     throw new Error(`The deliberator input is required for the DeliberationsForDeliberator element`);
   }
 
-  await fetchDeliberations()
+  await refetchDeliberations(client)
   loading = false;
 
   // client.on('signal', signal => {
@@ -139,35 +94,40 @@ onMount(async () => {
 </div>
 {:else if error}
 <span>Error fetching deliberations: {error}.</span>
-{:else if hashes.length === 0 && completedHashes.length === 0}
+{:else if deliberations.length === 0 && completedHashes.length === 0}
 <span>No deliberations found for this deliberator.</span>
-{:else}
+{:else if deliberations.length > 0}
 <div style="display: flex; flex-direction: column">
-  {#each hashes.reverse() as hash}
-  <div style="margin-bottom: 8px; display: flex; justify-content: space-between;">
-    <!-- <DeliberationDetail deliberationHash={hash}></DeliberationDetail> -->
-      <span on:click={() => navigate('deliberation', hash)} style="width: 100%;">
-        <DeliberationListItem deliberationHash={hash}></DeliberationListItem>
-      </span>
-      <button class="complete-button" on:click={() => completeDeliberation(hash)}>Mark complete</button>
-    </div>
+  {#each deliberations as deliberation}
+    {@const completed = completedHashes.includes(deliberation.action_hash)}
+      {#if !completed}
+      <div style="margin-bottom: 8px; display: flex; justify-content: space-between;">
+        <!-- <DeliberationDetail deliberationHash={hash}></DeliberationDetail> -->
+        <span on:click={() => navigate('deliberation', deliberation.action_hash)} style="width: 100%;">
+          <DeliberationListItem {deliberation}></DeliberationListItem>
+        </span>
+        <button class="complete-button" on:click={() => completeDeliberation(deliberation.action_hash)}>Mark complete</button>
+      </div>
+    {/if}
   {/each}
 </div>
 
+<!-- list all deliberations with hashes in completedHashes -->
 {#if completedHashes.length > 0}
-<div style="display: flex; flex-direction: column">
-  <h3>Completed</h3>
-  {#each completedHashes.reverse() as hash}
+  <h3>Completed deliberations</h3>
+  {#each completedHashes as hash}
+    {@const deliberation = deliberations.find(d => d.action_hash === hash)}
+    {#if deliberation}
     <div style="margin-bottom: 8px; display: flex; justify-content: space-between;">
-      <!-- <DeliberationDetail deliberationHash={hash}></DeliberationDetail> -->
-      <span on:click={() => navigate('deliberation', hash)} style="width: 100%;">
-        <DeliberationListItem deliberationHash={hash}></DeliberationListItem>
-      </span>
-      <button class="complete-button" on:click={() => rejoinDeliberation(hash)}>Rejoin</button>
-    </div>
+        <span on:click={() => navigate('deliberation', deliberation.action_hash)} style="width: 100%;">
+          <DeliberationListItem {deliberation}></DeliberationListItem>
+        </span>
+        <button class="complete-button" on:click={() => rejoinDeliberation(deliberation.action_hash)}>Rejoin</button>
+      </div>
+    {/if}
   {/each}
-</div>
 {/if}
+
 {/if}
 
 <style>

@@ -1,7 +1,7 @@
 <script lang="ts">
 import { onMount, getContext } from 'svelte';
 import '@material/mwc-circular-progress';
-import type { EntryHash, Record, AgentPubKey, ActionHash, AppAgentClient, NewEntryAction } from '@holochain/client';
+import type { EntryHash, Record, AgentPubKey, ActionHash, AppClient, NewEntryAction } from '@holochain/client';
 import { clientContext } from '../../../contexts';
 import DeliberationDetail from './DeliberationDetail.svelte';
 import type { ConvergeSignal } from '../types';
@@ -16,7 +16,7 @@ allDeliberations.subscribe(value => {
   deliberations = value;
 });
 
-let client: AppAgentClient = (getContext(clientContext) as any).getClient();
+let client: AppClient = (getContext(clientContext) as any).getClient();
 
 // let hashes: Array<ActionHash> | undefined;
 let loading = true;
@@ -66,7 +66,6 @@ onMount(async () => {
 {:else if deliberations.length === 0}
 <span>No deliberations found.</span>
 {:else if deliberations.length > 0}
-  {JSON.stringify(deliberations)}
   {#each deliberations as deliberation}
     <span on:click={() => navigate('deliberation', deliberation.action_hash)}>
       <DeliberationListItem {deliberation}  on:deliberation-deleted={() => fetchDeliberations()}></DeliberationListItem>

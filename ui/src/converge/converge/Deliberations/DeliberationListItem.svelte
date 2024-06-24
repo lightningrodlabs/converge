@@ -177,7 +177,7 @@ async function deleteDeliberation() {
             font-size: 0.8em;
             font-weight: 400;
             ">
-              (+{newOutcomeCount})
+              ({newOutcomeCount} new)
             </span>
           {/if}
         </div>
@@ -195,7 +195,7 @@ async function deleteDeliberation() {
             font-size: 0.8em;
             font-weight: 400;
             ">
-              (+{newProposalCount})
+              ({newProposalCount} new)
             </span>
           {/if}
         </div>
@@ -216,7 +216,7 @@ async function deleteDeliberation() {
             font-size: 0.8em;
             font-weight: 400;
             ">
-              (+{newCriteriaCount})
+              ({newCriteriaCount} new)
             </span>
           {/if}
       </div>
