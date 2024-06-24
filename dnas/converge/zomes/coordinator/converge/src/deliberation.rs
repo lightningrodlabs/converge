@@ -165,8 +165,6 @@ pub fn get_all_deliberations_complete(_: ()) -> ExternResult<Vec<DeliberationCom
         })
         .collect();
 
-        let completed = deliberators.iter().all(|d| d.completed);
-
         let criteria = get_links(
             link_input(
                 item.signed_action.hashed.hash.clone(),
