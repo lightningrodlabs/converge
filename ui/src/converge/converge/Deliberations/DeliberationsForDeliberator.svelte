@@ -141,8 +141,8 @@ onMount(async () => {
     height: 84px;
     margin: 8px 0;
     border: 0;
-    background-color: #b3b3b3;
-    color: white;
+    background-color: transparent;
+    color: rgb(92, 92, 92);
     border-radius: 10px;
     cursor: pointer;
     width: 70px;
@@ -150,6 +150,6 @@ onMount(async () => {
   }
 
   .complete-button:hover {
-    background-color: #cccccc;
+    background-color: #ffffff;
   }
 </style>

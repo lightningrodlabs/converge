@@ -189,7 +189,7 @@ async function createCriterion() {
         <div><span class="green-alert">↯ </span><strong>Alternative to {alternativeToFull.title}</strong></div>
         <br>
         {/if}
-        <small class="instructions" style="white-space: pre-line; font-size: 10px; margin: 0; width: calc(100vw - 111px); max-width: 388px;">
+        <small class="instructions" style="white-space: pre-line; font-size: 10px; margin: 0 0 16px 0; width: calc(100vw - 111px); max-width: 388px;">
           TIP: Does the criterion have these helpful characteristics?
 
           • Is noncontroversial

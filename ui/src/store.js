@@ -23,6 +23,10 @@ export function setAllDeliberations(deliberations) {
     allDeliberations.update(v => deliberations);
 }
 
+export function addDeliberation(deliberation) {
+    allDeliberations.update(v => [...v, deliberation]);
+}
+
 export function setAllCriteria(criteria) {
     allCriteria.update(v => criteria);
 }

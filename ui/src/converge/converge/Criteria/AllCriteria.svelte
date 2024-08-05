@@ -127,8 +127,6 @@ async function joinSignal() {
 
 </script>
 
-<!-- {JSON.stringify(sortableCriteria)} -->
-<!-- {JSON.stringify(sortedCriteria)} -->
 {#if loading}
 <div style="display: flex; flex: 1; align-items: center; justify-content: center">
   <mwc-circular-progress indeterminate></mwc-circular-progress>
@@ -136,7 +134,7 @@ async function joinSignal() {
 {:else if error}
 <span>Error fetching the criteria: {error.data.data}.</span>
 {:else if hashes.length === 0}
-<span>Add some criteria.</span>
+<span style="font-style: italic;">To get started, add some criteria. What would be necessary for you to accept a proposal?</span>
 {:else}
 <div style="display: flex; flex-direction: column" class="criterion-outer-all">
   {#each sortedCriteria as criterionHash (criterionHash)}

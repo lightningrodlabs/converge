@@ -29,6 +29,9 @@ import { getMyDna } from '../../../util';
 import type { WALUrl } from '../../../util';
 import AllOutcomes from '../Outcomes/AllOutcomes.svelte';
 import CreateOutcome from '../Outcomes/CreateOutcome.svelte';
+import { allDeliberations } from '../../../store.js';
+import { refetchDeliberations } from '../../../refetch';
+
     // import { hrlB64WithContextToRaw, hrlWithContextToB64 } from '../../../util';
 
 const dispatch = createEventDispatcher();
@@ -49,6 +52,10 @@ let deliberators: String[] | undefined;
 let completedDeliberators: String[] | undefined;
 let deliberatorsRaw: AgentPubKey[] | undefined;
 
+let criteria: any[] = [];
+let proposals: any[] = [];
+let outcomes: any[] = [];
+
 let editing = false;
 let criterionFormPopup = false;
 let proposalFormPopup = false;
@@ -65,6 +72,25 @@ let lastMessage;
 let detectSort;
 let outcomesTab;
 let outcomeCount;
+
+allDeliberations.subscribe(value => {
+  if (value) {
+    const deliberationComplete = value.find(d => d.action_hash == deliberationHash);
+    if (deliberationComplete) {
+      deliberation = deliberationComplete.deliberation;
+      criteria = deliberationComplete.criteria;
+      criteriaCount = deliberationComplete.criteria.length;
+      proposals = deliberationComplete.proposals;
+      proposalCount = deliberationComplete.proposals.length;
+      outcomes = deliberationComplete.outcomes;
+      outcomeCount = deliberationComplete.outcomes.length;
+      completedDeliberators = deliberationComplete.deliberators.filter(d => d.completed).map(d => d.deliberator.join(','));
+      deliberators = deliberationComplete.deliberators.filter(d => !d.completed).map(d => d.deliberator.join(','));
+      deliberatorsRaw = deliberationComplete.deliberators.map(d => d.deliberator);
+      loading = false;
+    }
+  }
+});
 
 let sortByOptions = [
   "support",
@@ -91,154 +117,49 @@ onMount(async () => {
   if (deliberationHash === undefined) {
     throw new Error(`The deliberationHash input is required for the DeliberationDetail element`);
   }
-  await fetchDeliberation();
+  // await fetchDeliberation();
+  await refetchDeliberations(client);
 
   client.on('signal', signal => {
-    // console.log("signal", signal)
-    if (signal.zome_name !== 'converge') return;
-    const payload = signal.payload as ConvergeSignal;
-    const updateMessages = ['new-join', 'criterion-created', 'proposal-rated', 'proposal-created', 'criterion-rated']
-    const urgentMessages = ['criterion-created', 'proposal-created']
-    const messagesFull = {
-      'new-join': "A new participant has joined the deliberation",
-      'criterion-created': "A new criterion has been added to the deliberation " + deliberation.title,
-      'proposal-rated': "A proposal has been rated",
-      'proposal-created': "A new proposal has been added to the deliberation " + deliberation.title,
-      'criterion-rated': "A criterion has been rated",
-    }
-    if (updateMessages.includes(payload.message) && (payload.deliberation_hash.join(',') == deliberationHash.join(','))) {
-      // console.log("activity received", payload)
-      outdated = true;
+    if (deliberation) {
 
-      weClient.notifyFrame([{
-        title: `New activity in ${deliberation.title}`,
-        body: messagesFull[payload.message],
-        notification_type: "change",
-        icon_src: undefined,
-        urgency: "low",
-        timestamp: Date.now()
-      }])
-
-      lastMessage = messagesFull[payload.message];
-    } else if (payload.message == "criterion-comment-created") {
-      // console.log("this is a new message", payload)
+      // console.log("signal", signal)
+      if (signal.zome_name !== 'converge') return;
+      const payload = signal.payload as ConvergeSignal;
+      const updateMessages = ['new-join', 'criterion-created', 'proposal-rated', 'proposal-created', 'criterion-rated']
+      const urgentMessages = ['criterion-created', 'proposal-created']
+      const messagesFull = {
+        'new-join': "A new participant has joined the deliberation",
+        'criterion-created': "A new criterion has been added to the deliberation " + deliberation?.title,
+        'proposal-rated': "A proposal has been rated",
+        'proposal-created': "A new proposal has been added to the deliberation " + deliberation?.title,
+        'criterion-rated': "A criterion has been rated",
+      }
+      if (updateMessages.includes(payload.message) && (payload.deliberation_hash.join(',') == deliberationHash.join(','))) {
+        // console.log("activity received", payload)
+        outdated = true;
+        
+        weClient.notifyFrame([{
+          title: `New activity in ${deliberation.title}`,
+          body: messagesFull[payload.message],
+          notification_type: "change",
+          icon_src: undefined,
+          urgency: "low",
+          timestamp: Date.now()
+        }])
+        
+        lastMessage = messagesFull[payload.message];
+      } else if (payload.message == "criterion-comment-created") {
+        // console.log("this is a new message", payload)
+      }
     }
     // console.log(payload)
   });
-
-  // client.on('signal', signal => {
-    // if (signal.zome_name !== 'converge') return;
-    // const payload = signal.payload as ConvergeSignal;  
-    // if (['LinkCreated'].includes(payload.type)) {
-      // if (['CriterionToSupporters', 'DeliberationToCriteria', 'DeliberationToProposals', 'ProposalToCriteria'].includes(Object.keys(signal.payload['link_type'])[0])) {
-        // console.log("CREATED", Object.keys(signal.payload['link_type'])[0]);
-        // wait a second
-        // setTimeout(() => {
-          // fetchDeliberation();
-          // joinDeliberation();
-        // }, 2000);
-      // }
-    // }
-    // if (!['LinkCreated', 'LinkDeleted'].includes(payload.type)) return;
-    // if (['DeliberatorToDeliberations', 'DeliberationToDeliberators'].includes(Object.keys(signal.payload['link_type'])[0])) {
-    // } else {
-      // fetchDeliberation();
-    // }
-    // console.log("----", payload.type, Object.keys(signal.payload['link_type'])[0]);
-    // console.log(!['DeliberatorToDeliberations'].includes(Object.keys(signal.payload['link_type'])[0]))
-    // joinDeliberation();
-  // });
 });
 
 const copyWalToPocket = () => {
   const attachment: WAL = { hrl: [dnaHash, deliberationHash], context: "" }
   weClient?.walToPocket(attachment)
-}
-
-async function fetchDeliberation() {
-  outdated = false;
-  loading = true;
-  error = undefined;
-  record = undefined;
-  // deliberation = undefined;
-  
-  try {
-    record = await client.callZome({
-      cap_secret: null,
-      role_name: 'converge',
-      zome_name: 'converge',
-      fn_name: 'get_deliberation',
-      payload: deliberationHash,
-    });
-    if (record) {
-      deliberation = decode((record.record.entry as any).Present.entry) as Deliberation;
-      attachments = deliberation.attachments
-    }
-  } catch (e) {
-    error = e;
-  }
-
-  try {
-    const records = await client.callZome({
-      cap_secret: null,
-      role_name: 'converge',
-      zome_name: 'converge',
-      fn_name: 'get_proposals_for_deliberation',
-      payload: deliberationHash,
-    });
-    proposalCount = records.length;
-  } catch (e) {
-    error = e;
-  }
-
-  try {
-    const records = await client.callZome({
-      cap_secret: null,
-      role_name: 'converge',
-      zome_name: 'converge',
-      fn_name: 'get_outcomes_for_deliberation',
-      payload: deliberationHash,
-    });
-    outcomeCount = records.length;
-  } catch (e) {
-    error = e;
-  }
-
-  try {
-    // console.log("trying to get deliberators")
-    const records = await client.callZome({
-      cap_secret: null,
-      role_name: 'converge',
-      zome_name: 'converge',
-      fn_name: 'get_deliberators_for_deliberation',
-      payload: deliberationHash,
-    });
-    deliberators = records.map((record) => record.deliberator.join(','));
-    completedDeliberators = records
-      .filter((record) => record.completed)
-      .map((record) => record.deliberator.join(','));
-    deliberatorsRaw = records.map((record) => record.deliberator);
-  } catch (e) {
-    error = e;
-  }
-
-  loading = false;
-}
-
-async function deleteDeliberation() {
-  try {
-    await client.callZome({
-      cap_secret: null,
-      role_name: 'converge',
-      zome_name: 'converge',
-      fn_name: 'delete_deliberation',
-      payload: deliberationHash,
-    });
-    dispatch('deliberation-deleted', { deliberationHash: deliberationHash });
-  } catch (e: any) {
-    errorSnackbar.labelText = `Error deleting the deliberation: ${e.data.data}`;
-    errorSnackbar.show();
-  }
 }
 
 async function newActivity(event, context = "") {
@@ -323,10 +244,7 @@ async function completeDeliberation() {
       fn_name: 'add_completed_tag',
       payload: deliberationHash,
     });
-    // 1 second timeout
-    // await new Promise(r => setTimeout(r, 10));
     deliberators = deliberators.filter(item => item !== client.myPubKey.join(','));
-    // await new Promise(r => setTimeout(r, 10));
     completedDeliberators = [...completedDeliberators, client.myPubKey.join(',')]
     deliberatorsRaw = [...deliberatorsRaw, client.myPubKey]
   } catch (e: any) {
@@ -438,7 +356,6 @@ function expandSearch2() {
         {#if !completedDeliberators.includes(client.myPubKey.join(','))}
           {#if deliberators.includes(client.myPubKey.join(','))}
             <mwc-button class="join-leave" on:click={leaveDeliberation}>Leave</mwc-button>
-            <!-- <mwc-button class="join-leave" on:click={completeDeliberation}>complete</mwc-button> -->
           {:else}
             <mwc-button class="join-leave" on:click={() => {newActivity("new-join")}}>Join</mwc-button>
           {/if}
@@ -453,11 +370,18 @@ function expandSearch2() {
     
     <div style="display:flex; flex-direction:column; justify-content:space-between;">
       <div style="display: flex; flex-direction: row; float: right; width: min-content; flex-shrink:0; align-self:end">
-        <button title="Add Board to Pocket" class="attachment-button" style="margin-right:10px; cursor: pointer;" on:click={()=>copyWalToPocket()} >          
-          <SvgIcon icon="addToPocket" size="20px"/>
-        </button>
+        {#if deliberators.length == 1 && deliberators[0] == client.myPubKey}
+          <button style="border: 0; border-radius: 4px; padding: 4px 6px; color: #313131; cursor: pointer;" title="Since no one else has interacted with this deliberation, you can still hide it from the main page." on:click={leaveDeliberation}> 
+            <!-- <SvgIcon icon="faEye" size="20px"/> -->
+            Hide</button>
+        {/if}
+        {#if isWeContext()}
+          <button title="Add Board to Pocket" class="attachment-button" style="margin-right:10px; cursor: pointer; border: 0; border-radius: 4px; padding: 4px;" on:click={()=>copyWalToPocket()} >          
+            <SvgIcon icon="addToPocket" size="20px"/>
+          </button>
+        {/if}
         <!-- {JSON.stringify(deliberation.discussion)} -->
-        {#if isWeContext && deliberation.discussion}
+        {#if isWeContext() && deliberation.discussion}
           {@const conversation = weaveUrlToWAL(deliberation.discussion)}
           {#await weClient.assetInfo(conversation)}
             <sl-button size="small" loading></sl-button>
@@ -518,7 +442,9 @@ function expandSearch2() {
     <mwc-tab-bar>
       <mwc-tab on:click={() => {activeTab = "criteria"}} label="Criteria ({criteriaCount})"></mwc-tab>
       <mwc-tab on:click={() => {activeTab = "proposals"}}  label="Proposals ({proposalCount})"></mwc-tab>
-      <mwc-tab bind:this={outcomesTab} on:click={() => {activeTab = "outcomes"}}  label="Outcomes ({outcomeCount})"></mwc-tab>
+      {#if isWeContext()}
+        <mwc-tab bind:this={outcomesTab} on:click={() => {activeTab = "outcomes"}}  label="Outcomes ({outcomeCount})"></mwc-tab>
+      {/if}
       <!-- <mwc-tab on:click={() => {activeTab = "activity"}}  label="Activity"></mwc-tab> -->
     </mwc-tab-bar>
     
@@ -527,10 +453,8 @@ function expandSearch2() {
 </div>
 
 {#if activeTab == "criteria"}
+<br>
   <!--<FaSort/> -->
-  <p class="instructions">
-    <!-- <SvgIcon icon="questionMark" size="16px"/> -->
-    What should to be true about any solution addressing this issue?</p>
     {#if criteriaCount > 1}
       <!-- <select class="sort-dropdown" bind:value={criteriaSort}
         on:change={() => {
@@ -552,7 +476,9 @@ function expandSearch2() {
 
 
   <!-- <div class="search-button"><FaSearch/></div> -->
-  <div on:click={() => {criterionFormPopup = true;}} class="add-button">{window.innerWidth < 768 ? "+" : "Add a criterion"}</div>
+  <div on:click={() => {criterionFormPopup = true;}} title="What would be necessary for you to accept a proposal?" class="add-button">{window.innerWidth < 768 ? "+" : "Add a criterion"}</div>
+  <!-- What should to be true about any solution addressing this issue? -->
+  
   <!-- <mwc-button dense outlined>Add criterion</mwc-button> -->
   <!-- {#if criterionForm} -->
   <CreateCriterion on:criterion-created={() => {newActivity("criterion-created")}} deliberationHash={deliberationHash} alternativeTo={null} bind:criterionFormPopup />
@@ -567,7 +493,7 @@ function expandSearch2() {
   <AllCriteria deliberationHash={deliberationHash} filter={criteriaFilter} sort="objections" bind:criteriaCount />
   {/if} -->
 {:else if activeTab == "proposals"}
-  <p class="instructions">What is a solution that would meet our criteria?</p>
+  <br>
   <!-- <select bind:value={proposalSort}>
     {#each ["score", "respondants"] as option}
     <option value={option}>  Sort by: {option}</option>
@@ -581,30 +507,24 @@ function expandSearch2() {
     </div>
   {/if}
   <!-- <div class="search-button"><FaSearch/></div> -->
-  <div raised on:click={() => {proposalFormPopup = true; console.log(proposalFormPopup)}} class="add-button">{window.innerWidth < 768 ? "+" : "Add a proposal"}</div>
+  <div title="How could we meet our criteria?" on:click={() => {proposalFormPopup = true; console.log(proposalFormPopup)}} class="add-button">{window.innerWidth < 768 ? "+" : "Add a proposal"}</div>
 
   <CreateProposal on:proposal-created={() => {newActivity("proposal-created")}} {deliberationHash} {sortedCriteria} bind:proposalFormPopup/>
   <br><br>
 
   
-  <AllProposals on:outcome-created={(v)=>{
+  <AllProposals hashes={proposals} on:outcome-created={(v)=>{
     dispatch('outcome-created', v);
     // activeTab = "outcomes";
     outcomesTab.click();
   }} on:proposal-rated={() => {newActivity("proposal-rated")}} sort={proposalSort} deliberationHash={deliberationHash} filter={proposalFilter} bind:proposalCount/>
 {:else if activeTab == "outcomes"}
-  <p class="instructions">Link to an asset from another tool such as a "Who's In?" coordination</p>
   <!-- <p class="instructions"></p> -->
-  <div on:click={() => {outcomeFormPopup = true; console.log(proposalFormPopup)}} class="add-button">{window.innerWidth < 768 ? "+" : "Add an outcome"}</div>
+  <div title="Link to an asset from another tool such as a {"Who's In?"} coordination" on:click={() => {outcomeFormPopup = true; console.log(proposalFormPopup)}} class="add-button">{window.innerWidth < 768 ? "+" : "Add an outcome"}</div>
 
   <CreateOutcome on:outcome-created={() => {newActivity("proposal-created")}} {deliberationHash} bind:outcomeFormPopup/>
   <br><br>
   <AllOutcomes deliberationHash={deliberationHash} bind:outcomeCount/>
-{/if}
-
-
-{#if deliberators.length == 1 && deliberators[0] == client.myPubKey}
-  <br><br><br><label class="instructions">Since no one else has interacted with this deliberation, you can still hide it from the main page. <button style="padding: 0 10px" on:click={leaveDeliberation}>Hide</button></label>
 {/if}
 
 {/if}

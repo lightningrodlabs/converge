@@ -445,7 +445,7 @@ async function scrollToDiv() {
       <mwc-icon-button style="top: 8px;
         position: relative; background-color: #f1f1f1; border-radius: 100%;">
         {#if commentsNumber && commentsNumber > 0}
-          <div id="commentsNumber">
+          <div id="commentsNumber" style="margin-right: {commentsNumber > 9 ? "20px" : "14px"}">
             {commentsNumber}
           </div>
         {/if}

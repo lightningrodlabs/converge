@@ -187,7 +187,7 @@ flex: 1;"> -->
             <div>
               <!-- button to switch to side-by-side view -->
               <button
-              style="height: 30px; cursor: pointer;"
+              style="height: 30px; cursor: pointer; border: 0; border-radius: 4px; color: #313030;"
               on:click={() => {
                 sideBySide = !sideBySide
               }}
@@ -195,7 +195,7 @@ flex: 1;"> -->
             <SvgIcon icon="faEye" size="20px"/>
             View { sideBySide ? "vertical" : "side-by-side"}</button>
             <button
-            style="height: 30px; cursor: pointer;"
+            style="height: 30px; cursor: pointer; border: 0; border-radius: 4px; color: #313030;"
             on:click={()=>{
               outcomeFormPopup = !outcomeFormPopup
             }}>+ Create outcome</button>
@@ -205,9 +205,11 @@ flex: 1;"> -->
               })
             }
           } proposalHash={proposalHash} {deliberationHash} {outcomeFormPopup} />
-            <button title="Add Board to Pocket" class="attachment-button" style="height: 30px; top: -1px; position: relative; cursor: pointer;" on:click={()=>copyWalToPocket()} >          
-              <SvgIcon icon="addToPocket" size="20px"/>
-            </button>
+            {#if isWeContext()}
+              <button title="Add Board to Pocket" class="attachment-button" style="height: 30px; top: -1px; position: relative; cursor: pointer; border: 0; border-radius: 4px; padding: 4px;" on:click={()=>copyWalToPocket()} >          
+                <SvgIcon icon="addToPocket" size="20px"/>
+              </button>
+            {/if}
           </div>
           
           <OutcomesForProposal proposalHash={proposalHash} />
@@ -235,7 +237,19 @@ flex: 1;"> -->
   <!-- </div> -->
 
   <div style="flex-direction: row; margin-bottom: 16px;">
-    <h2 style="margin-bottom: 0; margin-top: 30px;">Evaluate</h2>
+    <h2 style="margin-bottom: 0; margin-top: 30px;">Evaluation</h2>
+    <!-- two-option choice. question is "could you accept this proposal? answers are yes and no" -->
+    <div style="display: flex; flex-direction: row; margin-bottom: 16px; width:inherit; padding: 30px 30px 0 0;">
+      <span style="margin-right: 4px; margin: 3px 8px 0 0;">Could you accept this proposal? </span>
+      <div style="display: flex; flex-direction: row; margin-bottom: 5px">
+        <button style="height: 26px; cursor: pointer; border: 0; border-radius: 4px; color: #313030;" on:click={() => {
+          dispatch('proposal-rated');
+        }}>Yes</button>
+        <button style="height: 26px; margin-left: 4px; cursor: pointer; border: 0; border-radius: 4px; color: #313030;" on:click={() => {
+          dispatch('proposal-rated');
+        }}>No</button>
+      </div>
+    </div>
     <span style="white-space: pre-line">
       <!-- {deliberationHash} -->
       {#if deliberationHash}

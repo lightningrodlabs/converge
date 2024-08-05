@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount, setContext } from 'svelte';
-  import type { ActionHash, AppClient } from '@holochain/client';
+  import type { ActionHash, AppClient, AppWebsocketConnectionOptions } from '@holochain/client';
   import { AppWebsocket, AdminWebsocket } from '@holochain/client';
   import { view, viewHash, navigate, setWeaveClient } from './store.js';
   import { clientContext, profilesStoreContext } from './contexts';
@@ -93,28 +93,34 @@
         console.warn("Could not initialize applet hot-reloading. This is only expected to work in a We context in dev mode.")
       }
     }
+    let tokenResp;
     if (!isWeContext()) {
-      console.log("adminPort is", adminPort)
+      console.log("adminPort is", adminPort);
       if (adminPort) {
-        const url = `ws://localhost:${adminPort}`
-        console.log("connecting to admin port at:", url)
-        const adminWebsocket = await AdminWebsocket.connect({url: new URL(url)})
-        const x = await adminWebsocket.listApps({})
-        console.log("apps", x)
-        const cellIds = await adminWebsocket.listCellIds()
-        console.log("CELL IDS",cellIds)
-        await adminWebsocket.authorizeSigningCredentials(cellIds[0])
-
+        const url = `ws://localhost:${adminPort}`;
+        console.log("connecting to admin port at:", url);
+        const adminWebsocket = await AdminWebsocket.connect({
+          url: new URL(url)
+        });
+        console.log("issuing token");
+        tokenResp = await adminWebsocket.issueAppAuthenticationToken({
+          installed_app_id: appId,
+        });
+        console.log("token", tokenResp);
+        const x = await adminWebsocket.listApps({});
+        console.log("apps", x);
+        const cellIds = await adminWebsocket.listCellIds();
+        console.log("CELL IDS", cellIds);
+        await adminWebsocket.authorizeSigningCredentials(cellIds[0]);
       }
-      console.log("appPort and Id is", appPort, appId)
-      client = await AppWebsocket.connect(appId,{url: new URL(url)})
+      console.log("appPort and Id is", appPort, appId);
+      const params: AppWebsocketConnectionOptions = { url: new URL(url) };
+      console.log("params", params);
+      if (tokenResp) params.token = tokenResp.token;
+      console.log("connecting to app port at:", params.url);
+      client = await AppWebsocket.connect(params);
+      console.log("client", client);
       profilesClient = new ProfilesClient(client, appId);
-    
-      // client = await AppAgentWebsocket.connect('', 'dcan');
-      // profilesStore = new ProfilesStore(new ProfilesClient(client, 'converge'), {
-      //   avatarMode: "avatar-optional",
-      //   minNicknameLength: 3,
-      // });
     }
     else {
       // const weClient = await WeaveClient.connect();
@@ -352,11 +358,11 @@
       <!-- <NetworkInfo {weClient} /> -->
     {/if}
     <!-- feedback button -->
-    <SvgIcon icon="faBug" size="24" color="#000000" />
+    <!-- <SvgIcon icon="faBug" size="24" color="#000000" /> -->
     <a href="https://docs.google.com/forms/d/e/1FAIpQLSchqUdQWqNCnjV8LfdLwuuJoqvdy2hWKotxKZ2L7TazaEusUQ/viewform" target="_blank" class="feedback-button">
-      <span>Submit feedback</span>
+      <span>Give feedback here</span>
     </a>
-    :)
+    <!-- :) -->
 {#if !isWeContext && dna && !loading && currentView != "instructions" && currentView != "" && (!weClient || weClient.renderInfo.view.type != "asset")}
 <small>
   <img class="holochain-logo" src={Holochain} alt="holochain logo"/>

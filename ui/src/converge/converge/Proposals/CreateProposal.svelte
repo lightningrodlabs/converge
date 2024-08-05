@@ -35,7 +35,7 @@ let description: string = '';
 let errorSnackbar: Snackbar;
 
 $: title, description, proposalFormPopup, sortedCriteria;
-$: isProposalValid = true && title !== '' && description !== '';
+$: isProposalValid = true && title !== '';
 
 function checkKey(e) {
   if (e.key === "Escape" && !e.shiftKey) {
@@ -119,7 +119,7 @@ async function createProposal() {
           </div>
                     
           <div style="margin-bottom: 16px; margin-right: 10px;">
-            <mwc-textarea style="width: 100%; height: 50vh" outlined label="Description" value={ description } on:input={e => { description = e.target.value; } } required></mwc-textarea>          
+            <mwc-textarea style="width: 100%; height: 50vh" outlined label="Description" value={ description } on:input={e => { description = e.target.value; } }></mwc-textarea>          
           </div>
 
           <AttachmentsDialog bind:this={attachmentsDialog} bind:attachments on:add-attachments={

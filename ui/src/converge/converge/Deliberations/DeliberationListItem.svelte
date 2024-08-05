@@ -239,7 +239,7 @@ async function deleteDeliberation() {
 
     </div>
 
-    <div class="dashboard-item-details">  
+    <!-- <div class="dashboard-item-details">   -->
     <!-- {#if participants}
       {#if participants.length == 1}
         <span>{participants.length} criterion</span>
@@ -254,7 +254,7 @@ async function deleteDeliberation() {
         <span>| {proposals.length} proposals</span>
       {/if}
     {/if} -->
-    </div>
+    <!-- </div> -->
   </div>
 
 </div>

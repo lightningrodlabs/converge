@@ -11,20 +11,20 @@ export let deliberationHash: ActionHash;
 export let proposalCount = 0;
 export let filter;
 export let sort = "score";
+export let hashes: Array<ActionHash> | undefined;
 
 const dispatch = createEventDispatcher();
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
-let hashes: Array<ActionHash> | undefined;
-let loading = true;
+// let loading = true;
 let error: any = undefined;
 let allProposalScores = {};
 let sortableProposals = {};
 let sortedProposals = [];
 let anyProposalPopup = false;
 
-$: hashes, loading, error, allProposalScores, sortableProposals, sortedProposals, filter;
+$: hashes, error, allProposalScores, sortableProposals, sortedProposals, filter;
 // $: if (sort && sortableProposals && hashes && Object.values(sortableProposals).length == hashes.length && anyProposalPopup == false) {
 // $: if ((anyProposalPopup == false) && sort && sortableProposals && hashes && Object.values(sortableProposals).length == hashes.length) {
 // $: if (sort == "score" || sort == "respondants") {
@@ -111,7 +111,7 @@ async function fetchProposals() {
   } catch (e) {
     error = e;
   }
-  loading = false;
+  // loading = false;
 } 
 
 async function rateAlert() {
@@ -120,31 +120,22 @@ async function rateAlert() {
 
 </script>
 
-{#if loading}
+{#if !hashes}
 <div style="display: flex; flex: 1; align-items: center; justify-content: center">
   <mwc-circular-progress indeterminate></mwc-circular-progress>
 </div>
 {:else if error}
 <span>Error fetching the proposals: {error.data.data}.</span>
 {:else if hashes.length === 0}
-<span>No proposals yet</span>
+<span style="font-style: italic;">Try adding a proposal. How could we meet our criteria?</span>
 {:else}
 <div style="display: flex; flex-direction: column">
   {#each sortedProposals as hash}
     {#if deliberationHash}
-    <!-- {JSON.stringify(sortableProposals)} -->
-      <!-- {#if sort == "score"} -->
-        <!-- {#each sortedProposals as hash} -->
-          <ProposalListItem on:proposal-rated={rateAlert} on:outcome-created={(v) => {
-            dispatch('outcome-created', v);
-          }
-          } bind:anyProposalPopup bind:sortableProposals bind:allProposalScores proposalHash={hash} {deliberationHash} {hashes} {filter} on:proposal-deleted={() => fetchProposals()} />
-        <!-- {/each} -->
-      <!-- {:else if sort == "respondants"} -->
-        <!-- {#each sortedProposals as hash} -->
-          <!-- <ProposalListItem on:proposal-rated={rateAlert} bind:anyProposalPopup bind:sortableProposals bind:allProposalScores proposalHash={hash} {deliberationHash} {hashes} {filter} on:proposal-deleted={() => fetchProposals()} /> -->
-        <!-- {/each} -->
-      <!-- {/if} -->
+      <ProposalListItem on:proposal-rated={rateAlert} on:outcome-created={(v) => {
+        dispatch('outcome-created', v);
+      }
+      } bind:anyProposalPopup bind:sortableProposals bind:allProposalScores proposalHash={hash} {deliberationHash} {hashes} {filter} on:proposal-deleted={() => fetchProposals()} />
     {/if}
   {/each}
 </div>

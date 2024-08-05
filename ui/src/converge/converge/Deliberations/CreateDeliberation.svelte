@@ -116,7 +116,7 @@ async function submitDeliberation() {
     </mwc-formfield>
   </div> -->
 
-  {#if isWeContext}
+  {#if isWeContext()}
     {#if false}
     <div style="display:flex; flex-wrap:wrap; align-items: center; margin-bottom:10px;">
       <!-- {JSON.stringify(discussionApps[0])} -->

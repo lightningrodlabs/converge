@@ -15,7 +15,7 @@ export async function refetchDeliberations(client) {
     // let deliberators = deliberations.deliberators?.map(hash => {encodeHashToBase64(hash)})
     // let outcomes = deliberations.outcomes?.map(hash => {encodeHashToBase64(hash)})
 
-    setAllDeliberations(deliberations)
+    setAllDeliberations(deliberations.reverse())
   } catch (e) {
     console.log("error", e)
   }

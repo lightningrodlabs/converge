@@ -1,4 +1,5 @@
 import type { Record, EntryHash, AgentPubKey, ActionHash, DnaHash } from '@holochain/client';
+import { addDeliberation } from './store';
 
 export async function createDeliberation(deliberationEntry, client) {  
   try {
@@ -12,6 +13,14 @@ export async function createDeliberation(deliberationEntry, client) {
 
     await joinDeliberation(record.signed_action.hashed.hash, client)
 
+    await addDeliberation({
+      action_hash: record.signed_action.hashed.hash,
+      deliberation: deliberationEntry,
+      deliberators: [{completed: false, deliberator: client.myPubKey}],
+      criteria: [],
+      outcomes: [],
+      proposals: []
+    })
     return record.signed_action.hashed.hash
   } catch (e) {
     console.log("error", e)
