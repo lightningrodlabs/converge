@@ -7,6 +7,7 @@ import type { ConvergeSignal } from '../types';
 import OutcomeLink from './OutcomeLink.svelte';
 
 export let proposalHash: ActionHash;
+export let showArrow = true;
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
@@ -58,7 +59,12 @@ onMount(async () => {
 <!-- <span>No outcomes found for this proposal.</span> -->
 {:else}
   <div style="display:flex; flex-direction:row; align-items:center; margin: 2px;">
-    <div style="font-size: 50px; line-height: 12px; margin-bottom: 16px;">→</div>
+    {#if showArrow}
+      <div style="font-size: 50px; line-height: 12px; margin-bottom: 16px;">→</div>
+    {:else}
+      <!-- Word "Outcomes" -->
+      <strong>Outcomes:&nbsp;</strong>
+    {/if}
     {#each hashes as hash}
       <OutcomeLink outcomeHash={hash} />
     {/each}

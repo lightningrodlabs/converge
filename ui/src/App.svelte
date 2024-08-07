@@ -292,12 +292,15 @@
         <CreateDeliberation />
       {:else if currentView == "deliberation-asset"}
         <main>
-          <div class="attachment-container big">
+          <div class="attachment-container">
             <DeliberationDetail deliberationHash={currentHash} />
           </div>
-          <div class="attachment-container small" style="padding: 0;">
+          <!-- <div class="attachment-container big">
+            <DeliberationDetail deliberationHash={currentHash} />
+          </div> -->
+          <!-- <div class="attachment-container small" style="padding: 0;">
             <DeliberationListItem deliberationHash={currentHash} />
-          </div>
+          </div> -->
         </main>
       {:else if currentView == "proposal-asset"}
         <main>

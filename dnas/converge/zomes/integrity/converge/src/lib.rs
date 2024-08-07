@@ -1,3 +1,5 @@
+pub mod proposal_to_evaluators;
+pub use proposal_to_evaluators::*;
 pub mod viewed;
 pub use viewed::*;
 pub mod proposal_to_outcomes;
@@ -33,6 +35,7 @@ pub use criterion::*;
 pub mod deliberation;
 pub use deliberation::*;
 use hdi::prelude::*;
+
 #[derive(Serialize, Deserialize)]
 #[serde(tag = "type")]
 #[hdk_entry_types]
@@ -48,6 +51,7 @@ pub enum EntryTypes {
     #[entry_type(name = "Viewed", visibility = "private")]
     Viewed(Viewed),
 }
+
 #[derive(Serialize, Deserialize)]
 #[hdk_link_types]
 pub enum LinkTypes {
@@ -75,19 +79,23 @@ pub enum LinkTypes {
     CriterionToCriterionComments,
     SettingsUpdates,
     ProposalToOutcomes,
+    ProposalToEvaluators,
 }
+
 #[hdk_extern]
 pub fn genesis_self_check(
     _data: GenesisSelfCheckData,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Valid)
 }
+
 pub fn validate_agent_joining(
     _agent_pub_key: AgentPubKey,
     _membrane_proof: &Option<MembraneProof>,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Valid)
 }
+
 #[hdk_extern]
 pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
     match op.flattened::<EntryTypes, LinkTypes>()? {
@@ -190,12 +198,24 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
         }
         FlatOp::RegisterUpdate(update_entry) => {
             match update_entry {
-                _ => Ok(ValidateCallbackResult::Invalid(String::from("Entry cannot be updated"))),
+                _ => {
+                    Ok(
+                        ValidateCallbackResult::Invalid(
+                            String::from("Entry cannot be updated"),
+                        ),
+                    )
+                }
             }
         }
         FlatOp::RegisterDelete(delete_entry) => {
             match delete_entry {
-                _ => Ok(ValidateCallbackResult::Invalid(String::from("Entry cannot be deleted"))),
+                _ => {
+                    Ok(
+                        ValidateCallbackResult::Invalid(
+                            String::from("Entry cannot be deleted"),
+                        ),
+                    )
+                }
             }
         }
         FlatOp::RegisterCreateLink {
@@ -392,6 +412,14 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 }
                 LinkTypes::ProposalToOutcomes => {
                     validate_create_link_proposal_to_outcomes(
+                        action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::ProposalToEvaluators => {
+                    validate_create_link_proposal_to_evaluators(
                         action,
                         base_address,
                         target_address,
@@ -618,6 +646,15 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 }
                 LinkTypes::ProposalToOutcomes => {
                     validate_delete_link_proposal_to_outcomes(
+                        action,
+                        original_action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::ProposalToEvaluators => {
+                    validate_delete_link_proposal_to_evaluators(
                         action,
                         original_action,
                         base_address,
@@ -1218,6 +1255,14 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 tag,
                             )
                         }
+                        LinkTypes::ProposalToEvaluators => {
+                            validate_create_link_proposal_to_evaluators(
+                                action,
+                                base_address,
+                                target_address,
+                                tag,
+                            )
+                        }
                     }
                 }
                 OpRecord::DeleteLink { original_action_hash, base_address, action } => {
@@ -1452,6 +1497,15 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         LinkTypes::ProposalToOutcomes => {
                             validate_delete_link_proposal_to_outcomes(
+                                action,
+                                create_link.clone(),
+                                base_address,
+                                create_link.target_address,
+                                create_link.tag,
+                            )
+                        }
+                        LinkTypes::ProposalToEvaluators => {
+                            validate_delete_link_proposal_to_evaluators(
                                 action,
                                 create_link.clone(),
                                 base_address,

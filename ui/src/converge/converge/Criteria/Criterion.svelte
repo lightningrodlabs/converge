@@ -287,7 +287,7 @@ async function scrollToDiv() {
 
   {#if support}
   {#each Array.from({ length: 35 * support / supporters.length }) as _, index}
-    <div class="progress-line" style="opacity: {support / supporters.length}; background-color: blue;"></div>
+    <div class="criterion-line progress-line" style="opacity: {support / supporters.length}; background-color: blue;"></div>
   {/each}
   {/if}
   </div>
@@ -466,7 +466,7 @@ async function scrollToDiv() {
       on:click={() => reference(criterion.title)}
       >
       <mwc-icon-button style="top: 8px; position: relative; background-color: #f1f1f1; border-radius: 100%; --mdc-icon-size: 10px;">
-          <span style="font-size: 12px; top: -2px; left: -9px; position: relative;">Insert</span>
+          <span style="font-size: 11px; top: -2px; left: -9px; position: relative;">Quote</span>
       </mwc-icon-button>
       </button>
     {/if}

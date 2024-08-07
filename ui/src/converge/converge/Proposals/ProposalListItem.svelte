@@ -1,5 +1,5 @@
 <script lang="ts">
-import { createEventDispatcher, onMount, getContext } from 'svelte';
+import { createEventDispatcher, onMount, getContext, onDestroy } from 'svelte';
 import '@material/mwc-circular-progress';
 import { decode } from '@msgpack/msgpack';
 import type { Record, ActionHash, AppAgentClient, EntryHash, AgentPubKey, DnaHash } from '@holochain/client';
@@ -15,6 +15,8 @@ import '@material/mwc-icon-button'
 import { countViewed, addToViewed } from '../../../viewed.js';
 import ProposalDetail from './ProposalDetail.svelte';
 import OutcomesForProposal from '../Outcomes/OutcomesForProposal.svelte';
+import { decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
+import { allEvaluations } from '../../../store';
 
 
 const dispatch = createEventDispatcher();
@@ -27,6 +29,7 @@ export let hashes;
 export let sortableProposals;
 export let anyProposalPopup;
 export let userRatings;
+export let proposal: Proposal | undefined;
 // let deliberationHash: ActionHash | undefined;
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
@@ -35,7 +38,6 @@ let loading = true;
 let error: any = undefined;
 
 let record: Record | undefined;
-let proposal: Proposal | undefined;
 
 let convergence;
 let maxWeight;
@@ -46,6 +48,16 @@ let allSupport;
 let popupStyle = "block";
 let popupElement;
 let switchBool = true;
+let yesEvaluationCount = 0;
+let noEvaluationCount = 0;
+
+allEvaluations.subscribe(value => {
+  let encodedProposalHash = encodeHashToBase64(proposalHash);
+  if ( value[encodedProposalHash]) {
+    yesEvaluationCount = value[encodedProposalHash]?.filter(e => (e.tag === "1" || e.tag == "49")).length;
+    noEvaluationCount = value[encodedProposalHash]?.filter(e => (e.tag === "0" || e.tag == "48")).length;
+  }
+});
 
 let errorSnackbar: Snackbar;
   
@@ -53,50 +65,38 @@ $:  error, loading, record, proposal, proposalPopup, proposalDetailHash, hashes,
 
 $: if (popupElement && proposalPopup) popupElement.showModal();
 
-$: if (convergence && maxWeight) {
-  allProposalScores[proposalHash.join(',')] = convergence / maxWeight;
-  bestScoreKey = Object.keys(allProposalScores).reduce((a, b) => allProposalScores[a] > allProposalScores[b] ? a : b);
+// $: if (convergence && maxWeight) {
+//   allProposalScores[proposalHash.join(',')] = convergence / maxWeight;
+//   bestScoreKey = Object.keys(allProposalScores).reduce((a, b) => allProposalScores[a] > allProposalScores[b] ? a : b);
 
-  if (!proposalPopup) {
-    let hashKey = proposalHash.join(',')
-    sortableProposals[hashKey] = {
-      score: convergence / maxWeight,
-      respondants: allSupport,
-      hash: proposalHash,
-    };
-    // console.log(sortableProposals)
-  }
-}
+//   if (!proposalPopup) {
+//     let hashKey = proposalHash.join(',')
+//     sortableProposals[hashKey] = {
+//       score: convergence / maxWeight,
+//       respondants: allSupport,
+//       hash: proposalHash,
+//     };
+//     // console.log(sortableProposals)
+//   }
+// }
 
 onMount(async () => {
   if (proposalHash === undefined) {
     throw new Error(`The proposalHash input is required for the ProposalDetail element`);
   }
   await fetchProposal();
+  console.log("proposalHash", proposalHash)
   addToViewed(proposalHash, client);
   // await fetchDeliberation();
-
-  window.addEventListener("keydown", checkKey);
-
 });
 
-function checkKey(e) {
-  if (e.key === "Escape" && !e.shiftKey) {
-    e.preventDefault();
-    proposalDetailHash=proposalHash;
-    proposalPopup = false;
-    anyProposalPopup = false;
-  } else if (e.key === "ArrowRight") {
-    moveRight()
-  } else if (e.key === "ArrowLeft") {
-    moveLeft()
-  }
-}
-
-function moveRight() {
+async function moveRight() {
   // find next hash
-  if (hashes.length > hashes.indexOf(proposalDetailHash) + 1) {
-    let nextHash = hashes[hashes.indexOf(proposalDetailHash) + 1]
+  if (hashes?.length > hashes.indexOf(proposalDetailHash) + 1) {
+    let nextHashIndex = hashes.indexOf(proposalDetailHash) + 1
+    if (nextHashIndex < 1) {nextHashIndex = 1}
+    let nextHash = hashes[nextHashIndex]
+    console.log("888", nextHash, nextHashIndex, hashes.indexOf(proposalDetailHash), proposalDetailHash, hashes)
     if (nextHash) {
       proposalDetailHash = nextHash
     }
@@ -109,9 +109,9 @@ function moveRight() {
   }
 }
 
-function moveLeft() {
+async function moveLeft(currentProposalHash) {
   // find next hash
-  if (hashes.indexOf(proposalDetailHash) > 0) {
+  if (hashes?.indexOf(proposalDetailHash) > 0) {
     let nextHash = hashes[hashes.indexOf(proposalDetailHash) - 1]
     if (nextHash) {
       proposalDetailHash = nextHash
@@ -254,13 +254,15 @@ async function deleteProposal() {
       <mwc-linear-progress progress="0.5" style="flex-grow: 1;"></mwc-linear-progress>
     </div> -->
 
-    <div class="overflow-content" style="display: flex; flex-direction: row;; font-size: 0.8em; position: relative;">
-      <span style="white-space: pre-line; max-height: 56px; overflow: hidden;">
-        <strong>evaluations:</strong> {userRatings?.length || 0}&nbsp;&nbsp;
+    <div class="overflow-content" style="display: flex; flex-direction: row; font-size: 0.8em; position: relative; margin-top: 0px;">
+      <span style="white-space: pre-line; max-height: 56px; overflow: hidden; margin: 0 6px 0 0;">
+        <strong>Evaluations:</strong> {["userRatings"]?.length || 0}&nbsp;
       </span>
-
-      <span style="white-space: pre-line">
-        <strong>score:</strong> { Math.round(convergence / maxWeight * 100) }%
+      <span style="white-space: pre-line;  margin: 0 6px;">
+        <strong>Score:</strong> { convergence > 0 && maxWeight > 0 ? Math.round(convergence / maxWeight * 100) : "_"}%
+      </span>
+      <span style="white-space: pre-line;  margin: 0 6px;">
+        <strong>Accept:</strong> ✔{yesEvaluationCount} ✗{noEvaluationCount}
       </span>
     </div>
     
@@ -275,11 +277,11 @@ async function deleteProposal() {
 
   <div style="display: flex; flex-direction: column; flex-direction: row; align-items: center; margin: 2px;">
     
-    {#if bestScoreKey == proposalHash.join(',')}
+    <!-- {#if bestScoreKey == proposalHash.join(',')}
       <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-right: 16px">
         <div style="color: red; font-size: 1.2em">#1</div>
       </div>
-    {/if}
+    {/if} -->
 
     <!-- <div style="display: flex; flex-direction: row; margin-bottom: 16px; font-size: .8em">
       <button on:click={() => console.log("clicked")}>Evaluate</button>
@@ -307,14 +309,22 @@ async function deleteProposal() {
     
     position: relative;">⇦</mwc-icon-button>
     </div>
+
+  <!-- <div style="display: flex; flex: 1; align-items: center; justify-content: center; font-size: 0.8em; color: #666; position: relative;">Hit escape to close this window</div> -->
+
   <button class="close-button" on:click={() => {proposalDetailHash=proposalHash; proposalPopup = false; anyProposalPopup = false;}}>esc</button><br>
 <!-- <div class="popup-container" style="padding: 30px 24px 30px 30px;"> -->
   <!-- {#if proposalDetailHash} -->
-  <ProposalDetail on:proposal-rated={rateAlert} on:outcome-created={(v)=>{
+  <ProposalDetail on:proposal-rated={rateAlert} on:moveLeft={moveLeft} on:moveRight={moveRight} on:escape={() => {
+      proposalDetailHash=proposalHash;
+      proposalPopup = false;
+      anyProposalPopup = false;
+    }}
+    on:outcome-created={(v)=>{
       dispatch('outcome-created', { outcomeHash: v.detail.outcomeHash });
       proposalPopup=false
-    }
-  } proposalHash={proposalDetailHash} on:dismiss={() => {proposalPopup = false; anyProposalPopup = false;}} />
+    }}
+    proposalHash={proposalDetailHash} on:dismiss={() => {proposalPopup = false; anyProposalPopup = false;}} />
     <!-- {/if} -->
   <div id="move-right" on:mousedown={moveRight}>
     <mwc-icon-button style="top: 8px; background-color: white;
@@ -378,7 +388,10 @@ async function deleteProposal() {
     animation: showMoveLeft 0.1s forwards 0.3s; /* Appears after 0.3s delay (same as dialog's animation duration) */
   }
   .close-button {
+    font-weight: 800;
+    padding: 10px;
     opacity: 0; /* Initially hidden */
     animation: showMoveLeft 0.1s forwards 0.3s; /* Appears after 0.3s delay (same as dialog's animation duration) */
+    border: 2px solid #ff7200;
   }
 </style>

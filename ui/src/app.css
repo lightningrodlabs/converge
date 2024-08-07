@@ -320,7 +320,7 @@ body {
     height: 200px !important;
   }
 
-  .progress-line {
+  .criterion-line.progress-line {
     height: 3px !important;
     margin-top: 3px !important;
   }

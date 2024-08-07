@@ -1,3 +1,4 @@
+pub mod proposal_to_evaluators;
 pub mod viewed;
 pub mod proposal_to_outcomes;
 pub mod settings;
