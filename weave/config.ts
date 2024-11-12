@@ -1,4 +1,4 @@
-import { defineConfig } from '@lightningrodlabs/we-dev-cli';
+import { defineConfig } from '@theweave/cli';
 
 export default defineConfig({
   groups: [
@@ -7,7 +7,7 @@ export default defineConfig({
       networkSeed: '098rc1m-09384u-crm-29384u-cmkj',
       icon: {
         type: 'filesystem',
-        path: './we_dev/lrl-icon.png',
+        path: './weave/lrl-icon.png',
       },
       creatingAgent: {
         agentIdx: 1,
@@ -15,7 +15,7 @@ export default defineConfig({
           nickname: 'Zippy',
           avatar: {
             type: 'filesystem',
-            path: './we_dev/zippy.jpg',
+            path: './weave/zippy.jpg',
           },
         },
       },
@@ -26,7 +26,7 @@ export default defineConfig({
             nickname: 'Zerbina',
             avatar: {
               type: 'filesystem',
-              path: './we_dev/zerbina.jpg',
+              path: './weave/zerbina.jpg',
             },
           },
         },
@@ -60,7 +60,7 @@ export default defineConfig({
       description: '---',
       icon: {
         type: 'filesystem',
-        path: './we_dev/converge.png',
+        path: './weave/converge.png',
       },
       source: {
         type: 'localhost',
