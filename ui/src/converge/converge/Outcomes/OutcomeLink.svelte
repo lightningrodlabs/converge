@@ -12,9 +12,9 @@
   import '@material/mwc-linear-progress';
   import '@material/mwc-icon-button'
   import AttachmentsList from '../../../AttachmentsList.svelte';
-  import { weaveUrlToWAL, weaveUrlFromWal,  } from "@lightningrodlabs/we-applet";
+  import { weaveUrlToWAL, weaveUrlFromWal,  } from "@theweave/api";
   import ProposalListItem from '../Proposals/ProposalListItem.svelte';
-  import '@lightningrodlabs/we-elements/dist/elements/wal-embed.js';
+  // import '@lightningrodlabs/we-elements/dist/elements/wal-embed.js';
   import { weClientStored } from '../../../store.js';
   import SvgIcon from '../SvgIcon.svelte';
   import { getMyDna } from '../../../util';

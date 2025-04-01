@@ -13,7 +13,7 @@
     "@holochain-open-dev/stores": "^0.400.0-dev.3",
     "@holochain-open-dev/utils": "^0.400.0-dev.4",
     "@holochain/client": "0.18.0-dev.13",
-    "@lightningrodlabs/we-applet": "^0.17.0",
+    "@theweave/api": "^0.4.3",
     "@lightningrodlabs/we-elements": "^0.6.0-dev.0",
     "@material/mwc-button": "^0.27.0",
     "@material/mwc-checkbox": "^0.27.0",

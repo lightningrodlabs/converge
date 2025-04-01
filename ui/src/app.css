@@ -18,7 +18,7 @@ h2 {
 }
 
 .notifications, .dashboard, .bulletin {
-  width: 24px;
+  /* width: 24px; */
   height: 26px;
   color: #d6ddeb;
   /* margin: 0 10px; */

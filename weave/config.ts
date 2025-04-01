@@ -1,6 +1,7 @@
 import { defineConfig } from '@theweave/cli';
 
 export default defineConfig({
+  toolCurations: [],
   groups: [
     {
       name: 'Lightning Rod Labs',
@@ -59,8 +60,8 @@ export default defineConfig({
       subtitle: 'Converge',
       description: '---',
       icon: {
-        type: 'filesystem',
-        path: './weave/converge.png',
+        type: 'https',
+        url: 'https://lightningrodlabs.org/projects/notebooks.png',
       },
       source: {
         type: 'localhost',

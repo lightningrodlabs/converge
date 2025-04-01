@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, setContext } from 'svelte';
   import type { NetworkInfoRequest } from '@holochain/client';
-  // import { ReadonlyPeerStatusStore } from '@lightningrodlabs/we-applet'
+  // import { ReadonlyPeerStatusStore } from '@theweave/api'
   import { StoreSubscriber } from '@holochain-open-dev/stores';
 
   export let weClient;

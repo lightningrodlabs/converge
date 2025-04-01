@@ -13,7 +13,7 @@ import Criterion from '../Criteria/Criterion.svelte';
 import type { WALUrl } from '../../../util';
 import AttachmentsList from "../../../AttachmentsList.svelte";
 import { countViewed, addToViewed } from '../../../viewed.js';
-import { weaveUrlToWAL } from "@lightningrodlabs/we-applet";
+import { weaveUrlToWAL } from "@theweave/api";
 import { allProposals, allDeliberations } from '../../../store';
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
@@ -98,7 +98,7 @@ async function createOutcome() {
     });
 
     if (record && proposalHash) {
-      addToViewed(record.signed_action.hashed.hash, client);
+      await addToViewed(record.signed_action.hashed.hash, client);
 
       await client.callZome({
         cap_secret: null,
@@ -114,7 +114,7 @@ async function createOutcome() {
 
     dispatch('outcome-created', { outcomeHash: record.signed_action.hashed.hash });
   } catch (e) {
-    console.error("no propposal to add to", e);
+    console.error("no proposal to add to", e);
     // errorSnackbar.labelText = `Error creating the outcome: ${e}`;
     // errorSnackbar.show();
   }

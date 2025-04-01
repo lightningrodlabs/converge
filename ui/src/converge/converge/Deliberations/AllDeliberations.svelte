@@ -6,14 +6,40 @@ import { clientContext } from '../../../contexts';
 import DeliberationDetail from './DeliberationDetail.svelte';
 import type { ConvergeSignal } from '../types';
 import { refetchDeliberations } from '../../../refetch';
-import { view, viewHash, navigate } from '../../../store.js';
+import { view, viewHash, navigate, weClientStored } from '../../../store.js';
 import DeliberationListItem from './DeliberationListItem.svelte';
 import { allDeliberations } from '../../../store.js';
+import type { FrameNotification, WAL } from '@theweave/api';
+import { getMyDna } from '../../../util';
 
+let myDNA;
 let deliberations = [];
 allDeliberations.subscribe(value => {
   console.log('allDeliberations', value);
   deliberations = value;
+
+  let frameNotifications: FrameNotification[] = []
+  deliberations.forEach(d => {
+    console.log('deliberation', d['deliberators']);
+    let agentJoinedNotifications = d['deliberators'].map((deliberator) => {
+      const deliberationWAL: WAL = { hrl: [myDNA, d.action_hash], context: "" }
+      const notification: FrameNotification = {
+          title: "Joined Deliberation",
+          body: "Someone joined the deliberation",
+          notification_type: "change",
+          icon_src: undefined,
+          urgency: "low",
+          timestamp: deliberator.dateJoined ? Math.round(deliberator.dateJoined / 1000) : 0,
+          aboutWal: deliberationWAL,
+          fromAgent: deliberator.deliberator,
+      }
+      return notification;
+    });
+    frameNotifications = [...frameNotifications, ...agentJoinedNotifications];
+  });
+  console.log('frameNotifications', frameNotifications[0], new Date(Date.now()).getTime());
+  $weClientStored.notifyFrame(frameNotifications);
+  
 });
 
 let client: AppClient = (getContext(clientContext) as any).getClient();
@@ -25,12 +51,16 @@ let error: any = undefined;
 $: deliberations, loading, error;
 
 onMount(async () => {
+  myDNA = await getMyDna("converge", client);
   await refetchDeliberations(client);
   loading = false;
+  setInterval(() => {
+    refetchDeliberations(client);
+  }, 20000);
   // await fetchDeliberations();
   // client.on('signal', signal => {
-  //   if (signal.zome_name !== 'converge') return;
-  //   const payload = signal.payload as ConvergeSignal;
+  //   if (signal.App.zome_name !== 'converge') return;
+  //   const payload = signal.App.payload as ConvergeSignal;
   //   if (payload.type !== 'EntryCreated') return;
   //   if (payload.app_entry.type !== 'Deliberation') return;
   //   hashes = [...hashes, payload.action.hashed.hash];

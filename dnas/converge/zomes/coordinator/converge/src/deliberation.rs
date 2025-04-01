@@ -95,6 +95,7 @@ pub fn get_deliberation(
 pub struct DeliberatorsWithCompleted {
     pub deliberator: AgentPubKey,
     pub completed: bool,
+    pub dateJoined: Option<Timestamp>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -161,6 +162,7 @@ pub fn get_all_deliberations_complete(_: ()) -> ExternResult<Vec<DeliberationCom
             DeliberatorsWithCompleted {
                 deliberator: agent_pub_key,
                 completed: tag_str == "completed",
+                dateJoined: Some(link.timestamp)
             }
         })
         .collect();

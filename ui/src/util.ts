@@ -1,5 +1,5 @@
 import { decodeHashFromBase64, encodeHashToBase64, type AppAgentClient, type EntryHash, type DnaHash, CellType } from "@holochain/client";
-import type { HrlB64WithContext, HrlWithContext } from "@lightningrodlabs/we-applet";
+import type { HrlB64WithContext, HrlWithContext } from "@theweave/api";
 
 export function onVisible(element, callback) {
     new IntersectionObserver((entries, observer) => {

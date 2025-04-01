@@ -89,11 +89,13 @@ onMount(async () => {
   await fetchAndSort()
 
   client.on('signal', signal => {
-    console.log("signal", signal)
-    if (signal.zome_name !== 'converge') return;
-    const payload = signal.payload as ConvergeSignal;
+    // console.log("signal", signal)
+    if (signal.App.zome_name !== 'converge') return;
+    const payload = signal.App.payload as ConvergeSignal;
     if (payload.type !== 'EntryCreated') return;
     if (payload.app_entry.type !== 'Criterion') return;
+    console.log("signal", signal)
+
     // hashes = [...hashes, payload.action.hashed.hash];
     // sortedCriteria = [...sortedCriteria, payload.action.hashed.hash];
     // fetchCriteria()

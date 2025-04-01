@@ -21,7 +21,7 @@ import AllCriteria from '../Criteria/AllCriteria.svelte';
 import CreateProposal from '../Proposals/CreateProposal.svelte';
 // import AllProposals from '../Proposals/AllProposals.svelte';
 import AttachmentsList from '../../../AttachmentsList.svelte';
-import { isWeContext, weaveUrlToWAL, type WAL } from '@lightningrodlabs/we-applet';
+import { isWeaveContext, weaveUrlToWAL, type WAL } from '@theweave/api';
 import Avatar from '../Avatar.svelte';
 import SvgIcon from "../../../SvgIcon.svelte";
 import { weClientStored } from '../../../store.js';
@@ -135,8 +135,8 @@ onMount(async () => {
     if (deliberation) {
 
       // console.log("signal", signal)
-      if (signal.zome_name !== 'converge') return;
-      const payload = signal.payload as ConvergeSignal;
+      if (signal.App.zome_name !== 'converge') return;
+      const payload = signal.App.payload as ConvergeSignal;
       const updateMessages = ['new-join', 'criterion-created', 'proposal-rated', 'proposal-created', 'criterion-rated', 'outcome-created']
       const urgentMessages = ['criterion-created', 'proposal-created']
       const messagesFull = {
@@ -171,7 +171,7 @@ onMount(async () => {
 
 const copyWalToPocket = () => {
   const attachment: WAL = { hrl: [dnaHash, deliberationHash], context: "" }
-  weClient?.walToPocket(attachment)
+  weClient?.assets.assetToPocket(attachment)
 }
 
 async function newActivity(event, context = "") {
@@ -345,7 +345,7 @@ function expandSearch2() {
         <span style="white-space: pre-line">{ deliberation.description }</span>
       </div>
 
-      {#if isWeContext()}
+      {#if isWeaveContext()}
         <div style="display: flex; flex-direction: row; margin-bottom: 5px">
           <AttachmentsList {attachments} allowDelete={false}/>
         </div>
@@ -381,13 +381,13 @@ function expandSearch2() {
             <!-- <SvgIcon icon="faEye" size="20px"/> -->
             Hide</button>
         {/if}
-        {#if isWeContext()}
+        {#if isWeaveContext()}
           <button title="Add Board to Pocket" class="attachment-button" style="margin: 0 10px; cursor: pointer; border: 0; border-radius: 10px; padding: 4px;" on:click={()=>copyWalToPocket()} >          
             <SvgIcon icon="addToPocket" size="20px"/>
           </button>
         {/if}
         <!-- {JSON.stringify(deliberation.discussion)} -->
-        {#if isWeContext() && deliberation.discussion}
+        {#if isWeaveContext() && deliberation.discussion}
           {@const conversation = weaveUrlToWAL(deliberation.discussion)}
           {#await weClient.assetInfo(conversation)}
             <sl-button size="small" loading></sl-button>
@@ -449,7 +449,7 @@ function expandSearch2() {
     <mwc-tab-bar>
       <mwc-tab on:click={() => {activeTab = "criteria"}} label="Criteria ({criteriaCount})"></mwc-tab>
       <mwc-tab on:click={() => {activeTab = "proposals"}}  label="Proposals ({proposalCount})"></mwc-tab>
-      {#if isWeContext()}
+      {#if isWeaveContext()}
         <mwc-tab bind:this={outcomesTab} on:click={() => {activeTab = "outcomes"}}  label="Outcomes ({outcomeCount})"></mwc-tab>
       {/if}
       <!-- <mwc-tab on:click={() => {activeTab = "activity"}}  label="Activity"></mwc-tab> -->
@@ -537,6 +537,7 @@ function expandSearch2() {
   }} on:proposal-rated={() => {newActivity("proposal-rated")}} sort={proposalSort} deliberationHash={deliberationHash} filter={proposalFilter} bind:proposalCount/> -->
 {:else if activeTab == "outcomes"}
   <!-- <p class="instructions"></p> -->
+   <br>
   <div title="Link to an asset from another tool such as a {"Who's In?"} coordination" on:click={() => {outcomeFormPopup = true; console.log(proposalFormPopup)}} class="add-button">{window.innerWidth < 768 ? "+" : "Add an outcome"}</div>
 
   <CreateOutcome on:outcome-created={() => {newActivity("outcome-created"); dispatch('outcome-created'); reloadKey+=1}} {deliberationHash} bind:outcomeFormPopup/>

@@ -1,6 +1,6 @@
 import { asyncDerived, pipe, sliceAndJoin, toPromise } from '@holochain-open-dev/stores';
 import { LazyHoloHashMap } from '@holochain-open-dev/utils';
-import type { AppletHash, AppletServices, AssetInfo, WAL, RecordInfo, WeaveServices } from '@lightningrodlabs/we-applet';
+import type { AppletHash, AppletServices, AssetInfo, WAL, RecordInfo, WeaveServices } from '@theweave/api';
 import type { RoleName, ZomeName, AppClient } from '@holochain/client';
 import { getMyDna, hrlWithContextToB64 } from './util';
 import type { Deliberation, Proposal } from './converge/converge/types';
@@ -175,6 +175,11 @@ export const appletServices: AppletServices = {
     wal: WAL,
     recordInfo: RecordInfo
   ): Promise<AssetInfo | undefined> => {
+    console.log("looking for asset!")
+    // return {
+    //   icon_src: `data:image/svg+xml;utf8,${ICON2}`,
+    //   name: "Deliberation: hello world",
+    // };
     const entryType: string = recordInfo.entryType
     if (entryType == "deliberation") {
       let dnaHash = await getMyDna(ROLE_NAME, appletClient)

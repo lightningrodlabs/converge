@@ -23,7 +23,7 @@
   import Header from './converge/converge/Header.svelte';
   import DeliberationsForDeliberator from './converge/converge/Deliberations/DeliberationsForDeliberator.svelte';
   import { MyProfile } from '@holochain-open-dev/profiles/dist/elements/my-profile.js';
-  import { WeaveClient, isWeContext, initializeHotReload, type WAL, type Hrl } from '@lightningrodlabs/we-applet';  
+  import { WeaveClient, isWeaveContext, initializeHotReload, type WAL, type Hrl } from '@theweave/api';  
   import Holochain from "./assets/holochain.png";
   import type { Deliberation, ConvergeSignal } from './converge/converge/types';
   import { appletServices } from './we';
@@ -94,7 +94,7 @@
       }
     }
     let tokenResp;
-    if (!isWeContext()) {
+    if (!isWeaveContext()) {
       console.log("adminPort is", adminPort);
       if (adminPort) {
         const url = `ws://localhost:${adminPort}`;
@@ -238,8 +238,8 @@
 
     client.on('signal', signal => {
       // console.log("signalll", signal)
-      if (signal.zome_name !== 'converge') return;
-      const payload = signal.payload as ConvergeSignal;
+      if (signal.App.zome_name !== 'converge') return;
+      const payload = signal.App.payload as ConvergeSignal;
       console.log("activity received", payload)
       const urgentMessages = ['criterion-created', 'proposal-created', 'deliberation-created']
       const messagesFull = {
@@ -366,7 +366,7 @@
       <span>Give feedback here</span>
     </a>
     <!-- :) -->
-{#if !isWeContext && dna && !loading && currentView != "instructions" && currentView != "" && (!weClient || weClient.renderInfo.view.type != "asset")}
+{#if !isWeaveContext && dna && !loading && currentView != "instructions" && currentView != "" && (!weClient || weClient.renderInfo.view.type != "asset")}
 <small>
   <img class="holochain-logo" src={Holochain} alt="holochain logo"/>
   Private Holochain network: {dna}

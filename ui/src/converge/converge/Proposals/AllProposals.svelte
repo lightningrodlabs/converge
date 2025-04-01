@@ -99,8 +99,8 @@ onMount(async () => {
   // await sortProposals();
 
   // client.on('signal', signal => {
-  //   if (signal.zome_name !== 'converge') return;
-  //   const payload = signal.payload as ConvergeSignal;
+  //   if (signal.App.zome_name !== 'converge') return;
+  //   const payload = signal.App.payload as ConvergeSignal;
   //   if (payload.type !== 'EntryCreated') return;
   //   if (payload.app_entry.type !== 'Proposal') return;
   //   // hashes = [...hashes, payload.action.hashed.hash];
@@ -143,7 +143,7 @@ async function rateAlert() {
 <span style="font-style: italic;">Try adding a proposal. How could we meet our criteria?</span>
 {:else}
 <div style="display: flex; flex-direction: column">
-  {#each sortedProposals as hash}
+  {#each sortedProposals as hash (hash)}
     {#if deliberationHash}
       <ProposalListItem on:proposal-rated={rateAlert} on:outcome-created={(v) => {
         dispatch('outcome-created', v);

@@ -2,7 +2,7 @@
   import { createEventDispatcher, onMount, getContext } from 'svelte';
   import '@material/mwc-circular-progress';
   import { decode } from '@msgpack/msgpack';
-  import type { Record, ActionHash, AppAgentClient, EntryHash, AgentPubKey, DnaHash } from '@holochain/client';
+  import type { Record, ActionHash, AppClient, EntryHash, AgentPubKey, DnaHash } from '@holochain/client';
   import { clientContext } from '../../../contexts';
   import type { Outcome } from '../types';
   import '@material/mwc-circular-progress';
@@ -12,9 +12,9 @@
   import '@material/mwc-linear-progress';
   import '@material/mwc-icon-button'
   import AttachmentsList from '../../../AttachmentsList.svelte';
-  import { weaveUrlToWAL, weaveUrlFromWal,  } from "@lightningrodlabs/we-applet";
+  import { weaveUrlToWAL, weaveUrlFromWal  } from "@theweave/api";
   import ProposalListItem from '../Proposals/ProposalListItem.svelte';
-  import '@lightningrodlabs/we-elements/dist/elements/wal-embed.js';
+  // import '@lightningrodlabs/we-elements/dist/elements/wal-embed.js';
   import { weClientStored } from '../../../store.js';
   import { countViewed, addToViewed } from '../../../viewed.js';
   import SvgIcon from '../SvgIcon.svelte';
@@ -31,7 +31,7 @@
     weClient = value;
   });
 
-  let client: AppAgentClient = (getContext(clientContext) as any).getClient();
+  let client: AppClient = (getContext(clientContext) as any).getClient();
 
   
   let loading = true;
@@ -90,6 +90,8 @@
       context: {}
     })
 
+    console.log("weaveUrl", weaveUrl)
+
     window.addEventListener("keydown", checkKey);
 
   });
@@ -130,7 +132,7 @@
         <div style="font-size: 50px; height: 75px;">→</div>
       {/if}
       <AttachmentsList attachments={[outcome?.outcome_attachment]} allowDelete={false} />
-      <div
+      <!-- <div
         style="display: flex; align-items: center; margin-left: auto;"
       >
       {#if showEmbed}
@@ -154,7 +156,7 @@
           Expand
         </button>
         {/if}
-      </div>
+      </div> -->
     </div>
     {#if showEmbed}
       <div class="expanded-outcome">
@@ -163,7 +165,7 @@
             <ProposalListItem proposalHash={outcome.proposal} {deliberationHash} {allProposalScores} {sortableProposals} />
           </div>
         {/if}
-        <wal-embed
+        <!-- <wal-embed
           bind:this={walEmbed}
           on:click={(e)=>{
             console.log(e)
@@ -173,7 +175,7 @@
           style="margin-top: 20px;"
           src={outcome.outcome_attachment}
             >
-        </wal-embed>
+        </wal-embed> -->
       </div>
     {/if}
   </div>

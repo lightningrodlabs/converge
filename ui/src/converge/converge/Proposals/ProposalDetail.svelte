@@ -11,7 +11,7 @@ import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
 import { view, viewHash, navigate } from '../../../store.js';
 import RateCriteria from './RateCriteria.svelte';
-import { type WAL, isWeContext } from '@lightningrodlabs/we-applet';
+import { type WAL, isWeaveContext } from '@theweave/api';
 import AttachmentsList from '../../../AttachmentsList.svelte';
 import SvgIcon from "../../../SvgIcon.svelte";
 import { getMyDna } from '../../../util';
@@ -142,7 +142,7 @@ async function checkKey(e) {
 
 const copyWalToPocket = () => {
   const attachment: WAL = { hrl: [dnaHash, proposalHash], context: "" }
-  weClient?.walToPocket(attachment)
+  weClient?.assets.assetToPocket(attachment)
 }
 
 async function rateAlert() {
@@ -227,7 +227,7 @@ justify-content: center;">
     })
   }
 } proposalHash={proposalHash} {deliberationHash} {outcomeFormPopup} />
-  {#if isWeContext()}
+  {#if isWeaveContext()}
     <button title="Add Board to Pocket" class="attachment-button" style="height: 30px; top: -1px; position: relative; cursor: pointer; border: 0; border-radius: 4px; padding: 4px;" on:click={()=>copyWalToPocket()} >          
       <SvgIcon icon="addToPocket" size="20px"/>
     </button>
@@ -277,7 +277,7 @@ justify-content: center;">
         </div>
       </div>
       <div style="display: flex; flex: 1; flex-direction: row-reverse; width:inherit">
-        {#if isWeContext()}
+        {#if isWeaveContext()}
         <button title="Add Board to Pocket" class="attachment-button" style="height: 30px; top: -1px; position: relative; cursor: pointer; border: 0; border-radius: 4px; padding: 4px;" on:click={()=>copyWalToPocket()} >          
           <SvgIcon icon="addToPocket" size="20px"/>
         </button>
@@ -287,7 +287,7 @@ justify-content: center;">
 </div>
 
 <div style="display: {sideBySide ? "flex" : "inherit"};">
-  {#if isWeContext()}
+  {#if isWeaveContext()}
     <div style="display: flex; flex-direction: row; margin-bottom: 16px; width:inherit; padding: 30px 30px 0 0;">
     <!-- <span style="margin-right: 4px"><strong>Description:</strong></span> -->
       <div style="display: flex; flex-direction: row; margin-bottom: 5px">

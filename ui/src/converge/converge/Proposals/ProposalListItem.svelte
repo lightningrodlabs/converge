@@ -301,38 +301,65 @@ async function deleteProposal() {
 </div> -->
 <!-- <div bind:this={popupElement}> -->
 {#if proposalPopup}
-<!-- <div class="backdrop"> -->
-  <dialog bind:this={popupElement} class="popup-container" style="padding: 30px; width: 100%; height: 76%; overflow: scroll; display: {popupStyle}">
-  <div id="move-left" on:mousedown={moveLeft}>
+<dialog bind:this={popupElement} class="popup-container" style="padding: 30px; width: 100%; height: 76%; overflow: scroll;" on:mousedown={(e) => {
+  if (e.target === popupElement) {
+    proposalDetailHash = proposalHash;
+    proposalPopup = false;
+    anyProposalPopup = false;
+  }
+}}>
+  <div id="move-left" on:mousedown={() => {
+    moveLeft(proposalHash);
+    proposalPopup = false;
+    anyProposalPopup = false;
+  }}>
     <mwc-icon-button style="top: 8px; background-color: white;
     border-radius: 50px; margin-right: 8px;
-    
     position: relative;">⇦</mwc-icon-button>
-    </div>
+  </div>
 
-  <!-- <div style="display: flex; flex: 1; align-items: center; justify-content: center; font-size: 0.8em; color: #666; position: relative;">Hit escape to close this window</div> -->
+  <button class="close-button" on:click={() => {
+    proposalDetailHash = proposalHash;
+    proposalPopup = false;
+    anyProposalPopup = false;
+  }}>esc</button><br>
 
-  <button class="close-button" on:click={() => {proposalDetailHash=proposalHash; proposalPopup = false; anyProposalPopup = false;}}>esc</button><br>
-<!-- <div class="popup-container" style="padding: 30px 24px 30px 30px;"> -->
-  <!-- {#if proposalDetailHash} -->
-  <ProposalDetail on:proposal-rated={rateAlert} on:moveLeft={moveLeft} on:moveRight={moveRight} on:escape={() => {
-      proposalDetailHash=proposalHash;
+  <ProposalDetail on:proposal-rated={rateAlert} on:moveLeft={() => {
+      moveLeft(proposalHash);
+      proposalPopup = false;
+      anyProposalPopup = false;
+    }} 
+    on:moveRight={() => {
+      moveRight();
+      proposalPopup = false;
+      anyProposalPopup = false;
+    }} 
+    on:escape={() => {
+      proposalDetailHash = proposalHash;
       proposalPopup = false;
       anyProposalPopup = false;
     }}
-    on:outcome-created={(v)=>{
+    on:outcome-created={(v) => {
       dispatch('outcome-created', { outcomeHash: v.detail.outcomeHash });
-      proposalPopup=false
+      proposalPopup = false;
     }}
-    proposalHash={proposalDetailHash} on:dismiss={() => {proposalPopup = false; anyProposalPopup = false;}} />
-    <!-- {/if} -->
-  <div id="move-right" on:mousedown={moveRight}>
+    proposalHash={proposalDetailHash} 
+    on:dismiss={() => {
+      proposalPopup = false;
+      anyProposalPopup = false;
+    }} 
+  />
+
+  <div id="move-right" on:mousedown={() => {
+    moveRight();
+    proposalPopup = false;
+    anyProposalPopup = false;
+  }}>
     <mwc-icon-button style="top: 8px; background-color: white;
     border-radius: 50px; margin: 8px;
     position: relative;">⇨</mwc-icon-button>  
-    </div>
+  </div>
 </dialog>
-<!-- </div> -->
 {/if}
 <!-- </div> -->
 {/if}

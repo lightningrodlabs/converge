@@ -13,7 +13,7 @@ import '@material/mwc-textarea';
 import { view, viewHash, navigate } from '../../../store.js';
 import AttachmentsDialog from "../../../AttachmentsDialog.svelte"
 import SvgIcon from "../../../SvgIcon.svelte";
-import { WeaveClient, isWeContext, initializeHotReload, type WAL, type Hrl, weaveUrlFromWal } from '@lightningrodlabs/we-applet';
+import { WeaveClient, isWeaveContext, initializeHotReload, type WAL, type Hrl, weaveUrlFromWal } from '@theweave/api';
 import AttachmentsBind from '../../../AttachmentsBind.svelte';
 import { HoloHashMap, type EntryHashMap } from "@holochain-open-dev/utils";
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
@@ -98,13 +98,14 @@ async function submitDeliberation() {
   
   <!-- <h2>Deliberation Details</h2> -->
   
+  <label class="instructions">Warning: After creating a deliberation, it "belongs" to everyone, and therefore cannot be edited or deleted.</label>
 
   <div style="margin-bottom: 16px; text-align: left;">
-    <mwc-textfield style="width: 100%" outlined label="Title" value={ title } on:input={e => { title = e.target.value;} } required></mwc-textfield>          
+    <mwc-textfield style="width: 100%" outlined label="Title (What question or topic would you like to deliberate?)" value={ title } on:input={e => { title = e.target.value;} } required></mwc-textfield>          
   </div>
             
   <div style="margin-bottom: 16px; text-align: left;">
-    <mwc-textarea style="width: 100%; height: 30vh" outlined label="Description" value={ description } on:input={e => { description = e.target.value; } }></mwc-textarea>          
+    <mwc-textarea style="width: 100%; height: 30vh" outlined label="Description (optional)" value={ description } on:input={e => { description = e.target.value; } }></mwc-textarea>          
   </div>
             
   <!-- <div style="margin-bottom: 16px; text-align: left">
@@ -116,7 +117,7 @@ async function submitDeliberation() {
     </mwc-formfield>
   </div> -->
 
-  {#if isWeContext()}
+  {#if isWeaveContext()}
     {#if false}
     <div style="display:flex; flex-wrap:wrap; align-items: center; margin-bottom:10px;">
       <!-- {JSON.stringify(discussionApps[0])} -->
@@ -137,7 +138,7 @@ async function submitDeliberation() {
     </div>
     {/if}
     <div style="display:flex; flex-wrap:wrap; align-items: center; margin-bottom:10px;">
-      <label style="margin-top:5px">Link a discussion (e.g. a Vines thread)&nbsp;</label>
+      <!-- <label style="margin-top:5px">Link a discussion (e.g. a Vines thread)&nbsp;</label>
       <AttachmentsDialog bind:this={attachmentsDialog} attachmentsLimit={1} bind:attachments={discussionAttachments} 
       on:add-attachments={
         (e) => {
@@ -147,7 +148,7 @@ async function submitDeliberation() {
           // props.attachments = e.detail.attachments
           // bind.refresh()
         }
-      }></AttachmentsDialog>
+      }></AttachmentsDialog> -->
 
       <label style="margin-top:5px">Attachments &nbsp;
       </label>
@@ -177,8 +178,6 @@ async function submitDeliberation() {
     </div>
   {/if}
   
-  <label class="instructions">Warning: After creating a deliberation, it belongs to everyone and cannot be edited or deleted.</label>
-
   <mwc-button
     raised
     label="Create Deliberation"
