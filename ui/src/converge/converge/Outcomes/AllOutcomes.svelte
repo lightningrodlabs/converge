@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher, onMount, getContext } from 'svelte';
   import '@material/mwc-circular-progress';
-  import type { EntryHash, Record, AgentPubKey, ActionHash, AppAgentClient, NewEntryAction } from '@holochain/client';
+  import type { EntryHash, Record, AgentPubKey, ActionHash, AppClient, NewEntryAction } from '@holochain/client';
   import { clientContext } from '../../../contexts';
   import type { ConvergeSignal } from '../types';
   import Outcome from './Outcome.svelte';
@@ -18,15 +18,15 @@
   
   const dispatch = createEventDispatcher();
   
-  let client: AppAgentClient = (getContext(clientContext) as any).getClient();
+  let client: AppClient = (getContext(clientContext) as any).getClient();
 
 
   onMount(async () => {
     await fetchOutcomes();
 
     client.on('signal', signal => {
-      if (signal.zome_name !== 'converge') return;
-      const payload = signal.payload as ConvergeSignal;
+      if (signal.App.zome_name !== 'converge') return;
+      const payload = signal.App.payload as ConvergeSignal;
       if (payload.type !== 'EntryCreated') return;
       if (payload.app_entry.type !== 'Outcome') return;
       // hashes = [...hashes, payload.action.hashed.hash];
@@ -69,7 +69,7 @@
 {:else if error}
 <span>Error fetching the proposals: {error}.</span>
 {:else if hashes.length === 0}
-<span>No proposals yet</span>
+<span style="font-style: italic;">If you are ready to add an outcome, you can link to an asset from another tool such as a {"Who's In?"} coordination. Assets are components inside tools in The Weave/Moss.</span>
 {:else}
 <div style="display: flex; flex-direction: column">
   {#each hashes as hash}

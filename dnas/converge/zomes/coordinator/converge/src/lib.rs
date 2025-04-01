@@ -1,3 +1,4 @@
+pub mod proposal_to_evaluators;
 pub mod viewed;
 pub mod proposal_to_outcomes;
 pub mod settings;
@@ -19,6 +20,7 @@ pub mod proposal;
 pub mod outcome;
 pub mod criterion;
 pub mod deliberation;
+pub mod utils;
 use hdk::prelude::{*, tracing::field::debug};
 use converge_integrity::*;
 use serde::de;

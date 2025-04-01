@@ -1,13 +1,14 @@
-import { defineConfig } from '@lightningrodlabs/we-dev-cli';
+import { defineConfig } from '@theweave/cli';
 
 export default defineConfig({
+  toolCurations: [],
   groups: [
     {
       name: 'Lightning Rod Labs',
       networkSeed: '098rc1m-09384u-crm-29384u-cmkj',
       icon: {
         type: 'filesystem',
-        path: './we_dev/lrl-icon.png',
+        path: './weave/lrl-icon.png',
       },
       creatingAgent: {
         agentIdx: 1,
@@ -15,7 +16,7 @@ export default defineConfig({
           nickname: 'Zippy',
           avatar: {
             type: 'filesystem',
-            path: './we_dev/zippy.jpg',
+            path: './weave/zippy.jpg',
           },
         },
       },
@@ -26,7 +27,7 @@ export default defineConfig({
             nickname: 'Zerbina',
             avatar: {
               type: 'filesystem',
-              path: './we_dev/zerbina.jpg',
+              path: './weave/zerbina.jpg',
             },
           },
         },
@@ -59,8 +60,8 @@ export default defineConfig({
       subtitle: 'Converge',
       description: '---',
       icon: {
-        type: 'filesystem',
-        path: './we_dev/converge.png',
+        type: 'https',
+        url: 'https://lightningrodlabs.org/projects/notebooks.png',
       },
       source: {
         type: 'localhost',

@@ -4,7 +4,7 @@
     // import type { GamezSignal, GamezStore } from "./store";
     // import type { Board } from "./board";
     import SvgIcon from "./SvgIcon.svelte";
-    import type { AppletInfo } from "@lightningrodlabs/we-applet";
+    import type { AppletInfo } from "@theweave/api";
     import { HoloHashMap, type EntryHashMap } from "@holochain-open-dev/utils";
     import type { EntryHash } from "@holochain/client";
     import { hashEqual } from "./util";

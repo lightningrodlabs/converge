@@ -1,3 +1,5 @@
+pub mod proposal_to_evaluators;
+pub use proposal_to_evaluators::*;
 pub mod viewed;
 pub use viewed::*;
 pub mod proposal_to_outcomes;
@@ -33,6 +35,7 @@ pub use criterion::*;
 pub mod deliberation;
 pub use deliberation::*;
 use hdi::prelude::*;
+
 #[derive(Serialize, Deserialize)]
 #[serde(tag = "type")]
 #[hdk_entry_types]
@@ -48,6 +51,7 @@ pub enum EntryTypes {
     #[entry_type(name = "Viewed", visibility = "private")]
     Viewed(Viewed),
 }
+
 #[derive(Serialize, Deserialize)]
 #[hdk_link_types]
 pub enum LinkTypes {
@@ -75,19 +79,23 @@ pub enum LinkTypes {
     CriterionToCriterionComments,
     SettingsUpdates,
     ProposalToOutcomes,
+    ProposalToEvaluators,
 }
+
 #[hdk_extern]
 pub fn genesis_self_check(
     _data: GenesisSelfCheckData,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Valid)
 }
+
 pub fn validate_agent_joining(
     _agent_pub_key: AgentPubKey,
     _membrane_proof: &Option<MembraneProof>,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Valid)
 }
+
 #[hdk_extern]
 pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
     match op.flattened::<EntryTypes, LinkTypes>()? {
@@ -190,139 +198,24 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
         }
         FlatOp::RegisterUpdate(update_entry) => {
             match update_entry {
-                OpUpdate::Entry {
-                    original_action,
-                    original_app_entry,
-                    app_entry,
-                    action,
-                } => {
-                    match (app_entry, original_app_entry) {
-                        (
-                            EntryTypes::Viewed(viewed),
-                            EntryTypes::Viewed(original_viewed),
-                        ) => {
-                            validate_update_viewed(
-                                action,
-                                viewed,
-                                original_action,
-                                original_viewed,
-                            )
-                        }
-                        (
-                            EntryTypes::Settings(settings),
-                            EntryTypes::Settings(original_settings),
-                        ) => {
-                            validate_update_settings(
-                                action,
-                                settings,
-                                original_action,
-                                original_settings,
-                            )
-                        }
-                        (
-                            EntryTypes::CriterionComment(criterion_comment),
-                            EntryTypes::CriterionComment(original_criterion_comment),
-                        ) => {
-                            validate_update_criterion_comment(
-                                action,
-                                criterion_comment,
-                                original_action,
-                                original_criterion_comment,
-                            )
-                        }
-                        (
-                            EntryTypes::Proposal(proposal),
-                            EntryTypes::Proposal(original_proposal),
-                        ) => {
-                            validate_update_proposal(
-                                action,
-                                proposal,
-                                original_action,
-                                original_proposal,
-                            )
-                        }
-                        (
-                            EntryTypes::Outcome(outcome),
-                            EntryTypes::Outcome(original_outcome),
-                        ) => {
-                            validate_update_outcome(
-                                action,
-                                outcome,
-                                original_action,
-                                original_outcome,
-                            )
-                        }
-                        (
-                            EntryTypes::Criterion(criterion),
-                            EntryTypes::Criterion(original_criterion),
-                        ) => {
-                            validate_update_criterion(
-                                action,
-                                criterion,
-                                original_action,
-                                original_criterion,
-                            )
-                        }
-                        (
-                            EntryTypes::Deliberation(deliberation),
-                            EntryTypes::Deliberation(original_deliberation),
-                        ) => {
-                            validate_update_deliberation(
-                                action,
-                                deliberation,
-                                original_action,
-                                original_deliberation,
-                            )
-                        }
-                        _ => {
-                            Ok(
-                                ValidateCallbackResult::Invalid(
-                                    "Original and updated entry types must be the same"
-                                        .to_string(),
-                                ),
-                            )
-                        }
-                    }
+                _ => {
+                    Ok(
+                        ValidateCallbackResult::Invalid(
+                            String::from("Entry cannot be updated"),
+                        ),
+                    )
                 }
-                _ => Ok(ValidateCallbackResult::Valid),
             }
         }
         FlatOp::RegisterDelete(delete_entry) => {
             match delete_entry {
-                OpDelete::Entry { original_action, original_app_entry, action } => {
-                    match original_app_entry {
-                        EntryTypes::Deliberation(deliberation) => {
-                            validate_delete_deliberation(
-                                action,
-                                original_action,
-                                deliberation,
-                            )
-                        }
-                        EntryTypes::Criterion(criterion) => {
-                            validate_delete_criterion(action, original_action, criterion)
-                        }
-                        EntryTypes::Proposal(proposal) => {
-                            validate_delete_proposal(action, original_action, proposal)
-                        }
-                        EntryTypes::Outcome(outcome) => {
-                            validate_delete_outcome(action, original_action, outcome)
-                        }
-                        EntryTypes::CriterionComment(criterion_comment) => {
-                            validate_delete_criterion_comment(
-                                action,
-                                original_action,
-                                criterion_comment,
-                            )
-                        }
-                        EntryTypes::Settings(settings) => {
-                            validate_delete_settings(action, original_action, settings)
-                        }
-                        EntryTypes::Viewed(viewed) => {
-                            validate_delete_viewed(action, original_action, viewed)
-                        }
-                    }
+                _ => {
+                    Ok(
+                        ValidateCallbackResult::Invalid(
+                            String::from("Entry cannot be deleted"),
+                        ),
+                    )
                 }
-                _ => Ok(ValidateCallbackResult::Valid),
             }
         }
         FlatOp::RegisterCreateLink {
@@ -519,6 +412,14 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 }
                 LinkTypes::ProposalToOutcomes => {
                     validate_create_link_proposal_to_outcomes(
+                        action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::ProposalToEvaluators => {
+                    validate_create_link_proposal_to_evaluators(
                         action,
                         base_address,
                         target_address,
@@ -745,6 +646,15 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 }
                 LinkTypes::ProposalToOutcomes => {
                     validate_delete_link_proposal_to_outcomes(
+                        action,
+                        original_action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::ProposalToEvaluators => {
+                    validate_delete_link_proposal_to_evaluators(
                         action,
                         original_action,
                         base_address,
@@ -1345,6 +1255,14 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 tag,
                             )
                         }
+                        LinkTypes::ProposalToEvaluators => {
+                            validate_create_link_proposal_to_evaluators(
+                                action,
+                                base_address,
+                                target_address,
+                                tag,
+                            )
+                        }
                     }
                 }
                 OpRecord::DeleteLink { original_action_hash, base_address, action } => {
@@ -1579,6 +1497,15 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         LinkTypes::ProposalToOutcomes => {
                             validate_delete_link_proposal_to_outcomes(
+                                action,
+                                create_link.clone(),
+                                base_address,
+                                create_link.target_address,
+                                create_link.tag,
+                            )
+                        }
+                        LinkTypes::ProposalToEvaluators => {
+                            validate_delete_link_proposal_to_evaluators(
                                 action,
                                 create_link.clone(),
                                 base_address,

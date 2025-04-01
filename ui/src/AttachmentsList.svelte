@@ -1,11 +1,9 @@
 <script lang="ts">
   import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
   import { createEventDispatcher, getContext } from "svelte";
-  import { weaveUrlToWAL } from "@lightningrodlabs/we-applet";
+  import { weaveUrlToWAL } from "@theweave/api";
   import { clientContext } from './contexts';
   import { weClientStored } from './store.js';
-  import type { EntryHash, Record, AgentPubKey, ActionHash, AppAgentClient, NewEntryAction } from '@holochain/client';
-  import type { AppletHash, AppletServices, AssetInfo, WAL, WeServices } from '@lightningrodlabs/we-applet';
   import SvgIcon from "./SvgIcon.svelte";
   import type { WALUrl } from "./util";
 
@@ -28,7 +26,7 @@
       class:attachment-item={!allowDelete}
     >
     
-      {#await weClient.assetInfo(weaveUrlToWAL(wal))}
+      {#await weClient.assets.assetInfo(weaveUrlToWAL(wal))}
         <sl-button size="small" loading></sl-button>
       {:then data}
         {#if data}
@@ -37,7 +35,7 @@
             on:click={async (e)=>{
                 e.stopPropagation()
                 try {
-                  await weClient.openWal(weaveUrlToWAL(wal))
+                  await weClient.openAsset(weaveUrlToWAL(wal))
                 } catch(e) {
                   alert(`Error opening link: ${e}`)
                 }

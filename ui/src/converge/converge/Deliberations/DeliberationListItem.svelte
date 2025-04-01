@@ -2,7 +2,7 @@
 import { createEventDispatcher, onMount, getContext } from 'svelte';
 import '@material/mwc-circular-progress';
 import { decode } from '@msgpack/msgpack';
-import type { Record, ActionHash, AppAgentClient, EntryHash, AgentPubKey, DnaHash } from '@holochain/client';
+import type { Record, ActionHash, AppClient, EntryHash, AgentPubKey, DnaHash } from '@holochain/client';
 import { clientContext } from '../../../contexts';
 import type { Deliberation } from '../types';
 import '@material/mwc-circular-progress';
@@ -10,7 +10,7 @@ import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
 import EditDeliberation from './EditDeliberation.svelte'; 
-import { countViewed, addToViewed } from '../../../store.js';
+import { countViewed, addToViewed } from '../../../viewed.js';
 import CreateCriterion from '../Criteria/CreateCriterion.svelte';
 import AllCriteria from '../Criteria/AllCriteria.svelte';
 import CreateProposal from '../Proposals/CreateProposal.svelte';
@@ -20,15 +20,16 @@ import SvgIcon from '../SvgIcon.svelte';
 
 const dispatch = createEventDispatcher();
 
+export let deliberation: Deliberation | undefined;
+
 export let deliberationHash: ActionHash;
 
-let client: AppAgentClient = (getContext(clientContext) as any).getClient();
+let client: AppClient = (getContext(clientContext) as any).getClient();
 
 let loading = true;
 let error: any = undefined;
 
 let record: Record | undefined;
-let deliberation: Deliberation | undefined;
 
 let editing = false;
 
@@ -46,70 +47,72 @@ let completedDeliberators: String[] | undefined;
 $: editing,  error, loading, record, deliberation, proposals, criteria, outcomes;
 
 onMount(async () => {
-  if (deliberationHash === undefined) {
-    throw new Error(`The deliberationHash input is required for the DeliberationDetail element`);
-  }
-  await fetchDeliberation();
+  // if (deliberationHash === undefined) {
+  //   throw new Error(`The deliberationHash input is required for the DeliberationDetail element`);
+  // }
+  // await fetchDeliberation();
 
-  newCriteriaCount = Math.max(0, criteria.length - countViewed(criteria))
-  newProposalCount = Math.max(0, proposals.length - countViewed(proposals))
-  newOutcomeCount = Math.max(0, outcomes.length - countViewed(outcomes))
+  console.log(deliberation)
+
+  newCriteriaCount = Math.max(0, deliberation.criteria?.length - countViewed(deliberation.criteria))
+  newProposalCount = Math.max(0, deliberation.proposals?.length - countViewed(deliberation.proposals))
+  newOutcomeCount = Math.max(0, deliberation.outcomes?.length - countViewed(deliberation.outcomes))
 
   loading = false;
 
-  client.on('signal', signal => {
-    if (signal.zome_name !== 'converge') return;
-    const payload = signal.payload as ConvergeSignal;
-    if (payload.type !== 'LinkCreated') return;
-    if (payload.link_type !== 'DeliberationToProposals') return;
+  // client.on('signal', signal => {
+  //   if (signal.App.zome_name !== 'converge') return;
+  //   const payload = signal.App.payload as ConvergeSignal;
+  //   if (payload.type !== 'LinkCreated') return;
+  //   if (payload.link_type !== 'DeliberationToProposals') return;
 
-    proposals = [...proposals, payload.action.hashed.content.target_address];
-  });
+  //   proposals = [...proposals, payload.action.hashed.content.target_address];
+  // });
 });
 
-async function fetchDeliberation() {
-  loading = true;
-  error = undefined;
-  record = undefined;
-  deliberation = undefined;
+// async function fetchDeliberation() {
+//   loading = true;
+//   error = undefined;
+//   record = undefined;
+//   deliberation = undefined;
   
-  try {
-    record = await client.callZome({
-      cap_secret: null,
-      role_name: 'converge',
-      zome_name: 'converge',
-      fn_name: 'get_deliberation',
-      payload: deliberationHash,
-    });
-    if (record) {
-      deliberation = decode((record.record.entry as any).Present.entry) as Deliberation;
-      proposals = record.proposals.map(l => l.target);
-      criteria = record.criteria.map(l => l.target);
-      outcomes = record.outcomes.map(l => l.target);
-    }
-  } catch (e) {
-    error = e;
-  }
+//   try {
+//     record = await client.callZome({
+//       cap_secret: null,
+//       role_name: 'converge',
+//       zome_name: 'converge',
+//       fn_name: 'get_deliberation',
+//       payload: deliberationHash,
+//     });
+//     if (record) {
+//       deliberation = decode((record.record.entry as any).Present.entry) as Deliberation;
+//       proposals = record.proposals.map(l => l.target);
+//       criteria = record.criteria.map(l => l.target);
+//       outcomes = record.outcomes.map(l => l.target);
+//     }
+//   } catch (e) {
+//     error = e;
+//   }
 
-  try {
-    // console.log("trying to get deliberators")
-    const records = await client.callZome({
-      cap_secret: null,
-      role_name: 'converge',
-      zome_name: 'converge',
-      fn_name: 'get_deliberators_for_deliberation',
-      payload: deliberationHash,
-    });
-    deliberators = records.map((record) => record.deliberator.join(','));
-    completedDeliberators = records
-      .filter((record) => record.completed)
-      .map((record) => record.deliberator.join(','));
-  } catch (e) {
-    error = e;
-  }
+//   try {
+//     // console.log("trying to get deliberators")
+//     const records = await client.callZome({
+//       cap_secret: null,
+//       role_name: 'converge',
+//       zome_name: 'converge',
+//       fn_name: 'get_deliberators_for_deliberation',
+//       payload: deliberationHash,
+//     });
+//     deliberators = records.map((record) => record.deliberator.join(','));
+//     completedDeliberators = records
+//       .filter((record) => record.completed)
+//       .map((record) => record.deliberator.join(','));
+//   } catch (e) {
+//     error = e;
+//   }
 
-  loading = false;
-}
+//   loading = false;
+// }
 
 async function deleteDeliberation() {
   try {
@@ -131,7 +134,7 @@ async function deleteDeliberation() {
 <!-- <mwc-snackbar bind:this={errorSnackbar} leading>
 </mwc-snackbar> -->
 
-{#if loading || !deliberationHash}
+{#if loading || !deliberation}
 <div style="display: flex; flex: 1; align-items: center; justify-content: center">
   <mwc-circular-progress indeterminate></mwc-circular-progress>
 </div>
@@ -147,12 +150,12 @@ async function deleteDeliberation() {
   } }
   on:edit-canceled={() => { editing = false; } }
 ></EditDeliberation> -->
-{:else if deliberators.length > 0}
+{:else if deliberation.deliberators.length > 0}
 
 <div class="dashboard-section">
 
   <div class="dashboard-item">
-    <div>{ deliberation.title }</div>
+    <div>{ deliberation.deliberation.title }</div>
     <!-- <div class="dashboard-item-details">  
       Created | Last updated | Closes
     </div> -->
@@ -167,14 +170,14 @@ async function deleteDeliberation() {
         Outcomes
         <div>
           <SvgIcon color="#757575" icon="faArrow"></SvgIcon>
-          <strong>{outcomes.length}</strong>
+          <strong>{deliberation.outcomes.length}</strong>
           {#if newOutcomeCount > 0}
             <span style="
             color: #be59e9;
             font-size: 0.8em;
             font-weight: 400;
             ">
-              (+{newOutcomeCount})
+              ({newOutcomeCount} new)
             </span>
           {/if}
         </div>
@@ -185,14 +188,14 @@ async function deleteDeliberation() {
         Proposals
         <div>
           <SvgIcon color="#757575" icon="faBars"></SvgIcon>
-          <strong>{proposals.length}</strong>
+          <strong>{deliberation.proposals.length}</strong>
           {#if newProposalCount > 0}
             <span style="
             color: #be59e9;
             font-size: 0.8em;
             font-weight: 400;
             ">
-              (+{newProposalCount})
+              ({newProposalCount} new)
             </span>
           {/if}
         </div>
@@ -206,14 +209,14 @@ async function deleteDeliberation() {
         Criteria
         <div>
           <SvgIcon color="#757575" icon="faCheck"></SvgIcon>
-          <strong>{criteria.length}</strong> 
+          <strong>{deliberation.criteria.length}</strong> 
           {#if newCriteriaCount > 0}
             <span style="
             color: #be59e9;
             font-size: 0.8em;
             font-weight: 400;
             ">
-              (+{newCriteriaCount})
+              ({newCriteriaCount} new)
             </span>
           {/if}
       </div>
@@ -223,7 +226,7 @@ async function deleteDeliberation() {
       Joined
       <div>
         <SvgIcon color="#757575" icon="faUserGroup"></SvgIcon>
-        <strong>{deliberators.length}</strong>
+        <strong>{deliberation.deliberators.length}</strong>
       </div>
     </div>
 
@@ -236,7 +239,7 @@ async function deleteDeliberation() {
 
     </div>
 
-    <div class="dashboard-item-details">  
+    <!-- <div class="dashboard-item-details">   -->
     <!-- {#if participants}
       {#if participants.length == 1}
         <span>{participants.length} criterion</span>
@@ -251,7 +254,7 @@ async function deleteDeliberation() {
         <span>| {proposals.length} proposals</span>
       {/if}
     {/if} -->
-    </div>
+    <!-- </div> -->
   </div>
 
 </div>

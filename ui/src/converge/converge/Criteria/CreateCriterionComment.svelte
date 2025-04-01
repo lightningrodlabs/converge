@@ -8,7 +8,7 @@ import '@material/mwc-snackbar';
 import type { Snackbar } from '@material/mwc-snackbar';
 import '@vaadin/date-time-picker/theme/material/vaadin-date-time-picker.js';
 import '@material/mwc-checkbox';
-import { countViewed, addToViewed } from '../../../store.js';
+import { countViewed, addToViewed } from '../../../viewed.js';
 import { encodeHashToBase64 } from "@holochain/client";
 
 import '@material/mwc-textfield';

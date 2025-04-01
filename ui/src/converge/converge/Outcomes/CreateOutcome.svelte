@@ -1,6 +1,6 @@
 <script lang="ts">
 import { createEventDispatcher, getContext, onMount } from 'svelte';
-import type { AppAgentClient, Record, EntryHash, AgentPubKey, ActionHash, DnaHash, Action } from '@holochain/client';
+import { type AppAgentClient, type Record, type EntryHash, type AgentPubKey, type ActionHash, type DnaHash, type Action, encodeHashToBase64 } from '@holochain/client';
 import { clientContext } from '../../../contexts';
 import type { Outcome, CreateOutcomeInput } from '../types';
 import '@material/mwc-button';
@@ -12,8 +12,9 @@ import AttachmentsDialog from "../../../AttachmentsDialog.svelte"
 import Criterion from '../Criteria/Criterion.svelte';
 import type { WALUrl } from '../../../util';
 import AttachmentsList from "../../../AttachmentsList.svelte";
-import { countViewed, addToViewed } from '../../../store.js';
-import { weaveUrlToWAL } from "@lightningrodlabs/we-applet";
+import { countViewed, addToViewed } from '../../../viewed.js';
+import { weaveUrlToWAL } from "@theweave/api";
+import { allProposals, allDeliberations } from '../../../store';
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 let attachmentsDialog : AttachmentsDialog
@@ -37,11 +38,14 @@ function dismissPopup() {
 
 let title: string = '';
 let description: string = '';
+let deliberation;
+let proposals;
 
 let errorSnackbar: Snackbar;
 
 $: title, description, outcomeFormPopup, sortedCriteria;
 $: isOutcomeValid = true && outcome_attachment;
+$: deliberation, proposals;
 
 function checkKey(e) {
   if (e.key === "Escape" && !e.shiftKey) {
@@ -55,7 +59,17 @@ function reference(r) {
   description += "\n" + r + ":\n";
 }
 
+
 onMount(() => {
+  allDeliberations.subscribe((d) => {
+    console.log("deliberations", d, deliberationHash);
+    deliberation = d.find((d) => encodeHashToBase64(d.action_hash) === encodeHashToBase64(deliberationHash));
+    console.log("deliberation", deliberation);
+  });
+  
+  allProposals.subscribe((p) => {
+    proposals = p;
+  });
   window.addEventListener("keydown", checkKey);
 });
 
@@ -71,6 +85,8 @@ async function createOutcome() {
     outcome: outcomeEntry,
     deliberation: deliberationHash,
   };
+
+  console.log("createOutcomeInput", createOutcomeInput);
   
   try {
     const record: Record = await client.callZome({
@@ -81,8 +97,8 @@ async function createOutcome() {
       payload: createOutcomeInput,
     });
 
-    if (record) {
-      addToViewed(record.signed_action.hashed.hash, client);
+    if (record && proposalHash) {
+      await addToViewed(record.signed_action.hashed.hash, client);
 
       await client.callZome({
         cap_secret: null,
@@ -98,7 +114,7 @@ async function createOutcome() {
 
     dispatch('outcome-created', { outcomeHash: record.signed_action.hashed.hash });
   } catch (e) {
-    console.error("no propposal to add to", e);
+    console.error("no proposal to add to", e);
     // errorSnackbar.labelText = `Error creating the outcome: ${e}`;
     // errorSnackbar.show();
   }
@@ -133,7 +149,21 @@ async function createOutcome() {
             <mwc-textarea style="width: 100%; height: 20vh" outlined label="Description" value={ description } on:input={e => { description = e.target.value; } } required></mwc-textarea>          
           </div> -->
 
-          <div style="display:inline-block; width:fit-content">Attach an outcome</div>
+          <!-- dropdown option of sorted proposals -->
+          <label style="margin-bottom: 16px; margin-right: 10px;">Is this outcome related to a proposal?</label>
+          <select style="margin-bottom: 16px; margin-right: 10px;"
+            bind:value={proposalHash}>
+            {#if deliberation}
+            <option value={null}>No proposal selected</option>
+            {#each deliberation.proposals as proposalHash}
+              <option value={encodeHashToBase64(proposalHash)}>
+                {proposals[encodeHashToBase64(proposalHash)].title}
+              </option>
+            {/each}
+            {/if}
+          </select>
+
+          <div style="display:inline-block; width:fit-content">Attach the outcome: </div>
           <AttachmentsDialog bind:this={attachmentsDialog} attachmentsLimit={1} bind:attachments on:add-attachment={
             (e) => {
               console.log(e)

@@ -1,6 +1,6 @@
 use hdk::prelude::*;
 use converge_integrity::*;
-use zome_utils::*;
+use crate::utils::link_input;
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AddCriterionCommentForCriterionInput {
     pub base_criterion_hash: ActionHash,

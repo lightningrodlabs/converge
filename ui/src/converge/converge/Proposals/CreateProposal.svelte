@@ -1,7 +1,7 @@
 <script lang="ts">
 import { createEventDispatcher, getContext, onMount } from 'svelte';
 import type { AppAgentClient, Record, EntryHash, AgentPubKey, ActionHash, DnaHash } from '@holochain/client';
-import { WeClient, isWeContext, initializeHotReload, type HrlB64WithContext, type Hrl } from '@lightningrodlabs/we-applet';
+import { WeaveClient, isWeaveContext, initializeHotReload, type HrlB64WithContext, type Hrl } from '@theweave/api';
 import { clientContext } from '../../../contexts';
 import type { Proposal, CreateProposalInput } from '../types';
 import '@material/mwc-button';
@@ -12,6 +12,7 @@ import '@material/mwc-textfield';
 import AttachmentsDialog from "../../../AttachmentsDialog.svelte"
 import Criterion from '../Criteria/Criterion.svelte';
 import type { WALUrl } from '../../../util';
+import { createProposal } from '../../../publish';
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 let attachmentsDialog : AttachmentsDialog
@@ -35,7 +36,7 @@ let description: string = '';
 let errorSnackbar: Snackbar;
 
 $: title, description, proposalFormPopup, sortedCriteria;
-$: isProposalValid = true && title !== '' && description !== '';
+$: isProposalValid = true && title !== '';
 
 function checkKey(e) {
   if (e.key === "Escape" && !e.shiftKey) {
@@ -53,7 +54,7 @@ onMount(() => {
   window.addEventListener("keydown", checkKey);
 });
 
-async function createProposal() {  
+async function handleCreateProposal() {  
   const proposalEntry: Proposal = { 
     title: title!,
     description: description!,
@@ -65,20 +66,9 @@ async function createProposal() {
     deliberation: deliberationHash,
   };
   
-  try {
-    const record: Record = await client.callZome({
-      cap_secret: null,
-      role_name: 'converge',
-      zome_name: 'converge',
-      fn_name: 'create_proposal',
-      payload: createProposalInput,
-    });
-    dismissPopup()
-    dispatch('proposal-created', { proposalHash: record.signed_action.hashed.hash });
-  } catch (e) {
-    errorSnackbar.labelText = `Error creating the proposal: ${e.data.data}`;
-    errorSnackbar.show();
-  }
+  let newHash = await createProposal(createProposalInput, client);
+  dismissPopup()
+  dispatch('proposal-created', { proposalHash: newHash });
 }
 
 </script>
@@ -86,6 +76,7 @@ async function createProposal() {
 <div class="backdrop">
   {#if sortedCriteria.length > 0 && showCriteria}
     <div class="popup-container criterion-side-list">
+      <h2 style="font-size: 18px">Criteria (for reference)</h2>
       <button
       style="
         display: inline-block;
@@ -119,7 +110,7 @@ async function createProposal() {
           </div>
                     
           <div style="margin-bottom: 16px; margin-right: 10px;">
-            <mwc-textarea style="width: 100%; height: 50vh" outlined label="Description" value={ description } on:input={e => { description = e.target.value; } } required></mwc-textarea>          
+            <mwc-textarea style="width: 100%; height: 50vh" outlined label="Description" value={ description } on:input={e => { description = e.target.value; } }></mwc-textarea>          
           </div>
 
           <AttachmentsDialog bind:this={attachmentsDialog} bind:attachments on:add-attachments={
@@ -166,7 +157,7 @@ async function createProposal() {
               raised
               label="Create Proposal"
               disabled={!isProposalValid}
-              on:click={() => createProposal()}
+              on:click={() => handleCreateProposal()}
               on:keydown={(e) => {
                 if (e.key === 'Escape') {
                   dismissPopup();

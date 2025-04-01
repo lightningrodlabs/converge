@@ -3,77 +3,90 @@ import { writable } from 'svelte/store';
 
 export const view = writable("home");
 export const viewHash = writable(new Uint8Array([]));
-export const notifications = writable([]);
 export const weClientStored = writable(null);
-export const viewed = writable([]);
+export const allDeliberations = writable([])
+export const allCriteria = writable([])
+export const allProposals = writable({})
+export const allOutcomes = writable([])
+export const allEvaluations = writable({})
 
 export function navigate(location, hash) {
     view.update(v => location);
     viewHash.update(h => hash)
 }
 
-export function notifications_update(new_notifications) {
-    let ordered = new_notifications.sort((a, b) => parseFloat(b.timestamp) - parseFloat(a.timestamp));
-    notifications.update(v => ordered)
-}
-
-export function setWeClient(client) {
+export function setWeaveClient(client) {
     weClientStored.update(v => client);
 }
 
-export function setViewed(hashes) {
-    viewed.update(v => hashes);
+export function setAllDeliberations(deliberations) {
+    console.log("Setting all deliberations", deliberations);
+    allDeliberations.update(v => deliberations);
 }
 
-async function createViewed(viewedHash, client) {  
-    console.log("client", client)
-    const viewedEntry = { 
-        viewed_hash: viewedHash,
-        viewed_date: new Date().getSeconds() * 1000,
-    };
-    
-    // console.log("viewedEntry", viewedEntry)
-    
-    try {
-        await client.callZome({
-            cap_secret: null,
-            role_name: 'converge',
-            zome_name: 'converge',
-            fn_name: 'create_viewed',
-            payload: viewedEntry,
-        });
-    } catch (e) {
-        console.log(e)
-    }
+export function addDeliberation(deliberation) {
+    allDeliberations.update(v => [...v, deliberation]);
 }
 
-export function addToViewed(hash, client) {
-    let alreadyViewed = checkIfViewed(encodeHashToBase64(hash));
-    if (alreadyViewed) {
-        return;
-    }
-    viewed.update(v => {
-        v.push(encodeHashToBase64(hash));
-        return v;
-    });
-    createViewed(hash, client);
+export function setAllCriteria(criteria) {
+    allCriteria.update(v => criteria);
 }
 
-export function checkIfViewed(hash) {
-    let isViewed;
-    viewed.subscribe(v => {
-        isViewed = v.includes(hash);
-    })();
-    return isViewed;
-}
+// export function setAllProposals(proposals) {
+//     allProposals.update(v => proposals);
+// }
 
-export function countViewed(hashes) {
-    let count = 0;
-    hashes.forEach(hash => {
-        let viewed = checkIfViewed(encodeHashToBase64(hash));
-        if (viewed) {
-            count++;
+export function addSomeProposals(proposals) {
+    allProposals.update(v => {
+        let newProposals = {...v};
+        for (let proposal of proposals) {
+            newProposals[encodeHashToBase64(proposal.action_hash)] = proposal;
         }
+        return newProposals;
     });
-    return count;
+}
+
+export function addProposalHashesToDeliberation(deliberationHash, proposalHashes) {
+    console.log("Adding proposal hashes to deliberation 0", deliberationHash, proposalHashes);
+    allDeliberations.update(v => {
+        let newDeliberations = v.map(d => {
+            if (encodeHashToBase64(d.action_hash) === encodeHashToBase64(deliberationHash)) {
+                return {
+                    ...d,
+                    proposals: [...proposalHashes, ...d.proposals]
+                };
+            }
+            return d;
+        });
+        console.log("New deliberations", newDeliberations);
+        return newDeliberations;
+    });
+}
+
+export function addSomeEvaluations(evaluations) {
+    console.log("Adding some evaluations", evaluations  );
+    allEvaluations.update(v => {
+        let newEvaluations = {...v};
+        for (let evaluation of evaluations) {
+            let encodedProposalHash = evaluation.base_proposal_hash
+            if (newEvaluations[encodedProposalHash]) {
+                let existingEvaluation = newEvaluations[encodedProposalHash].find(e => (e.target_evaluator === evaluation.target_evaluator));
+                if (existingEvaluation) {
+                    // remove existing evaluation
+                    newEvaluations[encodedProposalHash] = newEvaluations[encodedProposalHash].filter(e => e.target_evaluator !== evaluation.target_evaluator);
+                    newEvaluations[encodedProposalHash].push(evaluation);
+                } else {
+                    newEvaluations[encodedProposalHash].push(evaluation);
+                }
+            } else {
+                newEvaluations[encodedProposalHash] = [evaluation];
+            }
+        }
+        console.log("New evaluations", newEvaluations);
+        return newEvaluations;
+    });
+}
+
+export function setAllOutcomes(outcomes) {
+    allOutcomes.update(v => outcomes);
 }

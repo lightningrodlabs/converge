@@ -1,6 +1,6 @@
 <script lang="ts">
 import { createEventDispatcher, getContext, onMount } from 'svelte';
-import type { AppAgentClient, Record, EntryHash, AgentPubKey, ActionHash, DnaHash } from '@holochain/client';
+import type { AppClient, Record, EntryHash, AgentPubKey, ActionHash, DnaHash } from '@holochain/client';
 import { clientContext } from '../../../contexts';
 import type { Criterion, CreateCriterionInput, CriterionComment } from '../types';
 import '@material/mwc-button';
@@ -19,7 +19,7 @@ function dismissPopup() {
   title = '';
 }
 
-let client: AppAgentClient = (getContext(clientContext) as any).getClient();
+let client: AppClient = (getContext(clientContext) as any).getClient();
 
 const dispatch = createEventDispatcher();
 
@@ -189,7 +189,7 @@ async function createCriterion() {
         <div><span class="green-alert">↯ </span><strong>Alternative to {alternativeToFull.title}</strong></div>
         <br>
         {/if}
-        <small class="instructions" style="white-space: pre-line; font-size: 10px; margin: 0; width: calc(100vw - 111px); max-width: 388px;">
+        <small class="instructions" style="white-space: pre-line; font-size: 10px; margin: 0 0 16px 0; width: calc(100vw - 111px); max-width: 388px;">
           TIP: Does the criterion have these helpful characteristics?
 
           • Is noncontroversial

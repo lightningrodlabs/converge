@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount, setContext } from 'svelte';
-  import type { ActionHash, AppAgentClient } from '@holochain/client';
-  import { AppWebsocket, AppAgentWebsocket, AdminWebsocket } from '@holochain/client';
-  import { view, viewHash, navigate, setWeClient } from './store.js';
+  import type { ActionHash, AppClient, AppWebsocketConnectionOptions } from '@holochain/client';
+  import { AppWebsocket, AdminWebsocket } from '@holochain/client';
+  import { view, viewHash, navigate, setWeaveClient } from './store.js';
   import { clientContext, profilesStoreContext } from './contexts';
   import { ProfilesStore, ProfilesClient } from "@holochain-open-dev/profiles";
   import { encodeHashToBase64, type AgentPubKey } from "@holochain/client";
@@ -23,7 +23,7 @@
   import Header from './converge/converge/Header.svelte';
   import DeliberationsForDeliberator from './converge/converge/Deliberations/DeliberationsForDeliberator.svelte';
   import { MyProfile } from '@holochain-open-dev/profiles/dist/elements/my-profile.js';
-  import { WeClient, isWeContext, initializeHotReload, type WAL, type Hrl } from '@lightningrodlabs/we-applet';  
+  import { WeaveClient, isWeaveContext, initializeHotReload, type WAL, type Hrl } from '@theweave/api';  
   import Holochain from "./assets/holochain.png";
   import type { Deliberation, ConvergeSignal } from './converge/converge/types';
   import { appletServices } from './we';
@@ -32,9 +32,7 @@
   import SvgIcon from './SvgIcon.svelte';
   import AllViewed from './converge/converge/AllViewed.svelte';
   import { fade } from 'svelte/transition';
-// import AttachmentsList from './AttachmentsList.svelte';
-  // import AttachmentsBind from './AttachmentsBind.svelte';
-  // import AttachmentsDialog from './AttachmentsDialog.svelte';
+  import NetworkInfo from './NetworkInfo.svelte';
 
   const appId = import.meta.env.VITE_APP_ID ? import.meta.env.VITE_APP_ID : 'converge'
   const roleName = 'converge'
@@ -42,7 +40,7 @@
   const adminPort = import.meta.env.VITE_ADMIN_PORT
   const url = `ws://localhost:${appPort}`;
 
-  let client: AppAgentClient | undefined;
+  let client: AppClient | undefined;
   let loading = true;
   let store = undefined;
   let currentHash: ActionHash | undefined;
@@ -54,9 +52,9 @@
   let connected = false
 
   // let hrlWithContext: HrlWithContext
-  let weClient: WeClient
+  let weClient: WeaveClient
 
-  $: client, loading, store, profilesStore, initialized, dna;
+  $: client, loading, store, profilesStore, initialized, dna, weClient
 
   async function checkIfNew() {
       try {
@@ -95,35 +93,41 @@
         console.warn("Could not initialize applet hot-reloading. This is only expected to work in a We context in dev mode.")
       }
     }
-    if (!isWeContext()) {
-      console.log("adminPort is", adminPort)
+    let tokenResp;
+    if (!isWeaveContext()) {
+      console.log("adminPort is", adminPort);
       if (adminPort) {
-        const url = `ws://localhost:${adminPort}`
-        console.log("connecting to admin port at:", url)
-        const adminWebsocket = await AdminWebsocket.connect({url: new URL(url)})
-        const x = await adminWebsocket.listApps({})
-        console.log("apps", x)
-        const cellIds = await adminWebsocket.listCellIds()
-        console.log("CELL IDS",cellIds)
-        await adminWebsocket.authorizeSigningCredentials(cellIds[0])
-
+        const url = `ws://localhost:${adminPort}`;
+        console.log("connecting to admin port at:", url);
+        const adminWebsocket = await AdminWebsocket.connect({
+          url: new URL(url)
+        });
+        console.log("issuing token");
+        tokenResp = await adminWebsocket.issueAppAuthenticationToken({
+          installed_app_id: appId,
+        });
+        console.log("token", tokenResp);
+        const x = await adminWebsocket.listApps({});
+        console.log("apps", x);
+        const cellIds = await adminWebsocket.listCellIds();
+        console.log("CELL IDS", cellIds);
+        await adminWebsocket.authorizeSigningCredentials(cellIds[0]);
       }
-      console.log("appPort and Id is", appPort, appId)
-      client = await AppAgentWebsocket.connect(appId,{url: new URL(url)})
+      console.log("appPort and Id is", appPort, appId);
+      const params: AppWebsocketConnectionOptions = { url: new URL(url) };
+      console.log("params", params);
+      if (tokenResp) params.token = tokenResp.token;
+      console.log("connecting to app port at:", params.url);
+      client = await AppWebsocket.connect(params);
+      console.log("client", client);
       profilesClient = new ProfilesClient(client, appId);
-    
-      // client = await AppAgentWebsocket.connect('', 'dcan');
-      // profilesStore = new ProfilesStore(new ProfilesClient(client, 'converge'), {
-      //   avatarMode: "avatar-optional",
-      //   minNicknameLength: 3,
-      // });
     }
     else {
-      // const weClient = await WeClient.connect();
-      weClient = await WeClient.connect(appletServices);
+      // const weClient = await WeaveClient.connect();
+      weClient = await WeaveClient.connect(appletServices);
       // store set
-      setWeClient(weClient)
-      // weClient = await WeClient.connect();
+      setWeaveClient(weClient)
+      // weClient = await WeaveClient.connect();
 
       switch (weClient.renderInfo.type) {
         case "applet-view":
@@ -147,11 +151,12 @@
               }
               break;  
             case "asset":
-              switch (weClient.renderInfo.view.roleName) {
+              console.log("wal", weClient.renderInfo.view)
+              switch (weClient.renderInfo.view.recordInfo.roleName) {
                 case "converge":
-                  switch (weClient.renderInfo.view.integrityZomeName) {
+                  switch (weClient.renderInfo.view.recordInfo.integrityZomeName) {
                     case "converge_integrity":
-                      switch (weClient.renderInfo.view.entryType) {
+                      switch (weClient.renderInfo.view.recordInfo.entryType) {
                         case "deliberation":
                           currentView = "deliberation-asset"
                           currentHash = weClient.renderInfo.view.wal.hrl[1]
@@ -163,15 +168,15 @@
                           currentHash = weClient.renderInfo.view.wal.hrl[1]
                           break;
                         default:
-                          throw new Error("Unknown entry type:"+weClient.renderInfo.view.entryType);
+                          throw new Error("Unknown entry type:"+weClient.renderInfo.view.recordInfo.entryType);
                       }
                       break;
                     default:
-                      throw new Error("Unknown integrity zome:"+weClient.renderInfo.view.integrityZomeName);
+                      throw new Error("Unknown integrity zome:"+weClient.renderInfo.view.recordInfo.integrityZomeName);
                   }
                   break;
                 default:
-                  throw new Error("Unknown role name:"+weClient.renderInfo.view.roleName);
+                  throw new Error("Unknown role name:"+weClient.renderInfo.view.recordInfo.roleName);
               }
               break;
             default:
@@ -233,8 +238,9 @@
 
     client.on('signal', signal => {
       // console.log("signalll", signal)
-      if (signal.zome_name !== 'converge') return;
-      const payload = signal.payload as ConvergeSignal;
+      if (signal.App.zome_name !== 'converge') return;
+      const payload = signal.App.payload as ConvergeSignal;
+      console.log("activity received", payload)
       const urgentMessages = ['criterion-created', 'proposal-created', 'deliberation-created']
       const messagesFull = {
         'criterion-created': "A new criterion has been added to the deliberation " + payload.title,
@@ -286,12 +292,15 @@
         <CreateDeliberation />
       {:else if currentView == "deliberation-asset"}
         <main>
-          <div class="attachment-container big">
+          <div class="attachment-container">
             <DeliberationDetail deliberationHash={currentHash} />
           </div>
-          <div class="attachment-container small" style="padding: 0;">
+          <!-- <div class="attachment-container big">
+            <DeliberationDetail deliberationHash={currentHash} />
+          </div> -->
+          <!-- <div class="attachment-container small" style="padding: 0;">
             <DeliberationListItem deliberationHash={currentHash} />
-          </div>
+          </div> -->
         </main>
       {:else if currentView == "proposal-asset"}
         <main>
@@ -347,13 +356,17 @@
 {/if}
 
 <footer style="margin: 10px;">
+    {#if weClient}
+      <!-- {JSON.stringify(weClient.renderInfo)} -->
+      <!-- <NetworkInfo {weClient} /> -->
+    {/if}
     <!-- feedback button -->
-    <SvgIcon icon="faBug" size="24" color="#000000" />
+    <!-- <SvgIcon icon="faBug" size="24" color="#000000" /> -->
     <a href="https://docs.google.com/forms/d/e/1FAIpQLSchqUdQWqNCnjV8LfdLwuuJoqvdy2hWKotxKZ2L7TazaEusUQ/viewform" target="_blank" class="feedback-button">
-      <span>Submit feedback</span>
+      <span>Give feedback here</span>
     </a>
-    :)
-{#if !isWeContext && dna && !loading && currentView != "instructions" && currentView != "" && (!weClient || weClient.renderInfo.view.type != "attachable")}
+    <!-- :) -->
+{#if !isWeaveContext && dna && !loading && currentView != "instructions" && currentView != "" && (!weClient || weClient.renderInfo.view.type != "asset")}
 <small>
   <img class="holochain-logo" src={Holochain} alt="holochain logo"/>
   Private Holochain network: {dna}

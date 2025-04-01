@@ -13,13 +13,14 @@ import '@material/mwc-textarea';
 import { view, viewHash, navigate } from '../../../store.js';
 import AttachmentsDialog from "../../../AttachmentsDialog.svelte"
 import SvgIcon from "../../../SvgIcon.svelte";
-import { WeClient, isWeContext, initializeHotReload, type WAL, type Hrl, weaveUrlFromWal } from '@lightningrodlabs/we-applet';
+import { WeaveClient, isWeaveContext, initializeHotReload, type WAL, type Hrl, weaveUrlFromWal } from '@theweave/api';
 import AttachmentsBind from '../../../AttachmentsBind.svelte';
 import { HoloHashMap, type EntryHashMap } from "@holochain-open-dev/utils";
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 import { weClientStored } from '../../../store.js';
 import app from '../../../main';
-import { hrlB64WithContextToRaw, hrlWithContextToB64, getMyDna, type WALUrl } from '../../../util';
+import type { WALUrl } from '../../../util';
+import { createDeliberation } from '../../../publish';
 
 const dispatch = createEventDispatcher();
 
@@ -77,96 +78,16 @@ onMount(async() => {
     // console.log(selectedDiscussionApp)
 });
 
-async function createDeliberation() {  
+async function submitDeliberation() {
   const deliberationEntry: Deliberation = { 
     title: title!,
     description: description!,
     settings: JSON.stringify(settings!),
     attachments: attachments,
     discussion: discussionAttachments[0] ? discussionAttachments[0] : null,
-    // discussionApp: selectedDiscussionApp.appletName
   };
-
-  // console.log("createDeliberation", deliberationEntry)
-  
-  try {
-    const record: Record = await client.callZome({
-      cap_secret: null,
-      role_name: 'converge',
-      zome_name: 'converge',
-      fn_name: 'create_deliberation',
-      payload: deliberationEntry,
-    });
-    dispatch('deliberation-created', { deliberationHash: record.signed_action.hashed.hash });
-
-    // join deliberation
-    await client.callZome({
-      cap_secret: null,
-      role_name: 'converge',
-      zome_name: 'converge',
-      fn_name: 'add_deliberation_for_deliberator',
-      payload: {
-        base_deliberator: client.myPubKey,
-        target_deliberation_hash: record.signed_action.hashed.hash
-      },
-    });
-
-    // if (selectedDiscussionApp != "none") {
-    //   // add discussion
-    //   const appletHash = discussionApps[selectedDiscussionApp][0]
-    //   const appletInfo = await weClient.appletInfo(appletHash)
-    //   console.log("appletInfo2", appletInfo)
-    //   const aType = discussionApps[selectedDiscussionApp][1]
-    //   console.log("aType", aType)
-    //   const threadsCreate = {hrl:[dna, record.signed_action.hashed.hash], attachmentType:"{}"}
-    //   console.log("threadsCreate", threadsCreate)
-    //   const hrlWithContext = await aType.create(threadsCreate)
-    //   console.log("hrl", hrlWithContext)
-    //   console.log("b64", hrlWithContextToB64(hrlWithContext))
-      
-    //   const hrlB64 = hrlWithContextToB64(hrlWithContext)
-    //   const deliberationUpdate = {
-    //     original_deliberation_hash: record.signed_action.hashed.hash,
-    //     previous_deliberation_hash: record.signed_action.hashed.hash,
-    //     updated_deliberation: {
-    //       ...deliberationEntry,
-    //       discussion: {
-    //         hrl: JSON.stringify(hrlB64.hrl),
-    //         context: hrlB64.context,
-    //       }
-    //     }
-    //   }
-      
-    //   console.log("deliberationUpdate", deliberationUpdate)
-      
-    //   // update deliberation to include newly created discussion
-    //   await client.callZome({
-    //     cap_secret: null,
-    //     role_name: 'converge',
-    //     zome_name: 'converge',
-    //     fn_name: 'update_deliberation',
-    //     payload: deliberationUpdate,
-    //   });
-    // }
-
-    // await client.callZome({
-    //   cap_secret: null,
-    //   role_name: 'converge',
-    //   zome_name: 'converge',
-    //   fn_name: 'new_activity_sender',
-    //   payload: {
-    //     deliberation_hash: record.signed_action.hashed.hash,
-    //     message: "deliberation-created",
-    //     title: title,
-    //   },
-    // });
-
-    navigate("deliberation", record.signed_action.hashed.hash)
-  } catch (e) {
-    console.log(e)
-    // errorSnackbar.labelText = `Error creating the deliberation: ${e}`;
-    // errorSnackbar.show();
-  }
+  let newDeliberationHash = await createDeliberation(deliberationEntry, client)
+  navigate("deliberation", newDeliberationHash)
 }
 
 </script>
@@ -177,13 +98,14 @@ async function createDeliberation() {
   
   <!-- <h2>Deliberation Details</h2> -->
   
+  <label class="instructions">Warning: After creating a deliberation, it "belongs" to everyone, and therefore cannot be edited or deleted.</label>
 
   <div style="margin-bottom: 16px; text-align: left;">
-    <mwc-textfield style="width: 100%" outlined label="Title" value={ title } on:input={e => { title = e.target.value;} } required></mwc-textfield>          
+    <mwc-textfield style="width: 100%" outlined label="Title (What question or topic would you like to deliberate?)" value={ title } on:input={e => { title = e.target.value;} } required></mwc-textfield>          
   </div>
             
   <div style="margin-bottom: 16px; text-align: left;">
-    <mwc-textarea style="width: 100%; height: 30vh" outlined label="Description" value={ description } on:input={e => { description = e.target.value; } }></mwc-textarea>          
+    <mwc-textarea style="width: 100%; height: 30vh" outlined label="Description (optional)" value={ description } on:input={e => { description = e.target.value; } }></mwc-textarea>          
   </div>
             
   <!-- <div style="margin-bottom: 16px; text-align: left">
@@ -195,7 +117,7 @@ async function createDeliberation() {
     </mwc-formfield>
   </div> -->
 
-  {#if isWeContext}
+  {#if isWeaveContext()}
     {#if false}
     <div style="display:flex; flex-wrap:wrap; align-items: center; margin-bottom:10px;">
       <!-- {JSON.stringify(discussionApps[0])} -->
@@ -216,7 +138,7 @@ async function createDeliberation() {
     </div>
     {/if}
     <div style="display:flex; flex-wrap:wrap; align-items: center; margin-bottom:10px;">
-      <label style="margin-top:5px">Discussion&nbsp;</label>
+      <!-- <label style="margin-top:5px">Link a discussion (e.g. a Vines thread)&nbsp;</label>
       <AttachmentsDialog bind:this={attachmentsDialog} attachmentsLimit={1} bind:attachments={discussionAttachments} 
       on:add-attachments={
         (e) => {
@@ -226,7 +148,7 @@ async function createDeliberation() {
           // props.attachments = e.detail.attachments
           // bind.refresh()
         }
-      }></AttachmentsDialog>
+      }></AttachmentsDialog> -->
 
       <label style="margin-top:5px">Attachments &nbsp;
       </label>
@@ -256,12 +178,12 @@ async function createDeliberation() {
     </div>
   {/if}
   
-  <label class="instructions">Warning: After creating a deliberation, it belongs to everyone and cannot be edited or deleted.</label>
-
   <mwc-button
     raised
     label="Create Deliberation"
     disabled={!isDeliberationValid}
-    on:click={() => createDeliberation()}
+    on:click={() => {
+      submitDeliberation()
+    }}
   ></mwc-button>
 </div>

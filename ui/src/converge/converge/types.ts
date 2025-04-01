@@ -12,7 +12,7 @@ import type {
   DeleteLink
 } from '@holochain/client';
 
-import type { HrlB64WithContext, Hrl } from '@lightningrodlabs/we-applet';
+import type { HrlB64WithContext, Hrl } from '@theweave/api';
 
 export type ConvergeSignal = {
   type: 'EntryCreated';

@@ -2,9 +2,9 @@
 import { createEventDispatcher, onMount, getContext } from 'svelte';
 import '@material/mwc-circular-progress';
 import { decode } from '@msgpack/msgpack';
-import type { Record, ActionHash, AppAgentClient, EntryHash, AgentPubKey, DnaHash } from '@holochain/client';
+import { type Record, type ActionHash, type AppAgentClient, type EntryHash, type AgentPubKey, type DnaHash, encodeHashToBase64 } from '@holochain/client';
 import { clientContext } from '../../../contexts';
-import type { Deliberation, ConvergeSignal } from '../types';
+import type { Deliberation, ConvergeSignal, Proposal } from '../types';
 import FaSort from 'svelte-icons/fa/FaSort.svelte';
 import FaSearch from 'svelte-icons/fa/FaSearch.svelte';
 import '@material/mwc-circular-progress';
@@ -19,9 +19,9 @@ import { view, viewHash, navigate } from '../../../store.js';
 import CreateCriterion from '../Criteria/CreateCriterion.svelte';
 import AllCriteria from '../Criteria/AllCriteria.svelte';
 import CreateProposal from '../Proposals/CreateProposal.svelte';
-import AllProposals from '../Proposals/AllProposals.svelte';
+// import AllProposals from '../Proposals/AllProposals.svelte';
 import AttachmentsList from '../../../AttachmentsList.svelte';
-import { isWeContext, weaveUrlToWAL, type WAL } from '@lightningrodlabs/we-applet';
+import { isWeaveContext, weaveUrlToWAL, type WAL } from '@theweave/api';
 import Avatar from '../Avatar.svelte';
 import SvgIcon from "../../../SvgIcon.svelte";
 import { weClientStored } from '../../../store.js';
@@ -29,9 +29,14 @@ import { getMyDna } from '../../../util';
 import type { WALUrl } from '../../../util';
 import AllOutcomes from '../Outcomes/AllOutcomes.svelte';
 import CreateOutcome from '../Outcomes/CreateOutcome.svelte';
-    // import { hrlB64WithContextToRaw, hrlWithContextToB64 } from '../../../util';
+import { allDeliberations, allProposals } from '../../../store.js';
+import { refetchDeliberations, refetchProposalsForDeliberation, refetchEvaluationsForProposals } from '../../../refetch';
+import ProposalListItem from '../Proposals/ProposalListItem.svelte';
+import { decodeHashFromBase64 } from '@holochain/client';
 
 const dispatch = createEventDispatcher();
+
+let sortCriteria;
 
 export let deliberationHash: ActionHash;
 
@@ -46,6 +51,11 @@ let deliberation: Deliberation | undefined;
 let deliberators: String[] | undefined;
 let completedDeliberators: String[] | undefined;
 let deliberatorsRaw: AgentPubKey[] | undefined;
+
+let criteria: any[] = [];
+let proposalHashes: any[] = [];
+let proposalsComplete: any = {};
+let outcomes: any[] = [];
 
 let editing = false;
 let criterionFormPopup = false;
@@ -63,6 +73,13 @@ let lastMessage;
 let detectSort;
 let outcomesTab;
 let outcomeCount;
+let reloadKey = 0;
+
+allProposals.subscribe(value => {
+  proposalsComplete = value;
+  console.log("proposalsComplete", proposalsComplete)
+  console.log("proposal hashes", proposalHashes)
+});
 
 let sortByOptions = [
   "support",
@@ -86,157 +103,75 @@ $: editing, error, loading, record, deliberation, activeTab, criterionFormPopup,
 onMount(async () => {
   dnaHash = await getMyDna("converge", client)
 
-  if (deliberationHash === undefined) {
-    throw new Error(`The deliberationHash input is required for the DeliberationDetail element`);
+  allDeliberations.subscribe(value => {
+  if (value) {
+    const deliberationComplete = value.find(d => encodeHashToBase64(d.action_hash) == encodeHashToBase64(deliberationHash));
+    if (deliberationComplete) {
+      deliberation = deliberationComplete.deliberation;
+      criteria = deliberationComplete.criteria;
+      criteriaCount = deliberationComplete.criteria.length;
+       proposalHashes = deliberationComplete.proposals.map(p => encodeHashToBase64(p));
+      proposalCount = deliberationComplete.proposals.length;
+      outcomes = deliberationComplete.outcomes;
+      outcomeCount = deliberationComplete.outcomes.length;
+      completedDeliberators = deliberationComplete.deliberators.filter(d => d.completed).map(d => d.deliberator.join(','));
+      deliberators = deliberationComplete.deliberators.filter(d => !d.completed).map(d => d.deliberator.join(','));
+      deliberatorsRaw = deliberationComplete.deliberators.map(d => d.deliberator);
+      attachments = deliberation.attachments;
+      loading = false;
+    }
   }
-  await fetchDeliberation();
+});
+
+  // if (deliberationHash === undefined) {
+  //   throw new Error(`The deliberationHash input is required for the DeliberationDetail element`);
+  // }
+  // await fetchDeliberation();
+  await refetchDeliberations(client);
+  await refetchProposalsForDeliberation(deliberationHash, client);
+  await refetchEvaluationsForProposals(proposalHashes.map(p => p), client);
 
   client.on('signal', signal => {
-    // console.log("signal", signal)
-    if (signal.zome_name !== 'converge') return;
-    const payload = signal.payload as ConvergeSignal;
-    const updateMessages = ['new-join', 'criterion-created', 'proposal-rated', 'proposal-created', 'criterion-rated']
-    const urgentMessages = ['criterion-created', 'proposal-created']
-    const messagesFull = {
-      'new-join': "A new participant has joined the deliberation",
-      'criterion-created': "A new criterion has been added to the deliberation " + deliberation.title,
-      'proposal-rated': "A proposal has been rated",
-      'proposal-created': "A new proposal has been added to the deliberation " + deliberation.title,
-      'criterion-rated': "A criterion has been rated",
-    }
-    if (updateMessages.includes(payload.message) && (payload.deliberation_hash.join(',') == deliberationHash.join(','))) {
-      // console.log("activity received", payload)
-      outdated = true;
+    if (deliberation) {
 
-      weClient.notifyFrame([{
-        title: `New activity in ${deliberation.title}`,
-        body: messagesFull[payload.message],
-        notification_type: "change",
-        icon_src: undefined,
-        urgency: "low",
-        timestamp: Date.now()
-      }])
-
-      lastMessage = messagesFull[payload.message];
-    } else if (payload.message == "criterion-comment-created") {
-      // console.log("this is a new message", payload)
+      // console.log("signal", signal)
+      if (signal.App.zome_name !== 'converge') return;
+      const payload = signal.App.payload as ConvergeSignal;
+      const updateMessages = ['new-join', 'criterion-created', 'proposal-rated', 'proposal-created', 'criterion-rated', 'outcome-created']
+      const urgentMessages = ['criterion-created', 'proposal-created']
+      const messagesFull = {
+        'new-join': "A new participant has joined the deliberation",
+        'criterion-created': "A new criterion has been added to the deliberation " + deliberation?.title,
+        'proposal-rated': "A proposal has been rated",
+        'proposal-created': "A new proposal has been added to the deliberation " + deliberation?.title,
+        'criterion-rated': "A criterion has been rated",
+        'outcome-created': "A new outcome has been added to the deliberation " + deliberation?.title,
+      }
+      if (updateMessages.includes(payload.message) && (payload.deliberation_hash.join(',') == deliberationHash.join(','))) {
+        // console.log("activity received", payload)
+        outdated = true;
+        
+        weClient.notifyFrame([{
+          title: `New activity in ${deliberation.title}`,
+          body: messagesFull[payload.message],
+          notification_type: "change",
+          icon_src: undefined,
+          urgency: "low",
+          timestamp: Date.now()
+        }])
+        
+        lastMessage = messagesFull[payload.message];
+      } else if (payload.message == "criterion-comment-created") {
+        // console.log("this is a new message", payload)
+      }
     }
     // console.log(payload)
   });
-
-  // client.on('signal', signal => {
-    // if (signal.zome_name !== 'converge') return;
-    // const payload = signal.payload as ConvergeSignal;  
-    // if (['LinkCreated'].includes(payload.type)) {
-      // if (['CriterionToSupporters', 'DeliberationToCriteria', 'DeliberationToProposals', 'ProposalToCriteria'].includes(Object.keys(signal.payload['link_type'])[0])) {
-        // console.log("CREATED", Object.keys(signal.payload['link_type'])[0]);
-        // wait a second
-        // setTimeout(() => {
-          // fetchDeliberation();
-          // joinDeliberation();
-        // }, 2000);
-      // }
-    // }
-    // if (!['LinkCreated', 'LinkDeleted'].includes(payload.type)) return;
-    // if (['DeliberatorToDeliberations', 'DeliberationToDeliberators'].includes(Object.keys(signal.payload['link_type'])[0])) {
-    // } else {
-      // fetchDeliberation();
-    // }
-    // console.log("----", payload.type, Object.keys(signal.payload['link_type'])[0]);
-    // console.log(!['DeliberatorToDeliberations'].includes(Object.keys(signal.payload['link_type'])[0]))
-    // joinDeliberation();
-  // });
 });
 
 const copyWalToPocket = () => {
   const attachment: WAL = { hrl: [dnaHash, deliberationHash], context: "" }
-  weClient?.walToPocket(attachment)
-}
-
-async function fetchDeliberation() {
-  outdated = false;
-  loading = true;
-  error = undefined;
-  record = undefined;
-  // deliberation = undefined;
-  
-  try {
-    record = await client.callZome({
-      cap_secret: null,
-      role_name: 'converge',
-      zome_name: 'converge',
-      fn_name: 'get_deliberation',
-      payload: deliberationHash,
-    });
-    if (record) {
-      deliberation = decode((record.record.entry as any).Present.entry) as Deliberation;
-      attachments = deliberation.attachments
-    }
-  } catch (e) {
-    error = e;
-  }
-
-  try {
-    const records = await client.callZome({
-      cap_secret: null,
-      role_name: 'converge',
-      zome_name: 'converge',
-      fn_name: 'get_proposals_for_deliberation',
-      payload: deliberationHash,
-    });
-    proposalCount = records.length;
-  } catch (e) {
-    error = e;
-  }
-
-  try {
-    const records = await client.callZome({
-      cap_secret: null,
-      role_name: 'converge',
-      zome_name: 'converge',
-      fn_name: 'get_outcomes_for_deliberation',
-      payload: deliberationHash,
-    });
-    outcomeCount = records.length;
-  } catch (e) {
-    error = e;
-  }
-
-  try {
-    // console.log("trying to get deliberators")
-    const records = await client.callZome({
-      cap_secret: null,
-      role_name: 'converge',
-      zome_name: 'converge',
-      fn_name: 'get_deliberators_for_deliberation',
-      payload: deliberationHash,
-    });
-    deliberators = records.map((record) => record.deliberator.join(','));
-    completedDeliberators = records
-      .filter((record) => record.completed)
-      .map((record) => record.deliberator.join(','));
-    deliberatorsRaw = records.map((record) => record.deliberator);
-  } catch (e) {
-    error = e;
-  }
-
-  loading = false;
-}
-
-async function deleteDeliberation() {
-  try {
-    await client.callZome({
-      cap_secret: null,
-      role_name: 'converge',
-      zome_name: 'converge',
-      fn_name: 'delete_deliberation',
-      payload: deliberationHash,
-    });
-    dispatch('deliberation-deleted', { deliberationHash: deliberationHash });
-  } catch (e: any) {
-    errorSnackbar.labelText = `Error deleting the deliberation: ${e.data.data}`;
-    errorSnackbar.show();
-  }
+  weClient?.assets.assetToPocket(attachment)
 }
 
 async function newActivity(event, context = "") {
@@ -321,10 +256,7 @@ async function completeDeliberation() {
       fn_name: 'add_completed_tag',
       payload: deliberationHash,
     });
-    // 1 second timeout
-    // await new Promise(r => setTimeout(r, 10));
     deliberators = deliberators.filter(item => item !== client.myPubKey.join(','));
-    // await new Promise(r => setTimeout(r, 10));
     completedDeliberators = [...completedDeliberators, client.myPubKey.join(',')]
     deliberatorsRaw = [...deliberatorsRaw, client.myPubKey]
   } catch (e: any) {
@@ -381,20 +313,14 @@ function expandSearch2() {
 </div>
 {:else if error}
 <span>Error fetching the deliberation: {JSON.stringify(error)}</span>
-{:else if editing}
-<EditDeliberation
-  originalDeliberationHash={ deliberationHash}
-  currentRecord={record}
-  on:deliberation-updated={async () => {
-    editing = false;
-    await fetchDeliberation()
-  } }
-  on:edit-canceled={() => { editing = false; } }
-></EditDeliberation>
 {:else}
 
 {#if outdated && lastMessage}
-<div on:click={fetchDeliberation} class="reload-page">
+<div on:click={async () => {refetchDeliberations(client);
+  await refetchProposalsForDeliberation(deliberationHash, client);
+  await refetchEvaluationsForProposals(proposalHashes.map(p => p), client);
+  reloadKey += 1;
+   outdated = false}} class="reload-page">
   <span style="margin-right: 8px">This page is outdated because {lastMessage.toLowerCase()}. Click to refresh. ↺</span>
 </div>
 {:else}
@@ -419,7 +345,7 @@ function expandSearch2() {
         <span style="white-space: pre-line">{ deliberation.description }</span>
       </div>
 
-      {#if isWeContext}
+      {#if isWeaveContext()}
         <div style="display: flex; flex-direction: row; margin-bottom: 5px">
           <AttachmentsList {attachments} allowDelete={false}/>
         </div>
@@ -436,7 +362,6 @@ function expandSearch2() {
         {#if !completedDeliberators.includes(client.myPubKey.join(','))}
           {#if deliberators.includes(client.myPubKey.join(','))}
             <mwc-button class="join-leave" on:click={leaveDeliberation}>Leave</mwc-button>
-            <!-- <mwc-button class="join-leave" on:click={completeDeliberation}>complete</mwc-button> -->
           {:else}
             <mwc-button class="join-leave" on:click={() => {newActivity("new-join")}}>Join</mwc-button>
           {/if}
@@ -451,11 +376,18 @@ function expandSearch2() {
     
     <div style="display:flex; flex-direction:column; justify-content:space-between;">
       <div style="display: flex; flex-direction: row; float: right; width: min-content; flex-shrink:0; align-self:end">
-        <button title="Add Board to Pocket" class="attachment-button" style="margin-right:10px; cursor: pointer;" on:click={()=>copyWalToPocket()} >          
-          <SvgIcon icon="addToPocket" size="20px"/>
-        </button>
+        {#if deliberators.length == 1 && deliberators[0] == client.myPubKey}
+          <button style="border: 0; border-radius: 10px; padding: 4px 6px; color: #313131; cursor: pointer;" title="Since no one else has interacted with this deliberation, you can still hide it from the main page." on:click={leaveDeliberation}> 
+            <!-- <SvgIcon icon="faEye" size="20px"/> -->
+            Hide</button>
+        {/if}
+        {#if isWeaveContext()}
+          <button title="Add Board to Pocket" class="attachment-button" style="margin: 0 10px; cursor: pointer; border: 0; border-radius: 10px; padding: 4px;" on:click={()=>copyWalToPocket()} >          
+            <SvgIcon icon="addToPocket" size="20px"/>
+          </button>
+        {/if}
         <!-- {JSON.stringify(deliberation.discussion)} -->
-        {#if isWeContext && deliberation.discussion}
+        {#if isWeaveContext() && deliberation.discussion}
           {@const conversation = weaveUrlToWAL(deliberation.discussion)}
           {#await weClient.assetInfo(conversation)}
             <sl-button size="small" loading></sl-button>
@@ -463,7 +395,7 @@ function expandSearch2() {
           <button class="discussion-button"
             on:click={(e)=>{
               e.stopPropagation()
-              activeTab = "discussion"
+              // activeTab = "discussion"
               weClient.openWal(conversation)
               // weClient.openAppletBlock(hrlWithContext.hrl[0], "active_boards", hrlWithContext.context)
             }} >
@@ -508,15 +440,18 @@ function expandSearch2() {
   </div>
 
   <div class="details-mini">
-    Criteria: {criteriaCount}
-    Proposals: {proposalCount}
+    Criteria: {criteriaCount}<br>
+    Proposals: {proposalCount}<br>
+    Outcomes: {outcomeCount}<br>
   </div>
 
   <div class="deliberation-section">
     <mwc-tab-bar>
       <mwc-tab on:click={() => {activeTab = "criteria"}} label="Criteria ({criteriaCount})"></mwc-tab>
       <mwc-tab on:click={() => {activeTab = "proposals"}}  label="Proposals ({proposalCount})"></mwc-tab>
-      <mwc-tab bind:this={outcomesTab} on:click={() => {activeTab = "outcomes"}}  label="Outcomes ({outcomeCount})"></mwc-tab>
+      {#if isWeaveContext()}
+        <mwc-tab bind:this={outcomesTab} on:click={() => {activeTab = "outcomes"}}  label="Outcomes ({outcomeCount})"></mwc-tab>
+      {/if}
       <!-- <mwc-tab on:click={() => {activeTab = "activity"}}  label="Activity"></mwc-tab> -->
     </mwc-tab-bar>
     
@@ -525,16 +460,18 @@ function expandSearch2() {
 </div>
 
 {#if activeTab == "criteria"}
+<br>
   <!--<FaSort/> -->
-  <p class="instructions">
-    <!-- <SvgIcon icon="questionMark" size="16px"/> -->
-    What should to be true about any solution addressing this issue?</p>
     {#if criteriaCount > 1}
-      <select class="sort-dropdown" bind:value={criteriaSort}>
+      <!-- <select class="sort-dropdown" bind:value={criteriaSort}
+        on:change={() => {
+          sortCriteria()
+        }}
+      >
         {#each sortByOptions as option}
         <option value={option}>  Sort by: {option}</option>
         {/each}
-      </select>
+      </select> -->
       
       <div class="search-container">
         <div class="search-button" on:click={expandSearch}><FaSearch/></div>
@@ -546,7 +483,9 @@ function expandSearch2() {
 
 
   <!-- <div class="search-button"><FaSearch/></div> -->
-  <div raised on:click={() => {criterionFormPopup = true;}} class="add-button">{window.innerWidth < 768 ? "+" : "Add a criterion"}</div>
+  <div on:click={() => {criterionFormPopup = true;}} title="What would be necessary for you to accept a proposal?" class="add-button">{window.innerWidth < 768 ? "+" : "Add a criterion"}</div>
+  <!-- What should to be true about any solution addressing this issue? -->
+  
   <!-- <mwc-button dense outlined>Add criterion</mwc-button> -->
   <!-- {#if criterionForm} -->
   <CreateCriterion on:criterion-created={() => {newActivity("criterion-created")}} deliberationHash={deliberationHash} alternativeTo={null} bind:criterionFormPopup />
@@ -554,14 +493,16 @@ function expandSearch2() {
   <br><br>
   <!-- {#if criteriaSort == "support"} -->
   
+  {#key reloadKey}
   <AllCriteria on:criterion-rated={() => {newActivity("criterion-rated")}} deliberationHash={deliberationHash} 
     on:criterion-comment-created={(e) => {newActivity("criterion-comment-created", e.detail.context)}}
-    filter={criteriaFilter} sort={criteriaSort} bind:sortedCriteria bind:criteriaCount />
+    filter={criteriaFilter} sort={criteriaSort} bind:sortedCriteria bind:criteriaCount bind:sortCriteria  />
+  {/key}
   <!-- {:else if criteriaSort == "objections"}
   <AllCriteria deliberationHash={deliberationHash} filter={criteriaFilter} sort="objections" bind:criteriaCount />
   {/if} -->
 {:else if activeTab == "proposals"}
-  <p class="instructions">What is a solution that would meet our criteria?</p>
+  <br>
   <!-- <select bind:value={proposalSort}>
     {#each ["score", "respondants"] as option}
     <option value={option}>  Sort by: {option}</option>
@@ -575,30 +516,35 @@ function expandSearch2() {
     </div>
   {/if}
   <!-- <div class="search-button"><FaSearch/></div> -->
-  <div raised on:click={() => {proposalFormPopup = true; console.log(proposalFormPopup)}} class="add-button">{window.innerWidth < 768 ? "+" : "Add a proposal"}</div>
+  <div title="How could we meet our criteria?" on:click={() => {proposalFormPopup = true; console.log(proposalFormPopup)}} class="add-button">{window.innerWidth < 768 ? "+" : "Add a proposal"}</div>
 
   <CreateProposal on:proposal-created={() => {newActivity("proposal-created")}} {deliberationHash} {sortedCriteria} bind:proposalFormPopup/>
   <br><br>
-
   
-  <AllProposals on:outcome-created={(v)=>{
+  {#if proposalHashes.length === 0}
+    <span style="font-style: italic;">Try adding a proposal. How could we meet our criteria?</span>
+  {:else if proposalCount > 0}
+    {#each proposalHashes as proposalHash}
+      {@const fullProposal = proposalsComplete[proposalHash]}
+      <ProposalListItem on:proposal-rated={() => {newActivity("proposal-rated")}} on:outcome-created={(v) => {dispatch('outcome-created', v)}} proposal={fullProposal} proposalHash={decodeHashFromBase64(proposalHash)} {deliberationHash} hashes={proposalHashes.map(h => decodeHashFromBase64(h))}  />
+      <!-- {JSON.stringify(fullProposal)} -->
+    {/each}
+  {/if}
+  <!-- <AllProposals hashes={proposals} on:outcome-created={(v)=>{
     dispatch('outcome-created', v);
     // activeTab = "outcomes";
     outcomesTab.click();
-  }} on:proposal-rated={() => {newActivity("proposal-rated")}} sort={proposalSort} deliberationHash={deliberationHash} filter={proposalFilter} bind:proposalCount/>
+  }} on:proposal-rated={() => {newActivity("proposal-rated")}} sort={proposalSort} deliberationHash={deliberationHash} filter={proposalFilter} bind:proposalCount/> -->
 {:else if activeTab == "outcomes"}
-  <p class="instructions">Link to an asset from another tool such as a "Who's In?" coordination</p>
   <!-- <p class="instructions"></p> -->
-  <div on:click={() => {outcomeFormPopup = true; console.log(proposalFormPopup)}} class="add-button">{window.innerWidth < 768 ? "+" : "Add an outcome"}</div>
+   <br>
+  <div title="Link to an asset from another tool such as a {"Who's In?"} coordination" on:click={() => {outcomeFormPopup = true; console.log(proposalFormPopup)}} class="add-button">{window.innerWidth < 768 ? "+" : "Add an outcome"}</div>
 
-  <CreateOutcome on:outcome-created={() => {newActivity("proposal-created")}} {deliberationHash} bind:outcomeFormPopup/>
+  <CreateOutcome on:outcome-created={() => {newActivity("outcome-created"); dispatch('outcome-created'); reloadKey+=1}} {deliberationHash} bind:outcomeFormPopup/>
   <br><br>
-  <AllOutcomes deliberationHash={deliberationHash} bind:outcomeCount/>
-{/if}
-
-
-{#if deliberators.length == 1 && deliberators[0] == client.myPubKey}
-  <br><br><br><label class="instructions">Since no one else has interacted with this deliberation, you can still hide it from the main page. <button style="padding: 0 10px" on:click={leaveDeliberation}>Hide</button></label>
+  {#key reloadKey}
+    <AllOutcomes deliberationHash={deliberationHash} bind:outcomeCount/>
+  {/key}
 {/if}
 
 {/if}
@@ -621,6 +567,14 @@ function expandSearch2() {
     .details-mini {
       display: inline-block !important;
     }
+    :global(footer) {
+      display: none;
+    }
+    /* hide add to pocket */
+    .attachment-button {
+      display: none;
+    }
+    
   }
 
   .details-mini {
@@ -635,7 +589,6 @@ function expandSearch2() {
     flex-shrink: 0;
     align-self: start;
     padding: 14px 18px;
-    margin-left: 6px;
     cursor: pointer;
     border: 0px;
     border-radius: 10px;

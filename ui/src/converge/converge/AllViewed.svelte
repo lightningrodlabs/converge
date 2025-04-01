@@ -5,7 +5,7 @@ import { type EntryHash, type Record, type AgentPubKey, type ActionHash, type Ap
 import { clientContext } from '../../contexts';
 import ViewedDetail from './ViewedDetail.svelte';
 import type { ConvergeSignal } from './types';
-import { viewed, setViewed, addToViewed } from '../../store.js';
+import { viewed, setViewed, addToViewed } from '../../viewed.js';
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
@@ -19,8 +19,8 @@ onMount(async () => {
 
   await fetchVieweds();
   // client.on('signal', signal => {
-  //   if (signal.zome_name !== 'converge') return;
-  //   const payload = signal.payload as ConvergeSignal;
+  //   if (signal.App.zome_name !== 'converge') return;
+  //   const payload = signal.App.payload as ConvergeSignal;
   //   if (payload.type !== 'EntryCreated') return;
   //   if (payload.app_entry.type !== 'Viewed') return;
   //   hashes = [...hashes, payload.action.hashed.hash];

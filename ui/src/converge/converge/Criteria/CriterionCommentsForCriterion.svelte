@@ -64,8 +64,8 @@ onMount(async () => {
   loading = false;
 
   // client.on('signal', signal => {
-  //   if (signal.zome_name !== 'converge') return;
-  //   const payload = signal.payload as ConvergeSignal;
+  //   if (signal.App.zome_name !== 'converge') return;
+  //   const payload = signal.App.payload as ConvergeSignal;
   //   if (payload.type !== 'LinkCreated') return;
   //   let linkType = Object.keys(payload.link_type)[0]
   //   console.log(linkType)
@@ -76,8 +76,8 @@ onMount(async () => {
 
   client.on('signal', signal => {
     // console.log("signal", signal)
-    if (signal.zome_name !== 'converge') return;
-    const payload = signal.payload as ConvergeSignal;
+    if (signal.App.zome_name !== 'converge') return;
+    const payload = signal.App.payload as ConvergeSignal;
     if (payload.message == "criterion-comment-created") {
       hashes = [...hashes, decodeHashFromBase64(JSON.parse(payload.context).criterionCommentHash)];
       // console.log("hashes", hashes)
@@ -181,7 +181,7 @@ async function removeObjection() {
       <CreateAlternative {criterionHash} {deliberationHash} {mySupport} {alternatives}
       on:criterion-comment-created={(e) => {
         // console.log("criterioncreated", e.detail)
-        hashes = [...hashes, JSON.parse(e.detail.context).criterionCommentHash];
+        hashes = [...hashes, decodeHashFromBase64(JSON.parse(e.detail.context).criterionCommentHash)];
         scrollToBottom();
         dispatch('criterion-comment-created', e.detail);
         commentReference=undefined
@@ -221,7 +221,7 @@ async function removeObjection() {
 
   <!-- {#if showSlider} -->
   <CreateCriterionComment on:criterion-comment-created={(e) => {
-    hashes = [...hashes, JSON.parse(e.detail.context).criterionCommentHash];
+    hashes = [...hashes, decodeHashFromBase64(JSON.parse(e.detail.context).criterionCommentHash)];
     scrollToBottom();
     dispatch('criterion-comment-created', e.detail);
     commentReference=undefined

@@ -2,7 +2,7 @@
 import { createEventDispatcher, onMount, getContext } from 'svelte';
 import '@material/mwc-circular-progress';
 import { decode } from '@msgpack/msgpack';
-import type { Record, ActionHash, AppAgentClient, EntryHash, AgentPubKey, DnaHash } from '@holochain/client';
+import type { Record, ActionHash, AppClient, EntryHash, AgentPubKey, DnaHash } from '@holochain/client';
 import { clientContext } from '../../../contexts';
 import type { Criterion, ConvergeSignal } from '../types';
 import '@material/mwc-circular-progress';
@@ -11,7 +11,8 @@ import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
 import CriterionPopup from './CriterionPopup.svelte';
-import { countViewed, addToViewed, navigate } from '../../../store.js';
+import { countViewed, addToViewed } from '../../../viewed.js';
+import { navigate } from '../../../store.js';
 import SvgIcon from "../SvgIcon.svelte";
 
 const dispatch = createEventDispatcher();
@@ -22,8 +23,10 @@ export let criterionHash: ActionHash;
 export let sortableCriteria;
 export let filter;
 export let reference;
+export let showUnsupportedCriteria = false;
+export let unsupportedCriteria = [];
 
-let client: AppAgentClient = (getContext(clientContext) as any).getClient();
+let client: AppClient = (getContext(clientContext) as any).getClient();
 
 let loading = true;
 let error: any = undefined;
@@ -46,7 +49,7 @@ const scoringLevel = 4;
 
 let errorSnackbar: Snackbar;
   
-$:  error, loading, record, criterion, supporters, sponsored, criterionPopupBoolean, filter;
+$:  error, loading, record, criterion, supporters, sponsored, criterionPopupBoolean, filter, unsupportedCriteria;
 
 onMount(async () => {
   if (criterionHash === undefined) {
@@ -73,8 +76,8 @@ onMount(async () => {
     // console.log(sortableCriteria)
 
   client.on('signal', signal => {
-    if (signal.zome_name !== 'converge') return;
-    const payload = signal.payload as ConvergeSignal;
+    if (signal.App.zome_name !== 'converge') return;
+    const payload = signal.App.payload as ConvergeSignal;
     if (!['LinkCreated', 'LinkDeleted'].includes(payload.type)) return;
     fetchSupport();
     fetchObjections();
@@ -139,17 +142,18 @@ async function fetchSupport() {
           return map;
         }, new Map()).values()
       );
-      // console.log(JSON.parse(supporters[0].tag))
+
+      // add to unsupported if no supporters
+      if (supporters.length === 0) {
+        unsupportedCriteria = Array.from(new Set([...unsupportedCriteria, criterionHash]));
+      }
+
       support = supporters.reduce((sum, item) => {
         let percentage = Number(JSON.parse(item["tag"]).percentage);
         return isNaN(percentage) ? sum : sum + percentage;
       }, 0);
-      // average support
-      // support = support / supporters.length;
       sponsored = supporters.some(item => item["agent"] === client.myPubKey.join(","));
-      // console.log(sponsored, criterionHash, support)
       if (sponsored) {
-        // console.log(supporters)
         mySupport = JSON.parse(supporters.find(item => item["agent"] === client.myPubKey.join(","))["tag"]).percentage;
         addSupportPercentage = mySupport * scoringLevel;
       } else {
@@ -261,6 +265,7 @@ async function scrollToDiv() {
 }
 </script>
 
+{#if !unsupportedCriteria?.includes(criterionHash) || showUnsupportedCriteria}
 <!-- <button on:click={myDiv.scrollIntoView({ behavior: 'smooth' })}>Scroll to Div</button> -->
 <mwc-snackbar bind:this={errorSnackbar} leading>
 </mwc-snackbar>
@@ -269,7 +274,7 @@ async function scrollToDiv() {
   <mwc-circular-progress indeterminate></mwc-circular-progress>
 </div>
 {:else if error}
-<span>Error fetching the criterion: {error.data.data}</span>
+<span>Error fetching the criterion: {error}</span>
 {:else}
 <!-- {criterionHash}
 {criterion.title} -->
@@ -282,7 +287,7 @@ async function scrollToDiv() {
 
   {#if support}
   {#each Array.from({ length: 35 * support / supporters.length }) as _, index}
-    <div class="progress-line" style="opacity: {support / supporters.length}; background-color: blue;"></div>
+    <div class="criterion-line progress-line" style="opacity: {support / supporters.length}; background-color: blue;"></div>
   {/each}
   {/if}
   </div>
@@ -440,7 +445,7 @@ async function scrollToDiv() {
       <mwc-icon-button style="top: 8px;
         position: relative; background-color: #f1f1f1; border-radius: 100%;">
         {#if commentsNumber && commentsNumber > 0}
-          <div id="commentsNumber">
+          <div id="commentsNumber" style="margin-right: {commentsNumber > 9 ? "20px" : "14px"}">
             {commentsNumber}
           </div>
         {/if}
@@ -461,7 +466,7 @@ async function scrollToDiv() {
       on:click={() => reference(criterion.title)}
       >
       <mwc-icon-button style="top: 8px; position: relative; background-color: #f1f1f1; border-radius: 100%; --mdc-icon-size: 10px;">
-          <span style="font-size: 12px; top: -2px; left: -9px; position: relative;">Insert</span>
+          <span style="font-size: 11px; top: -2px; left: -9px; position: relative;">Quote</span>
       </mwc-icon-button>
       </button>
     {/if}
@@ -481,5 +486,6 @@ async function scrollToDiv() {
   <!-- </div> -->
   <!-- {/if} -->
 </div>
+{/if}
 {/if}
 {/if}

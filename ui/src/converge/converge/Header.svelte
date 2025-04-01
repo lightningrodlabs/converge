@@ -17,7 +17,7 @@
   import type { Profile } from "@holochain-open-dev/profiles";
   import { encodeHashToBase64 } from "@holochain/client";
   import Avatar from "./Avatar.svelte";
-  import { WeClient, isWeContext } from '@lightningrodlabs/we-applet';
+  import { WeaveClient, isWeaveContext } from '@theweave/api';
   import SvgIcon from "./SvgIcon.svelte";
 
   // export let initialized: boolean = false;
@@ -77,6 +77,24 @@
       margin: 0;
       letter-spacing: 1.15px;
     }
+
+    .nav-icon {
+      width: 20px !important;
+      margin-right: 0.4em;
+    }
+
+    .bulletin-icon, .dashboard-icon {
+      display: flex;
+      width: max-content;
+      flex-direction: row;
+      margin-top: 3.5px;
+    }
+
+    .bulletin-icon > div, .dashboard-icon > div {
+      display: flex;
+      flex-direction: column;
+      width: max-content;
+    }
     
     /* show new action on tablet and mobile */
     @media (max-width: 991px) {
@@ -98,7 +116,7 @@
       <nav class="navbar">
         <div class="container-fluid converge-header">
           <div>
-            {#if false && !isWeContext()}
+            {#if false && !isWeaveContext()}
             <a id="logo" class="navbar-brand" on:click={() => navigate("instructions")}>
               <img class="logo-image" src={Logo} alt="whos-in logo"/>
             </a>  
@@ -124,11 +142,21 @@
         <li class="bulletin" on:click={goToBulletin}>
           {#if currentView == "all-deliberations"}
           <div class="bulletin-icon" style="color:#d92ed9">
-            <FaBullhorn />
+            <div class="nav-icon">
+              <FaBullhorn />
+            </div>
+            <div>
+              All
+            </div>
           </div>
           {:else}
           <div class="bulletin-icon">
-            <FaBullhorn />
+            <div class="nav-icon">
+              <FaBullhorn />
+            </div>
+            <div>
+              All
+            </div>
           </div>
           {/if}
         </li>
@@ -136,11 +164,21 @@
         <li class="dashboard" on:click={goToDashboard}>
           {#if currentView == "dashboard"}
           <div class="dashboard-icon" style="color:#d92ed9">
-            <FaList />
+            <div class="nav-icon">
+              <FaList />
+            </div>
+            <div>
+              Joined
+            </div>
           </div>
           {:else}
           <div class="dashboard-icon">
-            <FaList />
+            <div class="nav-icon">
+              <FaList />
+            </div>
+            <div>
+              Joined
+            </div>
           </div>
           {/if}
         </li>
@@ -173,7 +211,7 @@
         </li>
 
         <svg xmlns="http://www.w3.org/2000/svg" style="margin: 0 10" width="1" height="30" viewBox="0 0 1 30"><defs><style>.a{fill:none;stroke:rgba(0,0,0,0.15);}</style></defs><line class="a" y2="30" transform="translate(0.5)"/></svg>
-        <li class="notifications-li">
+        <li class="notifications-li" style="margin-left: 10px;">
           <Avatar showNickname={true} agentPubKey={client.myPubKey}  size={24} namePosition="row"></Avatar>
         </li>
         

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { isWeContext, type WAL, weaveUrlFromWal } from "@lightningrodlabs/we-applet";
+  import { isWeaveContext, type WAL, weaveUrlFromWal } from "@theweave/api";
   import { cloneDeep } from "lodash";
   // import type { Board, Piece } from "./board";
   import { getContext, onMount } from "svelte";
@@ -16,6 +16,7 @@
   // const { getStore } :any = getContext("gzStore");
   // let store: GamezStore = getStore();
   // let piece: Piece | undefined
+  export let fromWAL: WAL;
   export let attachmentsLimit: number = Infinity;
   export let attachments: Array<WALUrl>
   const dispatch = createEventDispatcher();
@@ -54,8 +55,9 @@
   }
 
   const addAttachment = async () => {
-    const wal = await weClient.userSelectWal()
+    const wal = await weClient.assets.userSelectAsset()
     if (wal) {
+      // await weClient.assets.addAssetRelation(fromWal, wal)
       _addAttachment(wal)
     }
   }
@@ -92,7 +94,7 @@
 </script>
 
 <!-- <sl-dialog label="Add links" bind:this={dialog}> -->
-  {#if isWeContext()}
+  {#if isWeaveContext()}
   
   <!-- <div>
     <h3>Search Linkables:</h3> 

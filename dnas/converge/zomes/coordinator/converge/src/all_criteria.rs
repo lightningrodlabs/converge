@@ -1,6 +1,7 @@
 use hdk::prelude::*;
 use converge_integrity::*;
-use zome_utils::*;
+use crate::utils::link_input;
+
 #[hdk_extern]
 pub fn get_all_criteria(_: ()) -> ExternResult<Vec<Record>> {
     let path = Path::from("all_criteria");

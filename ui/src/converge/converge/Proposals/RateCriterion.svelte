@@ -99,8 +99,8 @@ onMount(async () => {
   }
   await fetchCriterion().then(() => {fetchSupport();});
   client.on('signal', signal => {
-    if (signal.zome_name !== 'converge') return;
-    const payload = signal.payload as ConvergeSignal;
+    if (signal.App.zome_name !== 'converge') return;
+    const payload = signal.App.payload as ConvergeSignal;
     if (!['LinkCreated', 'LinkDeleted'].includes(payload.type)) return;
     fetchSupport();
     // fetchRating();
