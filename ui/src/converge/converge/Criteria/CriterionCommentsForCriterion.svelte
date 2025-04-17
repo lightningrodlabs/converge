@@ -34,13 +34,13 @@ let commentIsAnObjection: boolean = false;
 $: hashes, loading, error, chatWindow;
 
 async function scrollToBottom() {
-  if (chatWindow) {
-    await new Promise(res => setTimeout(res, 100));
-    chatWindow.scrollTop = chatWindow.scrollHeight;
-    await new Promise(res => setTimeout(res, 500));
-    chatWindow.scrollTop = chatWindow.scrollHeight;
-    // console.log(chatWindow.scrollTop, chatWindow.scrollHeight, chatWindow)
-  }
+  // if (chatWindow) {
+  await new Promise(res => setTimeout(res, 100));
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+  await new Promise(res => setTimeout(res, 500));
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+  console.log(chatWindow.scrollTop, chatWindow.scrollHeight, chatWindow)
+  // }
 }
 
 onMount(async () => {
@@ -207,14 +207,14 @@ async function removeObjection() {
     {/if}
 
   </div>
-<div bind:this={chatWindow} style="display: flex; flex-direction: column; max-height: 50vh; min-height: 10px; overflow-y: scroll; overflow-x: hidden;">
-  {#each hashes as hash}
-  <!-- <div style="margin-bottom: 8px;"> -->
-    <CriterionCommentDetail {criterion} {objections} {filter} criterionCommentHash={hash} {mySupport} {criterionHash} bind:commentReference on:transfer={(e) => {
-      dispatch('transfer', e.detail);
-    }}>
-    </CriterionCommentDetail>
-    <!-- </div> -->
+  <div bind:this={chatWindow} style="display: flex; flex-direction: column; max-height: 50vh; min-height: 10px; overflow-y: scroll; overflow-x: hidden;">
+    {#each hashes as hash}
+    <!-- <div style="margin-bottom: 8px;"> -->
+      <CriterionCommentDetail {criterion} {objections} {filter} criterionCommentHash={hash} {mySupport} {criterionHash} bind:commentReference on:transfer={(e) => {
+        dispatch('transfer', e.detail);
+      }}>
+      </CriterionCommentDetail>
+      <!-- </div> -->
     {/each}
   </div>
   {/if}

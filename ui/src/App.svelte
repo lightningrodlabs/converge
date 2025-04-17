@@ -363,7 +363,7 @@
     <!-- feedback button -->
     <!-- <SvgIcon icon="faBug" size="24" color="#000000" /> -->
     <a href="https://docs.google.com/forms/d/e/1FAIpQLSchqUdQWqNCnjV8LfdLwuuJoqvdy2hWKotxKZ2L7TazaEusUQ/viewform" target="_blank" class="feedback-button">
-      <span>Give feedback here</span>
+      <span>Give feedback regarding this software</span>
     </a>
     <!-- :) -->
 {#if !isWeaveContext && dna && !loading && currentView != "instructions" && currentView != "" && (!weClient || weClient.renderInfo.view.type != "asset")}

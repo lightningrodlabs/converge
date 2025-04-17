@@ -303,7 +303,8 @@ justify-content: center;">
 
   <div style="flex-direction: row; margin-bottom: 16px;">
     <h2 style="margin-bottom: 0; margin-top: 30px;">Evaluation</h2>
-    <div style="display: flex; flex-direction: row; margin-bottom: 16px; width:inherit; padding: 30px 30px 0 0;">
+    <p class="instructions" style="font-size: 0.9em;">You can rate this proposal with a simple yes/no evaluation, as well as with a more detailed evaluation of the criteria.</p>
+    <div style="display: flex; flex-direction: row; margin-bottom: 16px; width:inherit; padding: 10px 0 0 10px; margin-top: 10px; box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.2);">
       <span style="margin-right: 4px; margin: 3px 8px 0 0;">Could you accept this proposal? </span>
       <div style="display: flex; flex-direction: row; margin-bottom: 5px">
         <button class="evaluation-yes-button" on:click={() => {

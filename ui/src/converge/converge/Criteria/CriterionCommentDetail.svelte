@@ -243,16 +243,19 @@ async function fetchCriterionComment() {
         <!-- <div>{alternative.title}</div> -->
       {:else if respondingTo}
         <div class="comment-bubble">
-          {#if respondingTo.objection_reference}
-            <ObjectionMini {objections} objectionHash={respondingTo.objection_reference}></ObjectionMini>
-          {:else if respondingTo.alternative_reference}
-            <div><div class="green-alert">↯</div> <span style="font-weight: bold; color: green;">Alternative: </span>
-            {respondingTo.comment.substring(0,200)}{#if respondingTo.comment.length > 200}...{/if}</div>
-          {:else}
-            {respondingTo.comment.substring(0,200)}{#if respondingTo.comment.length > 200}...{/if}
-          <!-- {:else if respondingTo.alternative_reference} -->
-            <!-- <AlternativeMini alternative={} {mySupport} {criterionHash}></AlternativeMini> -->
-          {/if}
+          <div style="display: flex; flex-direction: row; gap: 8px;">
+            <agent-avatar disable-copy={true} size={20} agent-pub-key="{encodeHashToBase64(respondingTo.author)}"></agent-avatar>
+            {#if respondingTo.objection_reference}
+              <ObjectionMini {objections} objectionHash={respondingTo.objection_reference}></ObjectionMini>
+            {:else if respondingTo.alternative_reference}
+              <div><div class="green-alert">↯</div> <span style="font-weight: bold; color: green;">Alternative: </span>
+              {respondingTo.comment.substring(0,200)}{#if respondingTo.comment.length > 200}...{/if}</div>
+            {:else}
+              {respondingTo.comment.substring(0,200)}{#if respondingTo.comment.length > 200}...{/if}
+            <!-- {:else if respondingTo.alternative_reference} -->
+              <!-- <AlternativeMini alternative={} {mySupport} {criterionHash}></AlternativeMini> -->
+            {/if}
+          </div>
         </div>
       {/if}
 
@@ -318,7 +321,7 @@ async function fetchCriterionComment() {
   }
 
   .comment-bubble {
-    background-color: #e9e9e9;
+    background-color: #b5b5b5;
     border-radius: 10px;
     padding: 10px;
     margin-bottom: 8px;

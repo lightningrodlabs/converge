@@ -145,7 +145,7 @@ onMount(async () => {
         'proposal-rated': "A proposal has been rated",
         'proposal-created': "A new proposal has been added to the deliberation " + deliberation?.title,
         'criterion-rated': "A criterion has been rated",
-        'outcome-created': "A new outcome has been added to the deliberation " + deliberation?.title,
+        'outcome-created': "A new next step has been added to the deliberation " + deliberation?.title,
       }
       if (updateMessages.includes(payload.message) && (payload.deliberation_hash.join(',') == deliberationHash.join(','))) {
         // console.log("activity received", payload)
@@ -162,7 +162,9 @@ onMount(async () => {
         
         lastMessage = messagesFull[payload.message];
       } else if (payload.message == "criterion-comment-created") {
-        // console.log("this is a new message", payload)
+        console.log("this is a new message", payload)
+        // refresh the page
+        // refresh comments for the criterion
       }
     }
     // console.log(payload)
@@ -442,7 +444,7 @@ function expandSearch2() {
   <div class="details-mini">
     Criteria: {criteriaCount}<br>
     Proposals: {proposalCount}<br>
-    Outcomes: {outcomeCount}<br>
+    Next steps: {outcomeCount}<br>
   </div>
 
   <div class="deliberation-section">
@@ -450,7 +452,7 @@ function expandSearch2() {
       <mwc-tab on:click={() => {activeTab = "criteria"}} label="Criteria ({criteriaCount})"></mwc-tab>
       <mwc-tab on:click={() => {activeTab = "proposals"}}  label="Proposals ({proposalCount})"></mwc-tab>
       {#if isWeaveContext()}
-        <mwc-tab bind:this={outcomesTab} on:click={() => {activeTab = "outcomes"}}  label="Outcomes ({outcomeCount})"></mwc-tab>
+        <mwc-tab bind:this={outcomesTab} on:click={() => {activeTab = "outcomes"}}  label="Next steps ({outcomeCount})"></mwc-tab>
       {/if}
       <!-- <mwc-tab on:click={() => {activeTab = "activity"}}  label="Activity"></mwc-tab> -->
     </mwc-tab-bar>
@@ -538,7 +540,7 @@ function expandSearch2() {
 {:else if activeTab == "outcomes"}
   <!-- <p class="instructions"></p> -->
    <br>
-  <div title="Link to an asset from another tool such as a {"Who's In?"} coordination" on:click={() => {outcomeFormPopup = true; console.log(proposalFormPopup)}} class="add-button">{window.innerWidth < 768 ? "+" : "Add an outcome"}</div>
+  <div title="Link to an asset from another tool such as a {"Who's In?"} agreement" on:click={() => {outcomeFormPopup = true; console.log(proposalFormPopup)}} class="add-button">{window.innerWidth < 768 ? "+" : "Add a next step"}</div>
 
   <CreateOutcome on:outcome-created={() => {newActivity("outcome-created"); dispatch('outcome-created'); reloadKey+=1}} {deliberationHash} bind:outcomeFormPopup/>
   <br><br>

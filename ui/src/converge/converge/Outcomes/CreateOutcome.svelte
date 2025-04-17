@@ -132,7 +132,7 @@ async function createOutcome() {
         <mwc-snackbar bind:this={errorSnackbar} leading>
         </mwc-snackbar>
         <div style="display: flex; flex-direction: column">
-          <h2 style="font-size: 18px">Create Outcome</h2>
+          <h2 style="font-size: 18px">Create Next Step</h2>
 
           <div style="margin-bottom: 16px; margin-right: 10px;">
             <mwc-textfield style="width: 100%;" outlined label="Title (optional)" value={ title } on:input={e => { title = e.target.value;} }></mwc-textfield>          
@@ -163,7 +163,7 @@ async function createOutcome() {
             {/if}
           </select>
 
-          <div style="display:inline-block; width:fit-content">Attach the outcome: </div>
+          <div style="display:inline-block; width:fit-content">Attach the next step: </div>
           <AttachmentsDialog bind:this={attachmentsDialog} attachmentsLimit={1} bind:attachments on:add-attachment={
             (e) => {
               console.log(e)
@@ -208,7 +208,7 @@ async function createOutcome() {
             ></mwc-button>
             <mwc-button 
               raised
-              label="Create Outcome"
+              label="Create Next Step"
               disabled={!isOutcomeValid}
               on:click={() => createOutcome()}
               on:keydown={(e) => {

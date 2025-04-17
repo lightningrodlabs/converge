@@ -3,6 +3,7 @@ import { createEventDispatcher, onMount, getContext } from 'svelte';
 import '@material/mwc-circular-progress';
 import { decode } from '@msgpack/msgpack';
 import type { Record, ActionHash, AppClient, EntryHash, AgentPubKey, DnaHash } from '@holochain/client';
+import { encodeHashToBase64 } from '@holochain/client';
 import { clientContext } from '../../../contexts';
 import type { Criterion, ConvergeSignal } from '../types';
 import '@material/mwc-circular-progress';
@@ -75,9 +76,22 @@ onMount(async () => {
   }
     // console.log(sortableCriteria)
 
-  client.on('signal', signal => {
+  client.on('signal', async signal => {
     if (signal.App.zome_name !== 'converge') return;
     const payload = signal.App.payload as ConvergeSignal;
+
+    if (payload.message == "criterion-comment-created") {
+      console.log("this is a new message", payload)
+      if (JSON.stringify(payload.deliberation_hash), JSON.stringify(deliberationHash)) {
+        const notificationCriterionHash = JSON.parse(payload.context)?.criterionHash;
+        console.log(notificationCriterionHash, criterionHash)
+        if(notificationCriterionHash === encodeHashToBase64(criterionHash)) {
+          commentsNumber = commentsNumber + 1;
+          unreadCommentsNumber = unreadCommentsNumber + 1;
+        }
+      }
+    }
+
     if (!['LinkCreated', 'LinkDeleted'].includes(payload.type)) return;
     fetchSupport();
     fetchObjections();
@@ -162,26 +176,31 @@ async function fetchSupport() {
       }
 
       // get comments
-      try {
-        const records = await client.callZome({
-          cap_secret: null,
-          role_name: 'converge',
-          zome_name: 'converge',
-          fn_name: 'get_criterion_comments_for_criterion',
-          payload: criterionHash,
-        });
-        commentsNumber = records.length;
-        // console.log(records, "comments")
-        commentHashes = records.map(r => r.signed_action.hashed.hash)
-        unreadCommentsNumber = Math.max(0, commentsNumber - countViewed(commentHashes));
-      } catch (e) {
-        error = e;
-      }
+      await getComments()
       loading = false;
     }
     // console.log(records)
   } catch (e) {
     console.log(e)
+    error = e;
+  }
+}
+
+async function getComments() {
+  try {
+    const records = await client.callZome({
+      cap_secret: null,
+      role_name: 'converge',
+      zome_name: 'converge',
+      fn_name: 'get_criterion_comments_for_criterion',
+      payload: criterionHash,
+    });
+    commentsNumber = records.length;
+    // console.log(records, "comments")
+    commentHashes = records.map(r => r.signed_action.hashed.hash)
+    unreadCommentsNumber = Math.max(0, commentsNumber - countViewed(commentHashes));
+    console.log("unreadCommentsNumber", unreadCommentsNumber)
+  } catch (e) {
     error = e;
   }
 }
@@ -435,7 +454,10 @@ async function scrollToDiv() {
     <button style="height: 80%; width: 80px; 
     background-color: transparent;
     border: none;" 
-    on:click={() => {criterionPopupBoolean = !criterionPopupBoolean; scrollToDiv()}}
+    on:click={async () => {
+      criterionPopupBoolean = !criterionPopupBoolean; scrollToDiv()
+      await getComments()
+    }}
     >
     
     {#if criterionPopupBoolean}

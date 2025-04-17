@@ -69,7 +69,9 @@
 {:else if error}
 <span>Error fetching the proposals: {error}.</span>
 {:else if hashes.length === 0}
-<span style="font-style: italic;">If you are ready to add an outcome, you can link to an asset from another tool such as a {"Who's In?"} coordination. Assets are components inside tools in The Weave/Moss.</span>
+<span style="font-style: italic;">If you are ready to add a next step, you can link to an asset from another tool (e.g. a {"Who's In?"} agreement).
+   <!-- Assets are components inside tools in The Weave/Moss. -->
+  </span>
 {:else}
 <div style="display: flex; flex-direction: column">
   {#each hashes as hash}

@@ -294,9 +294,10 @@ async function addRating() {
 
 {#if display}
 
+{#if error}
 <mwc-snackbar bind:this={errorSnackbar} leading>
 </mwc-snackbar>
-  
+{/if}
 
 {#if loading}
 <div style="display: flex; flex: 1; align-items: center; justify-content: center">

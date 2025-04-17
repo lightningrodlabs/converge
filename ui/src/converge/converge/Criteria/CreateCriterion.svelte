@@ -9,6 +9,7 @@ import '@material/mwc-snackbar';
 import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-textfield';
 import { encodeHashToBase64 } from "@holochain/client";
+import StarSlider from './StarSlider.svelte';
 
 export let criterionFormPopup; // Prop to control popup visibility
 export let alternativeTo: ActionHash;
@@ -189,17 +190,18 @@ async function createCriterion() {
         <div><span class="green-alert">↯ </span><strong>Alternative to {alternativeToFull.title}</strong></div>
         <br>
         {/if}
-        <small class="instructions" style="white-space: pre-line; font-size: 10px; margin: 0 0 16px 0; width: calc(100vw - 111px); max-width: 388px;">
-          TIP: Does the criterion have these helpful characteristics?
-
-          • Is noncontroversial
-          • Can be evaluated (subjectively)
-          • Uses positive language (what is wanted rather than what is not wanted)
-          • Is relevant to the context
-          • Is operational (can in principle be made to happen)
-          • Applies to everyone (not just one person’s need)
-          • Doesn’t have a specific outcome
-        </small>
+        <details class="instructions" style="margin: 0 0 16px 0; width: calc(100vw - 111px); max-width: 388px; margin-bottom: 0;">
+          <summary style="font-size: 14px; font-weight: bold; cursor: pointer;">TIP: Does the criterion have these helpful characteristics?</summary>
+          <div style="white-space: pre-line; font-size: 14px; margin-top: 8px;">
+            • Is noncontroversial<br>
+            • Can be evaluated (subjectively)<br>
+            • Uses positive language (what is wanted rather than what is not wanted)<br>
+            • Is relevant to the context<br>
+            • Is operational (can in principle be made to happen)<br>
+            • Applies to everyone (not just one person’s need)<br>
+            • Doesn’t have a specific outcome
+          </div>
+        </details>
 
         <br>
 
@@ -215,6 +217,17 @@ async function createCriterion() {
           <!-- <input type="number" bind:value={support} /> -->
             <span style="white-space: pre-line; text-align: center;  top: 12px; position: relative;">NOT
             IMPORTANT</span>
+            <!-- <StarSlider
+              max={5}
+              rating={supportPercentage}
+              size={32}
+              color="blue"
+              hoverColor="lightblue"
+              on:rate={e => {
+                supportPercentage = e.detail.rating;
+                // console.log(supportPercentage)
+              }}
+            ></StarSlider> -->
             <mwc-slider
               on:change={e => {
                 supportPercentage = e.detail.value;
