@@ -92,7 +92,7 @@ pub fn remove_criterion_for_proposal(
         link_input(input.base_proposal_hash.clone(), LinkTypes::ProposalToCriteria, None),
     )?;
     for link in links {
-        let me: AgentPubKey = agent_info()?.agent_latest_pubkey.into();
+        let me: AgentPubKey = agent_info()?.agent_initial_pubkey.into();
         if link.author == me {
             if ActionHash::try_from(link.target.clone())
                 .map_err(|_| {

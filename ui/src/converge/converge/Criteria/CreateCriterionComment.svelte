@@ -92,7 +92,7 @@ async function createCriterionComment() {
 
     comment = ''
     commentReference = null;
-    commentIsAnObjection = false;
+    // commentIsAnObjection = false;
     // console.log('criterion-comment-created', {context: JSON.stringify({criterionCommentHash: encodeHashToBase64(record.signed_action.hashed.hash), criterionHash: encodeHashToBase64(criterionHash)})});
     dispatch('criterion-comment-created', {context: JSON.stringify({criterionCommentHash: encodeHashToBase64(record.signed_action.hashed.hash), criterionHash: encodeHashToBase64(criterionHash)})});
   } catch (e) {
@@ -129,7 +129,7 @@ async function createCriterionCommentCustom(inputComment, comment_reference, obj
 
       comment = ''
       commentReference = null;
-      commentIsAnObjection = false;
+      // commentIsAnObjection = false;
       dispatch('criterion-comment-created', {context: JSON.stringify({criterionCommentHash: encodeHashToBase64(record.signed_action.hashed.hash), criterionHash: encodeHashToBase64(criterionHash)})});
     } catch (e) {
       errorSnackbar.labelText = `Error creating the criterion comment: ${e.data.data}`;

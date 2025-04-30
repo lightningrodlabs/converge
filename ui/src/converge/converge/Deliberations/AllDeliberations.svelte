@@ -56,11 +56,11 @@ onMount(async () => {
   loading = false;
   setInterval(() => {
     refetchDeliberations(client);
-  }, 20000);
+  }, 60000);
   // await fetchDeliberations();
   // client.on('signal', signal => {
-  //   if (signal.App.zome_name !== 'converge') return;
-  //   const payload = signal.App.payload as ConvergeSignal;
+  //   if (signal.value.zome_name !== 'converge') return;
+  //   const payload = signal.value.payload as ConvergeSignal;
   //   if (payload.type !== 'EntryCreated') return;
   //   if (payload.app_entry.type !== 'Deliberation') return;
   //   hashes = [...hashes, payload.action.hashed.hash];

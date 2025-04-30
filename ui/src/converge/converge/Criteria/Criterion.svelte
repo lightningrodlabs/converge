@@ -77,8 +77,8 @@ onMount(async () => {
     // console.log(sortableCriteria)
 
   client.on('signal', async signal => {
-    if (signal.App.zome_name !== 'converge') return;
-    const payload = signal.App.payload as ConvergeSignal;
+    if (signal.value.zome_name !== 'converge') return;
+    const payload = signal.value.payload as ConvergeSignal;
 
     if (payload.message == "criterion-comment-created") {
       console.log("this is a new message", payload)
@@ -199,7 +199,6 @@ async function getComments() {
     // console.log(records, "comments")
     commentHashes = records.map(r => r.signed_action.hashed.hash)
     unreadCommentsNumber = Math.max(0, commentsNumber - countViewed(commentHashes));
-    console.log("unreadCommentsNumber", unreadCommentsNumber)
   } catch (e) {
     error = e;
   }

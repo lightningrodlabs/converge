@@ -4,7 +4,6 @@ name: converge
 integrity:
   network_seed: ~
   properties: ~
-  origin_time: 1685041341943049
   zomes:
     - name: converge_integrity
       hash: ~

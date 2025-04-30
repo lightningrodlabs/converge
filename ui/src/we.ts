@@ -155,11 +155,13 @@ export const appletServices: AppletServices = {
     'Deliberation': {
       label: "Deliberation",
       icon_src: MINILOGO,
+      width: 'large',
+      height: 'large',
     },
-    'Proposal': {
-      label: "Proposal",
-      icon_src: MINILOGO,
-    }
+    // 'Proposal': {
+    //   label: "Proposal",
+    //   icon_src: MINILOGO,
+    // }
   },
   // Types of UI widgets/blocks that this Applet supports
   blockTypes: {

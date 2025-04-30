@@ -19,7 +19,7 @@ import { HoloHashMap, type EntryHashMap } from "@holochain-open-dev/utils";
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 import { weClientStored } from '../../../store.js';
 import app from '../../../main';
-import type { WALUrl } from '../../../util';
+import { getMyDna, type WALUrl } from '../../../util';
 import { createDeliberation } from '../../../publish';
 
 const dispatch = createEventDispatcher();
@@ -87,6 +87,14 @@ async function submitDeliberation() {
     discussion: discussionAttachments[0] ? discussionAttachments[0] : null,
   };
   let newDeliberationHash = await createDeliberation(deliberationEntry, client)
+  const myDNA = await getMyDna("converge", client);
+  // weClient.openAsset([myDNA, newDeliberationHash], {});
+  console.log(weClient, weClient.renderInfo.view, [myDNA, newDeliberationHash])
+  try {
+    weClient.renderInfo.view.resolve({hrl: [myDNA, newDeliberationHash]})
+  } catch (e) {
+    const x = "Error"
+  }
   navigate("deliberation", newDeliberationHash)
 }
 

@@ -29,7 +29,7 @@ pub fn add_deliberation_for_deliberator(
 pub fn add_completed_tag(
     deliberation_hash: ActionHash,
 ) -> ExternResult<()> {
-    let my_pub_key = agent_info()?.agent_latest_pubkey;
+    let my_pub_key = agent_info()?.agent_initial_pubkey;
 
     // let links = get_links(
     //     link_input(
@@ -92,7 +92,7 @@ pub fn add_completed_tag(
 pub fn remove_completed_tag(
     deliberation_hash: ActionHash,
 ) -> ExternResult<()> {
-    let my_pub_key = agent_info()?.agent_latest_pubkey;
+    let my_pub_key = agent_info()?.agent_initial_pubkey;
 
     let links = get_links(
         link_input(

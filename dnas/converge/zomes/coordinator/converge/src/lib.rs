@@ -83,7 +83,7 @@ pub fn new_activity_sender(data: ActivityPayload) -> ExternResult<InitCallbackRe
             debug!("all_agents: {:?}", all_agents);
             for agent in all_agents {
                 let agent_only = agent.deliberator;
-                if agent_only != agent_info()?.agent_latest_pubkey.into() {
+                if agent_only != agent_info()?.agent_initial_pubkey.into() {
                     let zome_call_response = call_remote(
                         agent_only.clone(),
                         "converge",
@@ -98,8 +98,8 @@ pub fn new_activity_sender(data: ActivityPayload) -> ExternResult<InitCallbackRe
         ZomeCallResponse::NetworkError(err) => {
             debug!("network error: {:?}", err);
         }
-        ZomeCallResponse::Unauthorized(a, b, c, d, e) => {
-            debug!("unauthorized: {:?}", a);
+        ZomeCallResponse::Unauthorized(a, b, c, d) => {
+            debug!("unauthorized: {:?} {:?} {:?} {:?}", a, b, c, d);
         }
         _ => {
             debug!("error: {:?}", zome_call_response);

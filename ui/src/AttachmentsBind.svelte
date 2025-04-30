@@ -1,5 +1,5 @@
 <script lang="ts">
-    import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
+    // import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
     import { createEventDispatcher, getContext } from "svelte";
     // import type { GamezSignal, GamezStore } from "./store";
     // import type { Board } from "./board";

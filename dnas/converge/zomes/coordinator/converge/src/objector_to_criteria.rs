@@ -12,7 +12,7 @@ pub struct AddCriterionForObjectorInput {
 pub fn add_criterion_for_objector(
     input: AddCriterionForObjectorInput,
 ) -> ExternResult<ActionHash> {
-    if input.base_objector.clone().eq(&agent_info()?.agent_latest_pubkey) {
+    if input.base_objector.clone().eq(&agent_info()?.agent_initial_pubkey) {
         call(
             CallTargetCell::Local,
             ZomeName::from(String::from("converge")),

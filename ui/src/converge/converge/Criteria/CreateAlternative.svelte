@@ -40,8 +40,8 @@
     loading = false;
   
     client.on('signal', signal => {
-      if (signal.App.zome_name !== 'converge') return;
-      const payload = signal.App.payload as ConvergeSignal;
+      if (signal.value.zome_name !== 'converge') return;
+      const payload = signal.value.payload as ConvergeSignal;
       if (payload.type !== 'LinkCreated') return;
       let linkType = Object.keys(payload.link_type)[0]
       if (linkType !== 'CriterionToCriteria') return;
@@ -243,10 +243,14 @@
     {#if allCriteria && selectedCriterion}
     {@const selectedCriterionName = allCriteria.filter(a => a.hash.join(',') === selectedCriterion.join(','))[0].title}
     <sl-dialog label="Suggest {selectedCriterionName} as an alternative?" bind:this={dialog}>
-      <mwc-button outlined>Cancel</mwc-button>
-      <mwc-button raised style="color: white" on:click={(e)=>{
+      <button
+        on:click={(e)=>{
+          selectedCriterion = undefined
+        }}
+      >Cancel</button>
+      <button on:click={(e)=>{
         addAlternative(selectedCriterion)
-      }}>Suggest</mwc-button>
+      }}>Suggest</button>
     </sl-dialog>
     {/if}
     <!-- <button on:click={() => addAlternative(selectedCriterion)} style="width: fit-content">Suggest</button> -->

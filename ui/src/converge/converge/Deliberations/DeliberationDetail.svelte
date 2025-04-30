@@ -135,8 +135,8 @@ onMount(async () => {
     if (deliberation) {
 
       // console.log("signal", signal)
-      if (signal.App.zome_name !== 'converge') return;
-      const payload = signal.App.payload as ConvergeSignal;
+      if (signal.value.zome_name !== 'converge') return;
+      const payload = signal.value.payload as ConvergeSignal;
       const updateMessages = ['new-join', 'criterion-created', 'proposal-rated', 'proposal-created', 'criterion-rated', 'outcome-created']
       const urgentMessages = ['criterion-created', 'proposal-created']
       const messagesFull = {

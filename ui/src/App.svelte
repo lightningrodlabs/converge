@@ -6,7 +6,7 @@
   import { clientContext, profilesStoreContext } from './contexts';
   import { ProfilesStore, ProfilesClient } from "@holochain-open-dev/profiles";
   import { encodeHashToBase64, type AgentPubKey } from "@holochain/client";
-  import '@shoelace-style/shoelace/dist/themes/light.css';
+  // import '@shoelace-style/shoelace/dist/themes/light.css';
   import "@holochain-open-dev/profiles/dist/elements/profiles-context.js";
   import "@holochain-open-dev/profiles/dist/elements/profile-prompt.js";
   import "@holochain-open-dev/profiles/dist/elements/my-profile.js";
@@ -237,9 +237,9 @@
     loading = false;
 
     client.on('signal', signal => {
-      // console.log("signalll", signal)
-      if (signal.App.zome_name !== 'converge') return;
-      const payload = signal.App.payload as ConvergeSignal;
+      console.log("signalll", signal)
+      if (signal.value.zome_name !== 'converge') return;
+      const payload = signal.value as ConvergeSignal;
       console.log("activity received", payload)
       const urgentMessages = ['criterion-created', 'proposal-created', 'deliberation-created']
       const messagesFull = {
