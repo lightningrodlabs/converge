@@ -11,10 +11,10 @@
 
   async function refresh() {
     let networkInfoRequest: NetworkInfoRequest = {
-      agent_pub_key: weClient?.renderInfo.appletClient.myPubKey,
-      dnas: weClient?.renderInfo.appletClient.cachedAppInfo.cell_info.converge.map((cell) => cell.provisioned.cell_id[0])
+      agent_pub_key: weClient?.renderInfo?.appletClient.myPubKey,
+      dnas: weClient?.renderInfo?.appletClient.cachedAppInfo.cell_info.converge.map((cell) => cell.provisioned.cell_id[0])
     }
-    let x = await weClient?.renderInfo.appletClient.networkInfoRequester(networkInfoRequest)
+    let x = await weClient?.renderInfo?.appletClient.networkInfoRequester(networkInfoRequest)
     networkInfo = x
   }
 

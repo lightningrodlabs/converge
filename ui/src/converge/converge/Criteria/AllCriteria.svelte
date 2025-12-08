@@ -90,8 +90,8 @@ onMount(async () => {
 
   client.on('signal', signal => {
     // console.log("signal", signal)
-    if (signal.App.zome_name !== 'converge') return;
-    const payload = signal.App.payload as ConvergeSignal;
+    if (signal.value.zome_name !== 'converge') return;
+    const payload = signal.value.payload as ConvergeSignal;
     if (payload.type !== 'EntryCreated') return;
     if (payload.app_entry.type !== 'Criterion') return;
     console.log("signal", signal)

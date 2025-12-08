@@ -1,11 +1,14 @@
 use hdk::prelude::*;
 use converge_integrity::*;
-use crate::utils::link_input;
+
 #[hdk_extern]
 pub fn get_all_outcomes(_: ()) -> ExternResult<Vec<Record>> {
     let path = Path::from("all_outcomes");
     let links = get_links(
-        link_input(path.path_entry_hash()?, LinkTypes::AllOutcomes, None),
+        LinkQuery::try_new(
+            path.path_entry_hash()?,
+            LinkTypes::AllOutcomes,
+        )?, GetStrategy::Local
     )?;
     let get_input: Vec<GetInput> = links
         .into_iter()

@@ -87,7 +87,7 @@
   </div>
 {/if}
 
-<style lang="scss">
+<style>
   .green-alert {
     font-size: 20px;
     font-weight: bold;

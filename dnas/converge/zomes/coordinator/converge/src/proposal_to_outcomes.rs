@@ -18,7 +18,7 @@ pub fn add_outcome_for_proposal(input: AddOutcomeForProposalInput) -> ExternResu
 #[hdk_extern]
 pub fn get_outcomes_for_proposal(proposal_hash: ActionHash) -> ExternResult<Vec<Link>> {
     get_links(
-        GetLinksInputBuilder::try_new(proposal_hash, LinkTypes::ProposalToOutcomes)?
-            .build(),
+        LinkQuery::try_new(proposal_hash, LinkTypes::ProposalToOutcomes)?,
+        GetStrategy::Local
     )
 }

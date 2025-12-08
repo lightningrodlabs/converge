@@ -1,6 +1,6 @@
 <script lang="ts">
 import { createEventDispatcher, getContext, onMount } from 'svelte';
-import { type AppAgentClient, type Record, type EntryHash, type AgentPubKey, type ActionHash, type DnaHash, type Action, encodeHashToBase64 } from '@holochain/client';
+import { type AppClient, type Record, type EntryHash, type AgentPubKey, type ActionHash, type DnaHash, type Action, encodeHashToBase64 } from '@holochain/client';
 import { clientContext } from '../../../contexts';
 import type { Outcome, CreateOutcomeInput } from '../types';
 import '@material/mwc-button';
@@ -16,7 +16,7 @@ import { countViewed, addToViewed } from '../../../viewed.js';
 import { weaveUrlToWAL } from "@theweave/api";
 import { allProposals, allDeliberations } from '../../../store';
 
-let client: AppAgentClient = (getContext(clientContext) as any).getClient();
+let client: AppClient = (getContext(clientContext) as any).getClient();
 let attachmentsDialog : AttachmentsDialog
 let attachments: Array<WALUrl> = [];
 let outcome_attachment: WALUrl = null;

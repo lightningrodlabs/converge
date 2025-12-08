@@ -25,8 +25,8 @@
     await fetchOutcomes();
 
     client.on('signal', signal => {
-      if (signal.App.zome_name !== 'converge') return;
-      const payload = signal.App.payload as ConvergeSignal;
+      if (signal.value.zome_name !== 'converge') return;
+      const payload = signal.value.payload as ConvergeSignal;
       if (payload.type !== 'EntryCreated') return;
       if (payload.app_entry.type !== 'Outcome') return;
       // hashes = [...hashes, payload.action.hashed.hash];
@@ -68,11 +68,13 @@
 </div>
 {:else if error}
 <span>Error fetching the proposals: {error}.</span>
-{:else if hashes.length === 0}
-<span style="font-style: italic;">If you are ready to add a next step, you can link to an asset from another tool (e.g. a {"Who's In?"} agreement).
+<!-- {:else if hashes.length === 0} -->
+<!-- <span style="font-style: italic;">If you are ready to add a next step, you can link to an asset from another tool (e.g. a {"Who's In?"} agreement).
+</span> -->
    <!-- Assets are components inside tools in The Weave/Moss. -->
-  </span>
 {:else}
+<div style="font-style: italic; margin-bottom: 1em;">This is a space for links to other tools inside Moss that will continue the decision-making process.
+</div>
 <div style="display: flex; flex-direction: column">
   {#each hashes as hash}
     {#if deliberationHash}

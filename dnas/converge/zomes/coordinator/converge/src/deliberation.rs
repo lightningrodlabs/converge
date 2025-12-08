@@ -1,6 +1,6 @@
 use hdk::prelude::*;
 use converge_integrity::*;
-use crate::utils::link_input;
+
 #[hdk_extern]
 pub fn create_deliberation(deliberation: Deliberation) -> ExternResult<Record> {
     debug!("create_deliberation: {:?}", deliberation);
@@ -34,11 +34,10 @@ pub fn get_deliberation(
     original_deliberation_hash: ActionHash,
 ) -> ExternResult<Option<RecordWithLinks>> {
     let links = get_links(
-        link_input(
+        LinkQuery::try_new(
             original_deliberation_hash.clone(),
             LinkTypes::DeliberationUpdates,
-            None,
-        ),
+        )?, GetStrategy::Local
     )?;
     let latest_link = links
         .into_iter()
@@ -55,25 +54,22 @@ pub fn get_deliberation(
     };
     let deliberation = get(latest_deliberation_hash.clone(), GetOptions::default());
     let criteria = get_links(
-        link_input(
+        LinkQuery::try_new(
             latest_deliberation_hash.clone(),
             LinkTypes::DeliberationToCriteria,
-            None,
-        ),
+        )?, GetStrategy::Local
     )?;
     let proposals = get_links(
-        link_input(
+        LinkQuery::try_new(
             latest_deliberation_hash.clone(),
             LinkTypes::DeliberationToProposals,
-            None,
-        ),
+        )?, GetStrategy::Local
     )?;
     let outcomes = get_links(
-        link_input(
+        LinkQuery::try_new(
             latest_deliberation_hash.clone(),
             LinkTypes::DeliberationToOutcomes,
-            None,
-        ),
+        )?, GetStrategy::Local
     )?;
     return Ok(
         Some(RecordWithLinks {
@@ -112,7 +108,10 @@ pub struct DeliberationComplete {
 pub fn get_all_deliberations_complete(_: ()) -> ExternResult<Vec<DeliberationComplete>> {
     let path = Path::from("all_deliberations");
     let links = get_links(
-        link_input(path.path_entry_hash()?, LinkTypes::AllDeliberations, None),
+        LinkQuery::try_new(
+            path.path_entry_hash()?,
+            LinkTypes::AllDeliberations,
+        )?, GetStrategy::Local
     )?;
     let get_input: Vec<GetInput> = links
         .into_iter()
@@ -142,11 +141,10 @@ pub fn get_all_deliberations_complete(_: ()) -> ExternResult<Vec<DeliberationCom
             .try_into()?;
 
         let deliberators = get_links(
-            link_input(
+            LinkQuery::try_new(
                 item.signed_action.hashed.hash.clone(),
                 LinkTypes::DeliberationToDeliberators,
-                None,
-            ),
+            )?, GetStrategy::Local
         )?
         .into_iter()
         .map(|link| {
@@ -168,25 +166,22 @@ pub fn get_all_deliberations_complete(_: ()) -> ExternResult<Vec<DeliberationCom
         .collect();
 
         let criteria = get_links(
-            link_input(
+            LinkQuery::try_new(
                 item.signed_action.hashed.hash.clone(),
                 LinkTypes::DeliberationToCriteria,
-                None,
-            ),
+            )?, GetStrategy::Local
         )?.into_iter().map(|link| ActionHash::try_from(link.target).unwrap()).collect();
         let proposals = get_links(
-            link_input(
+            LinkQuery::try_new(
                 item.signed_action.hashed.hash.clone(),
                 LinkTypes::DeliberationToProposals,
-                None,
-            ),
+            )?, GetStrategy::Local
         )?.into_iter().map(|link| ActionHash::try_from(link.target).unwrap()).collect();
         let outcomes = get_links(
-            link_input(
+            LinkQuery::try_new(
                 item.signed_action.hashed.hash.clone(),
                 LinkTypes::DeliberationToOutcomes,
-                None,
-            ),
+            )?, GetStrategy::Local
         )?.into_iter().map(|link| ActionHash::try_from(link.target).unwrap()).collect();
         output.push(DeliberationComplete {
             action_hash: item.signed_action.hashed.hash.clone(),

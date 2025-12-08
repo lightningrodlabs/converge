@@ -193,9 +193,9 @@
     border-radius: 6px;
   }
 
-  .outcome-outer:hover {
+  /* .outcome-outer:hover {
     box-shadow: 0px 0px 6px 4px #00000034;
-  }
+  } */
 
   .expanded-outcome {
     /* margin-top: -6px; border-radius: 6px; display: flex;  box-shadow: 0px 4px 6px #00000034; flex-direction:column; border-top: 0; padding: 6px; background: white; */

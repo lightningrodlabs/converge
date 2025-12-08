@@ -29,6 +29,7 @@ let error: any = undefined;
 let commentReference;
 let chatWindow;
 let filter = "all";
+let commentMethod = "comment";
 let commentIsAnObjection: boolean = false;
 
 $: hashes, loading, error, chatWindow;
@@ -64,8 +65,8 @@ onMount(async () => {
   loading = false;
 
   // client.on('signal', signal => {
-  //   if (signal.App.zome_name !== 'converge') return;
-  //   const payload = signal.App.payload as ConvergeSignal;
+  //   if (signal.value.zome_name !== 'converge') return;
+  //   const payload = signal.value.payload as ConvergeSignal;
   //   if (payload.type !== 'LinkCreated') return;
   //   let linkType = Object.keys(payload.link_type)[0]
   //   console.log(linkType)
@@ -76,8 +77,8 @@ onMount(async () => {
 
   client.on('signal', signal => {
     // console.log("signal", signal)
-    if (signal.App.zome_name !== 'converge') return;
-    const payload = signal.App.payload as ConvergeSignal;
+    if (signal.value.zome_name !== 'converge') return;
+    const payload = signal.value.payload as ConvergeSignal;
     if (payload.message == "criterion-comment-created") {
       hashes = [...hashes, decodeHashFromBase64(JSON.parse(payload.context).criterionCommentHash)];
       // console.log("hashes", hashes)
@@ -149,7 +150,7 @@ async function removeObjection() {
   </ul> -->
 
   <!-- filters as tabs -->
-  Filter:
+  Comments filter:
   <div style="display: flex; flex-direction: row; margin-left: 8px;">
     <div style="margin-right: 8px; cursor: pointer;" class:underline={filter=='all'} on:click={() => {filter='all'}}>all</div>
     <div style="margin-right: 8px; cursor: pointer;" class:underline={filter=='objections'} on:click={() => {filter='objections'}}>objections</div>
@@ -170,66 +171,80 @@ async function removeObjection() {
 
   <!-- <div on:click={()=>{filter='all'}} style="margin-right: 8px; cursor: pointer; color: gray; font-weight: bold; text-decoration: underline;">All</div> -->
 </div>
+<div bind:this={chatWindow} style="display: flex; flex-direction: column; max-height: 50vh; min-height: 10px; overflow-y: scroll; overflow-x: hidden;">
+  {#each hashes as hash}
+  <!-- <div style="margin-bottom: 8px;"> -->
+    <CriterionCommentDetail {criterion} {objections} {filter} criterionCommentHash={hash} {mySupport} {criterionHash} bind:commentReference on:transfer={(e) => {
+      dispatch('transfer', e.detail);
+    }}>
+    </CriterionCommentDetail>
+    <!-- </div> -->
+  {/each}
+</div>
 <div style="display: flex; 
     flex-direction: row
     display: flex;
     flex-direction: row;
     border-bottom: 1px solid #ccc;
     margin-top: 2px;">
-
     {#if showSlider}
-      <CreateAlternative {criterionHash} {deliberationHash} {mySupport} {alternatives}
-      on:criterion-comment-created={(e) => {
-        // console.log("criterioncreated", e.detail)
-        hashes = [...hashes, decodeHashFromBase64(JSON.parse(e.detail.context).criterionCommentHash)];
-        scrollToBottom();
-        dispatch('criterion-comment-created', e.detail);
-        commentReference=undefined
-      }}
-      ></CreateAlternative>
-
-      <!-- <div style="flex-align: center; position: relative;
-      bottom: -7px;
-      left: 6px;"> -->
-      <div style="border: 1px solid;
-        border: 1px solid #ccc;
-        display: flex;
-        height: 19px;
-        margin: 6px;
-        border-radius: 3px;
-        background-color: #f2f2f2;
-        cursor: pointer;">
-        <!-- <mwc-switch on:click={(e) => {console.log(e.target)}} name="choice"></mwc-switch>  -->
-        <mwc-formfield style="padding: 10px 2px; cursor: pointer;" label="Submit comment as an objection to the criterion?">
-          <input type="checkbox" bind:checked={commentIsAnObjection} />
-          </mwc-formfield>
+      <label style="margin: 8px; cursor: pointer;">Commenting method:</label>
+      <div style="display: flex; flex-direction: row; margin-top: 8px;">
+        <div style="margin-right: 8px; cursor: pointer;" class:underline={commentMethod=='comment'} on:click={() => {commentMethod='comment'}}>comment</div>
+        <div style="margin-right: 8px; cursor: pointer;" class:underline={commentMethod=='objection'} on:click={() => {commentMethod='objection'}}>objection</div>
+        <div style="margin-right: 8px; cursor: pointer;" class:underline={commentMethod=='alternative'} on:click={() => {commentMethod='alternative'}}>alternative</div>
       </div>
+      <!-- <select value={'regular'} style="margin: 8px; cursor: pointer;">
+        <option value='regular'>Regular comment</option>
+        <option value='objection'>Objection</option>
+        <option value='alternative'>Suggest an alternative</option>
+      </select> -->
     {/if}
-
-  </div>
-  <div bind:this={chatWindow} style="display: flex; flex-direction: column; max-height: 50vh; min-height: 10px; overflow-y: scroll; overflow-x: hidden;">
-    {#each hashes as hash}
-    <!-- <div style="margin-bottom: 8px;"> -->
-      <CriterionCommentDetail {criterion} {objections} {filter} criterionCommentHash={hash} {mySupport} {criterionHash} bind:commentReference on:transfer={(e) => {
-        dispatch('transfer', e.detail);
-      }}>
-      </CriterionCommentDetail>
-      <!-- </div> -->
-    {/each}
   </div>
   {/if}
 
-  <!-- {#if showSlider} -->
-  <CreateCriterionComment on:criterion-comment-created={(e) => {
-    hashes = [...hashes, decodeHashFromBase64(JSON.parse(e.detail.context).criterionCommentHash)];
-    scrollToBottom();
-    dispatch('criterion-comment-created', e.detail);
-    commentReference=undefined
-  }
-  } {criterionHash} {commentReference} bind:commentIsAnObjection></CreateCriterionComment>
+  {#if commentMethod == "alternative"}
+    <div style="border: 1px solid gray; padding: 0.5em">
+      <p style="margin: 6px;">Create a new alternative, or suggest an existing criterion as an alternative</p>
+      <CreateAlternative {criterionHash} {deliberationHash} {mySupport} {alternatives}
+        on:criterion-comment-created={(e) => {
+          // console.log("criterioncreated", e.detail)
+          hashes = [...hashes, decodeHashFromBase64(JSON.parse(e.detail.context).criterionCommentHash)];
+          scrollToBottom();
+          dispatch('criterion-comment-created', e.detail);
+          commentReference=undefined
+        }}
+      />
+    </div>
+
+    <!-- <div style="flex-align: center; position: relative;
+    bottom: -7px;
+    left: 6px;"> -->
+  <!-- {:else if commentMethod == "objection"} -->
+    <!-- <div style="border: 1px solid;
+      border: 1px solid #ccc;
+      display: flex;
+      height: 19px;
+      margin: 6px;
+      border-radius: 3px;
+      background-color: #f2f2f2;
+      cursor: pointer;">
+      <mwc-formfield style="padding: 10px 2px; cursor: pointer;" label="Submit comment as an objection to the criterion?">
+        <input type="checkbox" bind:checked={commentIsAnObjection} />
+        </mwc-formfield>
+    </div> -->
+  {:else if commentMethod == "comment" || commentMethod == "objection"}
+    <!-- {#if showSlider} -->
+    <CreateCriterionComment on:criterion-comment-created={(e) => {
+      hashes = [...hashes, decodeHashFromBase64(JSON.parse(e.detail.context).criterionCommentHash)];
+      scrollToBottom();
+      dispatch('criterion-comment-created', e.detail);
+      commentReference=undefined
+    }
+  } {criterionHash} {commentReference} commentIsAnObjection={commentMethod == "objection"}></CreateCriterionComment>
   <!-- <div style="margin-bottom: 16px">
     <mwc-textarea style="width: 35vw; height: 100px" outlined label="Comment" on:input={e => { objection = e.target.value; console.log(objection)}} required></mwc-textarea>          
-  </div> -->
-  <!-- <mwc-button on:click = {() => {addObjection()}}>Submit</mwc-button> -->
-  <!-- {/if} -->
-
+    </div> -->
+    <!-- <mwc-button on:click = {() => {addObjection()}}>Submit</mwc-button> -->
+    <!-- {/if} -->
+  {/if}

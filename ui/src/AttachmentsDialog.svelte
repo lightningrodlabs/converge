@@ -5,8 +5,8 @@
   import { getContext, onMount } from "svelte";
   // import type { GamezStore } from "./store";
   import SvgIcon from "./SvgIcon.svelte";
-  import '@shoelace-style/shoelace/dist/components/button/button.js';
-  import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
+  // import '@shoelace-style/shoelace/dist/components/button/button.js';
+  // import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
   import AttachmentsList from "./AttachmentsList.svelte";
   import AttachmentsBind from "./AttachmentsBind.svelte";
   import { weClientStored } from './store.js';

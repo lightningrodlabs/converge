@@ -31,8 +31,8 @@ onMount(async () => {
   loading = false;
 
   client.on('signal', signal => {
-    if (signal.App.zome_name !== 'converge') return;
-    const payload = signal.App.payload as ConvergeSignal;
+    if (signal.value.zome_name !== 'converge') return;
+    const payload = signal.value.payload as ConvergeSignal;
     if (payload.type !== 'LinkCreated') return;
     let linkType = Object.keys(payload.link_type)[0]
     if (linkType != 'CriterionToObjectors') return;

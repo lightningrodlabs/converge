@@ -1,6 +1,6 @@
 use hdk::prelude::*;
 use converge_integrity::*;
-use crate::utils::link_input;
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AddCriterionForSupporterInput {
     pub base_supporter: AgentPubKey,
@@ -12,7 +12,10 @@ pub fn add_criterion_for_supporter(
     input: AddCriterionForSupporterInput,
 ) -> ExternResult<()> {
     let links = get_links(
-        link_input(input.base_supporter.clone(), LinkTypes::ObjectorToCriteria, None),
+        LinkQuery::try_new(
+            input.base_supporter.clone(),
+            LinkTypes::ObjectorToCriteria,
+        )?, GetStrategy::Local
     )?;
     for link in links {
         if ActionHash::try_from(link.target.clone())
@@ -22,15 +25,14 @@ pub fn add_criterion_for_supporter(
             .unwrap()
             .eq(&input.target_criterion_hash)
         {
-            delete_link(link.create_link_hash)?;
+            delete_link(link.create_link_hash, GetOptions::local())?;
         }
     }
     let links = get_links(
-        link_input(
+        LinkQuery::try_new(
             input.target_criterion_hash.clone(),
             LinkTypes::CriterionToObjectors,
-            None,
-        ),
+        )?, GetStrategy::Local
     )?;
     for link in links {
         if AgentPubKey::from(
@@ -42,7 +44,7 @@ pub fn add_criterion_for_supporter(
             )
             .eq(&input.base_supporter)
         {
-            delete_link(link.create_link_hash)?;
+            delete_link(link.create_link_hash, GetOptions::local())?;
         }
     }
     let tag_str = input.tag;
@@ -58,7 +60,12 @@ pub fn add_criterion_for_supporter(
 }
 #[hdk_extern]
 pub fn get_criteria_for_supporter(supporter: AgentPubKey) -> ExternResult<Vec<Record>> {
-    let links = get_links(link_input(supporter, LinkTypes::SupporterToCriteria, None))?;
+    let links = get_links(
+        LinkQuery::try_new(
+            supporter,
+            LinkTypes::SupporterToCriteria,
+        )?, GetStrategy::Local
+    )?;
     let get_input: Vec<GetInput> = links
         .into_iter()
         .map(|link| GetInput::new(
@@ -88,7 +95,10 @@ pub fn get_supporters_for_criterion(
     criterion_hash: ActionHash,
 ) -> ExternResult<Vec<AgentPubKeyWithTag>> {
     let links = get_links(
-        link_input(criterion_hash, LinkTypes::CriterionToSupporters, None),
+        LinkQuery::try_new(
+            criterion_hash,
+            LinkTypes::CriterionToSupporters,
+        )?, GetStrategy::Local
     )?;
     let agents: Vec<AgentPubKeyWithTag> = links
         .into_iter()
@@ -121,7 +131,10 @@ pub fn remove_criterion_for_supporter(
     input: RemoveCriterionForSupporterInput,
 ) -> ExternResult<()> {
     let links = get_links(
-        link_input(input.base_supporter.clone(), LinkTypes::SupporterToCriteria, None),
+        LinkQuery::try_new(
+            input.base_supporter.clone(),
+            LinkTypes::SupporterToCriteria,
+        )?, GetStrategy::Local
     )?;
     for link in links {
         if ActionHash::try_from(link.target.clone())
@@ -131,15 +144,14 @@ pub fn remove_criterion_for_supporter(
             .unwrap()
             .eq(&input.target_criterion_hash)
         {
-            delete_link(link.create_link_hash)?;
+            delete_link(link.create_link_hash, GetOptions::local())?;
         }
     }
     let links = get_links(
-        link_input(
+        LinkQuery::try_new(
             input.target_criterion_hash.clone(),
             LinkTypes::CriterionToSupporters,
-            None,
-        ),
+        )?, GetStrategy::Local
     )?;
     for link in links {
         if AgentPubKey::from(
@@ -151,7 +163,7 @@ pub fn remove_criterion_for_supporter(
             )
             .eq(&input.base_supporter)
         {
-            delete_link(link.create_link_hash)?;
+            delete_link(link.create_link_hash, GetOptions::local())?;
         }
     }
     Ok(())

@@ -1,7 +1,7 @@
 ---
-manifest_version: "1"
+manifest_version: "0"
 name: converge
 ui:
-  bundled: "../ui/dist.zip"
-happ_manifest:
-  bundled: "./converge.happ"
+  path: "../ui/dist.zip"
+happ:
+  path: "./converge.happ"

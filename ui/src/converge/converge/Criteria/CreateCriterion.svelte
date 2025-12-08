@@ -140,7 +140,7 @@ async function createCriterion() {
     title = '';
   } catch (e) {
     console.log("error", e)
-    errorSnackbar.labelText = `Error creating the criterion: ${e}`;
+    // errorSnackbar.labelText = `Error creating the criterion: ${e}`;
     errorSnackbar.show();
   }
 

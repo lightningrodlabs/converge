@@ -13,11 +13,10 @@ pub fn add_evaluator_for_proposal(
     input: AddEvaluatorForProposalInput,
 ) -> ExternResult<()> {
     let links = get_links(
-        GetLinksInputBuilder::try_new(
-                input.base_proposal_hash.clone(),
-                LinkTypes::ProposalToEvaluators,
-            )?
-            .build(),
+        LinkQuery::try_new(
+            input.base_proposal_hash.clone(),
+            LinkTypes::ProposalToEvaluators,
+        )?, GetStrategy::Local
     )?;
     for link in links {
         if AgentPubKey::from(
@@ -33,7 +32,7 @@ pub fn add_evaluator_for_proposal(
                 )?,
         ) == input.target_evaluator
         {
-            delete_link(link.create_link_hash)?;
+            delete_link(link.create_link_hash, GetOptions::local())?;
         }
     }
 
@@ -54,8 +53,8 @@ pub fn get_evaluators_for_proposal(
     proposal_hash: ActionHash,
 ) -> ExternResult<Vec<Link>> {
     get_links(
-        GetLinksInputBuilder::try_new(proposal_hash, LinkTypes::ProposalToEvaluators)?
-            .build(),
+        LinkQuery::try_new(proposal_hash, LinkTypes::ProposalToEvaluators)?,
+        GetStrategy::Local
     )
 }
 
@@ -63,11 +62,9 @@ pub fn get_evaluators_for_proposal(
 pub fn get_deleted_evaluators_for_proposal(
     proposal_hash: ActionHash,
 ) -> ExternResult<Vec<(SignedActionHashed, Vec<SignedActionHashed>)>> {
-    let details = get_link_details(
-        proposal_hash,
-        LinkTypes::ProposalToEvaluators,
-        None,
-        GetOptions::default(),
+    let details = get_links_details(
+        LinkQuery::try_new(proposal_hash, LinkTypes::ProposalToEvaluators)?,
+        GetStrategy::Local,
     )?;
     Ok(
         details
@@ -89,11 +86,10 @@ pub fn remove_evaluator_for_proposal(
     input: RemoveEvaluatorForProposalInput,
 ) -> ExternResult<()> {
     let links = get_links(
-        GetLinksInputBuilder::try_new(
-                input.base_proposal_hash.clone(),
-                LinkTypes::ProposalToEvaluators,
-            )?
-            .build(),
+        LinkQuery::try_new(
+            input.base_proposal_hash.clone(),
+            LinkTypes::ProposalToEvaluators,
+        )?, GetStrategy::Local
     )?;
     for link in links {
         if AgentPubKey::from(
@@ -109,7 +105,7 @@ pub fn remove_evaluator_for_proposal(
                 )?,
         ) == input.target_evaluator
         {
-            delete_link(link.create_link_hash)?;
+            delete_link(link.create_link_hash, GetOptions::local())?;
         }
     }
     Ok(())
