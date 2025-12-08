@@ -1,6 +1,6 @@
 use hdk::prelude::*;
 use converge_integrity::*;
-use crate::utils::link_input;
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AddCriterionCommentForCriterionInput {
     pub base_criterion_hash: ActionHash,
@@ -23,7 +23,10 @@ pub fn get_criterion_comments_for_criterion(
     criterion_hash: ActionHash,
 ) -> ExternResult<Vec<Record>> {
     let links = get_links(
-        link_input(criterion_hash, LinkTypes::CriterionToCriterionComments, None),
+        LinkQuery::try_new(
+            criterion_hash,
+            LinkTypes::CriterionToCriterionComments,
+        )?, GetStrategy::Local
     )?;
     let get_input: Vec<GetInput> = links
         .into_iter()
@@ -54,11 +57,10 @@ pub fn remove_criterion_comment_for_criterion(
     input: RemoveCriterionCommentForCriterionInput,
 ) -> ExternResult<()> {
     let links = get_links(
-        link_input(
+        LinkQuery::try_new(
             input.base_criterion_hash.clone(),
             LinkTypes::CriterionToCriterionComments,
-            None,
-        ),
+        )?, GetStrategy::Local
     )?;
     for link in links {
         if ActionHash::try_from(link.target.clone())
@@ -68,7 +70,7 @@ pub fn remove_criterion_comment_for_criterion(
             .unwrap()
             .eq(&input.target_criterion_comment_hash)
         {
-            delete_link(link.create_link_hash)?;
+            delete_link(link.create_link_hash, GetOptions::local())?;
         }
     }
     Ok(())

@@ -1,7 +1,7 @@
 use std::ptr::null;
 use hdk::prelude::{*, tracing::field::debug};
 use converge_integrity::*;
-use crate::utils::link_input;
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AddCriterionForObjectorInput {
     pub base_objector: AgentPubKey,
@@ -25,7 +25,10 @@ pub fn add_criterion_for_objector(
         )?;
     }
     let links = get_links(
-        link_input(input.base_objector.clone(), LinkTypes::SupporterToCriteria, None),
+        LinkQuery::try_new(
+            input.base_objector.clone(),
+            LinkTypes::SupporterToCriteria,
+        )?, GetStrategy::Local
     )?;
     for link in links {
         if ActionHash::try_from(link.target.clone())
@@ -35,15 +38,14 @@ pub fn add_criterion_for_objector(
             .unwrap()
             .eq(&input.target_criterion_hash)
         {
-            delete_link(link.create_link_hash)?;
+            delete_link(link.create_link_hash, GetOptions::local())?;
         }
     }
     let links = get_links(
-        link_input(
+        LinkQuery::try_new(
             input.target_criterion_hash.clone(),
             LinkTypes::CriterionToSupporters,
-            None,
-        ),
+        )?, GetStrategy::Local
     )?;
     for link in links {
         if AgentPubKey::from(
@@ -55,11 +57,14 @@ pub fn add_criterion_for_objector(
             )
             .eq(&input.base_objector)
         {
-            delete_link(link.create_link_hash)?;
+            delete_link(link.create_link_hash, GetOptions::local())?;
         }
     }
     let links = get_links(
-        link_input(input.base_objector.clone(), LinkTypes::ObjectorToCriteria, None),
+        LinkQuery::try_new(
+            input.base_objector.clone(),
+            LinkTypes::ObjectorToCriteria,
+        )?, GetStrategy::Local
     )?;
     for link in links {
         if ActionHash::try_from(link.target.clone())
@@ -69,15 +74,14 @@ pub fn add_criterion_for_objector(
             .unwrap()
             .eq(&input.target_criterion_hash)
         {
-            delete_link(link.create_link_hash)?;
+            delete_link(link.create_link_hash, GetOptions::local())?;
         }
     }
     let links = get_links(
-        link_input(
+        LinkQuery::try_new(
             input.target_criterion_hash.clone(),
             LinkTypes::CriterionToObjectors,
-            None,
-        ),
+        )?, GetStrategy::Local
     )?;
     for link in links {
         if AgentPubKey::from(
@@ -89,7 +93,7 @@ pub fn add_criterion_for_objector(
             )
             .eq(&input.base_objector)
         {
-            delete_link(link.create_link_hash)?;
+            delete_link(link.create_link_hash, GetOptions::local())?;
         }
     }
     let tag_str = input.comment;
@@ -146,7 +150,12 @@ pub fn get_objection_link(link_hash: ActionHash) -> ExternResult<Objection> {
 }
 #[hdk_extern]
 pub fn get_criteria_for_objector(objector: AgentPubKey) -> ExternResult<Vec<Record>> {
-    let links = get_links(link_input(objector, LinkTypes::ObjectorToCriteria, None))?;
+    let links = get_links(
+        LinkQuery::try_new(
+            objector,
+            LinkTypes::ObjectorToCriteria,
+        )?, GetStrategy::Local
+    )?;
     let get_input: Vec<GetInput> = links
         .into_iter()
         .map(|link| GetInput::new(
@@ -177,7 +186,10 @@ pub fn get_objectors_for_criterion(
     criterion_hash: ActionHash,
 ) -> ExternResult<Vec<AgentPubKeyWithTag>> {
     let links = get_links(
-        link_input(criterion_hash, LinkTypes::CriterionToObjectors, None),
+        LinkQuery::try_new(
+            criterion_hash,
+            LinkTypes::CriterionToObjectors,
+        )?, GetStrategy::Local
     )?;
     let agents: Vec<AgentPubKeyWithTag> = links
         .into_iter()
@@ -211,7 +223,10 @@ pub fn remove_criterion_for_objector(
     input: RemoveCriterionForObjectorInput,
 ) -> ExternResult<()> {
     let links = get_links(
-        link_input(input.base_objector.clone(), LinkTypes::ObjectorToCriteria, None),
+        LinkQuery::try_new(
+            input.base_objector.clone(),
+            LinkTypes::ObjectorToCriteria,
+        )?, GetStrategy::Local
     )?;
     for link in links {
         if ActionHash::try_from(link.target.clone())
@@ -221,15 +236,14 @@ pub fn remove_criterion_for_objector(
             .unwrap()
             .eq(&input.target_criterion_hash)
         {
-            delete_link(link.create_link_hash)?;
+            delete_link(link.create_link_hash, GetOptions::local())?;
         }
     }
     let links = get_links(
-        link_input(
+        LinkQuery::try_new(
             input.target_criterion_hash.clone(),
             LinkTypes::CriterionToObjectors,
-            None,
-        ),
+        )?, GetStrategy::Local
     )?;
     for link in links {
         if AgentPubKey::from(
@@ -241,7 +255,7 @@ pub fn remove_criterion_for_objector(
             )
             .eq(&input.base_objector)
         {
-            delete_link(link.create_link_hash)?;
+            delete_link(link.create_link_hash, GetOptions::local())?;
         }
     }
     Ok(())

@@ -1,6 +1,6 @@
 use hdk::prelude::*;
 use converge_integrity::*;
-use crate::utils::link_input;
+
 use std::collections::HashSet;
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AddCriterionForCriterionInput {
@@ -24,7 +24,10 @@ pub fn get_criteria_for_criterion(
     criterion_hash: ActionHash,
 ) -> ExternResult<Vec<Record>> {
     let links = get_links(
-        link_input(criterion_hash, LinkTypes::CriterionToCriteria, None),
+        LinkQuery::try_new(
+            criterion_hash,
+            LinkTypes::CriterionToCriteria,
+        )?, GetStrategy::Local
     )?;
     let mut seen_targets = HashSet::new();
     let get_input: Vec<GetInput> = links

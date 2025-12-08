@@ -38,7 +38,7 @@ allDeliberations.subscribe(value => {
     frameNotifications = [...frameNotifications, ...agentJoinedNotifications];
   });
   console.log('frameNotifications', frameNotifications[0], new Date(Date.now()).getTime());
-  $weClientStored.notifyFrame(frameNotifications);
+  $weClientStored?.notifyFrame(frameNotifications);
   
 });
 

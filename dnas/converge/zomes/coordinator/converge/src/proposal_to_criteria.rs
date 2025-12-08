@@ -1,6 +1,6 @@
 use hdk::prelude::*;
 use converge_integrity::*;
-use crate::utils::link_input;
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AddCriterionForProposalInput {
     pub base_proposal_hash: ActionHash,
@@ -31,7 +31,10 @@ pub struct Rating {
 #[hdk_extern]
 pub fn get_ratings_for_proposal(proposal_hash: ActionHash) -> ExternResult<Vec<Rating>> {
     let links = get_links(
-        link_input(proposal_hash, LinkTypes::ProposalToCriteria, None),
+        LinkQuery::try_new(
+            proposal_hash,
+            LinkTypes::ProposalToCriteria,
+        )?, GetStrategy::Local
     )?;
     let output: Vec<Rating> = links
         .into_iter()
@@ -58,7 +61,10 @@ pub fn get_criteria_for_proposal(
     proposal_hash: ActionHash,
 ) -> ExternResult<Vec<Record>> {
     let links = get_links(
-        link_input(proposal_hash, LinkTypes::ProposalToCriteria, None),
+        LinkQuery::try_new(
+            proposal_hash,
+            LinkTypes::ProposalToCriteria,
+        )?, GetStrategy::Local
     )?;
     let get_input: Vec<GetInput> = links
         .into_iter()
@@ -89,7 +95,10 @@ pub fn remove_criterion_for_proposal(
     input: RemoveCriterionForProposalInput,
 ) -> ExternResult<()> {
     let links = get_links(
-        link_input(input.base_proposal_hash.clone(), LinkTypes::ProposalToCriteria, None),
+        LinkQuery::try_new(
+            input.base_proposal_hash.clone(),
+            LinkTypes::ProposalToCriteria,
+        )?, GetStrategy::Local
     )?;
     for link in links {
         let me: AgentPubKey = agent_info()?.agent_initial_pubkey.into();
@@ -101,7 +110,7 @@ pub fn remove_criterion_for_proposal(
                 .unwrap()
                 .eq(&input.target_criterion_hash)
             {
-                delete_link(link.create_link_hash)?;
+                delete_link(link.create_link_hash, GetOptions::local())?;
             }
         }
     }

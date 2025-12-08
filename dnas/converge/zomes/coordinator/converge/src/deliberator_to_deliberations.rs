@@ -1,6 +1,6 @@
 use hdk::prelude::*;
 use converge_integrity::*;
-use crate::utils::link_input;
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AddDeliberationForDeliberatorInput {
     pub base_deliberator: AgentPubKey,
@@ -95,11 +95,10 @@ pub fn remove_completed_tag(
     let my_pub_key = agent_info()?.agent_initial_pubkey;
 
     let links = get_links(
-        link_input(
+        LinkQuery::try_new(
             my_pub_key.clone(),
             LinkTypes::DeliberatorToDeliberations,
-            None,
-        ),
+        )?, GetStrategy::Local
     )?;
     for link in links {
         if ActionHash::try_from(link.target.clone())
@@ -109,15 +108,14 @@ pub fn remove_completed_tag(
             .unwrap()
             .eq(&deliberation_hash)
         {
-            delete_link(link.create_link_hash)?;
+            delete_link(link.create_link_hash, GetOptions::local())?;
         }
     }
     let links = get_links(
-        link_input(
+        LinkQuery::try_new(
             deliberation_hash.clone(),
             LinkTypes::DeliberationToDeliberators,
-            None,
-        ),
+        )?, GetStrategy::Local
     )?;
     for link in links {
         if AgentPubKey::from(
@@ -129,7 +127,7 @@ pub fn remove_completed_tag(
             )
             .eq(&my_pub_key)
         {
-            delete_link(link.create_link_hash)?;
+            delete_link(link.create_link_hash, GetOptions::local())?;
         }
     }
 
@@ -159,7 +157,10 @@ pub fn get_deliberations_for_deliberator(
     deliberator: AgentPubKey,
 ) -> ExternResult<DeliberationsWithCompleted> {
     let links: Vec<Link> = get_links(
-        link_input(deliberator, LinkTypes::DeliberatorToDeliberations, None),
+        LinkQuery::try_new(
+            deliberator,
+            LinkTypes::DeliberatorToDeliberations,
+        )?, GetStrategy::Local
     )?;
 
     let completed_links = links
@@ -232,7 +233,10 @@ pub fn get_deliberators_for_deliberation(
     deliberation_hash: ActionHash,
 ) -> ExternResult<Vec<DeliberatorsWithCompleted>> {
     let links = get_links(
-        link_input(deliberation_hash.clone(), LinkTypes::DeliberationToDeliberators, None),
+        LinkQuery::try_new(
+            deliberation_hash.clone(),
+            LinkTypes::DeliberationToDeliberators,
+        )?, GetStrategy::Local
     )?;
     let output: Vec<DeliberatorsWithCompleted> = links
         .into_iter()
@@ -288,11 +292,10 @@ pub fn remove_deliberation_for_deliberator(
     input: RemoveDeliberationForDeliberatorInput,
 ) -> ExternResult<()> {
     let links = get_links(
-        link_input(
+        LinkQuery::try_new(
             input.base_deliberator.clone(),
             LinkTypes::DeliberatorToDeliberations,
-            None,
-        ),
+        )?, GetStrategy::Local
     )?;
     for link in links {
         if ActionHash::try_from(link.target.clone())
@@ -302,15 +305,14 @@ pub fn remove_deliberation_for_deliberator(
             .unwrap()
             .eq(&input.target_deliberation_hash)
         {
-            delete_link(link.create_link_hash)?;
+            delete_link(link.create_link_hash, GetOptions::local())?;
         }
     }
     let links = get_links(
-        link_input(
+        LinkQuery::try_new(
             input.target_deliberation_hash.clone(),
             LinkTypes::DeliberationToDeliberators,
-            None,
-        ),
+        )?, GetStrategy::Local
     )?;
     for link in links {
         if AgentPubKey::from(
@@ -322,7 +324,7 @@ pub fn remove_deliberation_for_deliberator(
             )
             .eq(&input.base_deliberator)
         {
-            delete_link(link.create_link_hash)?;
+            delete_link(link.create_link_hash, GetOptions::local())?;
         }
     }
     Ok(())

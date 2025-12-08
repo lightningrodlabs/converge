@@ -151,7 +151,7 @@ onMount(async () => {
         // console.log("activity received", payload)
         outdated = true;
         
-        weClient.notifyFrame([{
+        weClient?.notifyFrame([{
           title: `New activity in ${deliberation.title}`,
           body: messagesFull[payload.message],
           notification_type: "change",

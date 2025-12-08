@@ -35,7 +35,7 @@ pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
             target_os = "netbsd"
         )
     )] std::env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
-    let mut functions: BTreeSet<(ZomeName, FunctionName)> = BTreeSet::new();
+    let mut functions: HashSet<(ZomeName, FunctionName)> = HashSet::new();
     functions
         .insert((
             zome_info()?.name,

@@ -89,9 +89,9 @@ async function submitDeliberation() {
   let newDeliberationHash = await createDeliberation(deliberationEntry, client)
   const myDNA = await getMyDna("converge", client);
   // weClient.openAsset([myDNA, newDeliberationHash], {});
-  console.log(weClient, weClient.renderInfo.view, [myDNA, newDeliberationHash])
+  console.log(weClient, weClient?.renderInfo.view, [myDNA, newDeliberationHash])
   try {
-    weClient.renderInfo.view.resolve({hrl: [myDNA, newDeliberationHash]})
+    weClient?.renderInfo.view.resolve({hrl: [myDNA, newDeliberationHash]})
   } catch (e) {
     const x = "Error"
   }

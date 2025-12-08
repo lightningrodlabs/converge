@@ -237,7 +237,6 @@
     loading = false;
 
     client.on('signal', signal => {
-      console.log("signalll", signal)
       if (signal.value.zome_name !== 'converge') return;
       const payload = signal.value as ConvergeSignal;
       console.log("activity received", payload)
@@ -255,7 +254,7 @@
       if (urgentMessages.includes(payload.message)) {
         // console.log("activity received", payload)
         
-        weClient.notifyFrame([{
+        weClient?.notifyFrame([{
           title: messagesShort[payload.message],
           body: messagesFull[payload.message],
           notification_type: "change",
