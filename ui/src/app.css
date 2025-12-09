@@ -17,7 +17,7 @@ h2 {
   text-align: left;
 }
 
-.notifications, .dashboard, .bulletin {
+.notifications, .dashboard, .bulletin, .info {
   /* width: 24px; */
   height: 26px;
   color: #585a5e;
@@ -29,7 +29,7 @@ h2 {
   display: flex;
 }
 
-.notifications:hover, .dashboard:hover, .bulletin:hover {
+.notifications:hover, .dashboard:hover, .bulletin:hover, .info:hover {
   background-color: #c0b8c3;
 }
 

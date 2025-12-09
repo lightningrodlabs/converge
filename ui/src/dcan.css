@@ -212,7 +212,7 @@ nav logo {
   margin: 0 12px;
 }
 
-.notifications, .dashboard, .bulletin {
+.notifications, .dashboard, .bulletin, .info {
   /* width: 24px; */
   height: 26px;
   color: #d6ddeb;

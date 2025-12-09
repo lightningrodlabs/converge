@@ -8,7 +8,7 @@
   import FaHome from 'svelte-icons/fa/FaHome.svelte';
   import { navigate, view } from '../../store.js';
   import { clientContext } from '../../contexts';
-  import type { EntryHash, Record, AgentPubKey, ActionHash, AppAgentClient, NewEntryAction } from '@holochain/client';
+  import type { EntryHash, Record, AgentPubKey, ActionHash, AppClient, NewEntryAction } from '@holochain/client';
   import { onMount, setContext, getContext } from 'svelte';
   import { decode } from '@msgpack/msgpack';
   import "@holochain-open-dev/profiles/dist/elements/agent-avatar.js";
@@ -22,7 +22,7 @@
 
   // export let initialized: boolean = false;
 
-  let client: AppAgentClient = (getContext(clientContext) as any).getClient();
+  let client: AppClient = (getContext(clientContext) as any).getClient();
   let currentView;
   
   view.subscribe(value => {
@@ -83,17 +83,22 @@
       margin-right: 0.4em;
     }
 
-    .bulletin-icon, .dashboard-icon {
+    .bulletin-icon, .dashboard-icon, .info-icon {
       display: flex;
       width: max-content;
       flex-direction: row;
       margin-top: 3.5px;
     }
 
-    .bulletin-icon > div, .dashboard-icon > div {
+    .bulletin-icon > div, .dashboard-icon > div, .info-icon > div {
       display: flex;
       flex-direction: column;
       width: max-content;
+    }
+
+    a.info-icon {
+      text-decoration: none;
+      color: inherit;
     }
     
     /* show new action on tablet and mobile */
@@ -139,6 +144,15 @@
 
         <ul class="nav navbar-nav float-right">
   
+        <li class="info">
+          <a class="info-icon" href="https://dcan.app" target="_blank" rel="noopener noreferrer">
+            <div class="nav-icon">
+              <SvgIcon icon="faExternal" size=18 />
+            </div>
+            <span>Website</span>
+          </a>
+        </li>
+
         <li class="bulletin" on:click={goToBulletin}>
           {#if currentView == "all-deliberations"}
           <div class="bulletin-icon" style="color:#d92ed9">
