@@ -80,6 +80,11 @@ onMount(async () => {
     if (signal.value.zome_name !== 'converge') return;
     const payload = signal.value.payload as ConvergeSignal;
 
+    // Only handle specific message types this component cares about
+    if (!payload.message || !['criterion-comment-created', 'criterion-rated'].includes(payload.message)) {
+      return;
+    }
+
     if (payload.message == "criterion-comment-created") {
       console.log("this is a new message", payload)
       if (JSON.stringify(payload.deliberation_hash), JSON.stringify(deliberationHash)) {
@@ -90,6 +95,45 @@ onMount(async () => {
           unreadCommentsNumber = unreadCommentsNumber + 1;
         }
       }
+    }
+
+    // Handle criterion-rated activity notification (when someone else rates)
+    if (payload.message == "criterion-rated") {
+      // Skip signals from my own actions
+      const signalAgent = payload.agent ? Object.values(payload.agent).join(',') : null;
+      const myAgent = client.myPubKey.join(',');
+      
+      if (signalAgent === myAgent) {
+        // console.log("Skipping own signal");
+        return;
+      }
+      
+      // console.log("criterion-rated signal received from another user", payload)
+      
+      const signalDelibHash = Object.values(payload.deliberation_hash).join(',');
+      const currentDelibHash = Array.isArray(deliberationHash) ? deliberationHash.join(',') : deliberationHash.toString();
+      
+      if (signalDelibHash === currentDelibHash) {
+        // Check if this signal is for this specific criterion
+        try {
+          const contextData = JSON.parse(payload.context);
+          const notificationCriterionHash = contextData.criterionHash;
+          const currentCriterionHash = encodeHashToBase64(criterionHash);
+          
+          // console.log("Comparing hashes:", notificationCriterionHash, currentCriterionHash);
+          
+          if (notificationCriterionHash === currentCriterionHash) {
+            // console.log("Refreshing this criterion's data from remote signal");
+            // Refresh support and objections for this criterion only
+            // This updates data from other users' ratings
+            await fetchSupport();
+            await fetchObjections();
+          }
+        } catch (e) {
+          console.error("Error parsing criterion-rated context:", e);
+        }
+      }
+      return;
     }
 
     if (!['LinkCreated', 'LinkDeleted'].includes(payload.type)) return;
@@ -247,7 +291,7 @@ async function addSupport() {
         tag: String(JSON.stringify(tag)),
       },
     });
-    dispatch('criterion-rated', { criterionHash: criterionHash });
+    dispatch('criterion-rated', { criterionHash: encodeHashToBase64(criterionHash) });
     // openSupport = false;
     // if (record) {
     //   console.log("record: ")

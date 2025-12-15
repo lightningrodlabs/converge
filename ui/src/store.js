@@ -24,6 +24,26 @@ export function setAllDeliberations(deliberations) {
     allDeliberations.update(v => deliberations);
 }
 
+export function updateDeliberation(updatedDeliberation) {
+    console.log("updateDeliberation called with:", updatedDeliberation);
+    allDeliberations.update(v => {
+        let newDeliberations = v.map(d => {
+            if (encodeHashToBase64(d.action_hash) === encodeHashToBase64(updatedDeliberation.record.signed_action.hashed.hash)) {
+                console.log("Found matching deliberation, updating proposals from", d.proposals.length, "to", updatedDeliberation.proposals.length);
+                // Convert RecordWithLinks to DeliberationComplete structure
+                return {
+                    ...d,
+                    proposals: updatedDeliberation.proposals.map(link => link.target),
+                    criteria: updatedDeliberation.criteria.map(link => link.target),
+                    outcomes: updatedDeliberation.outcomes.map(link => link.target),
+                };
+            }
+            return d;
+        });
+        return newDeliberations;
+    });
+}
+
 export function addDeliberation(deliberation) {
     allDeliberations.update(v => [...v, deliberation]);
 }

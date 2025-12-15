@@ -14,13 +14,13 @@
         }
         return `data:image/svg+xml;charset=utf-8,${i.replace("#","%23")}`
     }
-    $:styleStr = `${size ? "width:"+size:""};`
+    $:styleStr = `${size ? "width:"+size+";height:"+size+";":""};`
 </script>
 
-<div class="icon" style={style}><img width={size} src={iconStr()}/></div>
+<div class="icon-outer" style={style ? style : styleStr}><img width={size} src={iconStr()}/></div>
 
 <style>
-    .icon {
+    .icon-outer {
         display: inline-block;
         height: auto;
     }
