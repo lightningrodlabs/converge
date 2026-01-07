@@ -10,6 +10,7 @@ import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-textfield';
 import { encodeHashToBase64 } from "@holochain/client";
 import StarSlider from './StarSlider.svelte';
+import { joinDeliberation } from '../../../publish';
 
 export let criterionFormPopup; // Prop to control popup visibility
 export let alternativeTo: ActionHash;
@@ -81,6 +82,14 @@ async function fetchAlternative() {
 }
 
 async function createCriterion() {
+  // Auto-join the deliberation if not already joined
+  try {
+    await joinDeliberation(deliberationHash, client);
+  } catch (e) {
+    // User may already be joined, continue
+    console.log("Note: User may already be joined to deliberation", e);
+  }
+
   // console.log(supportPercentage)
   const criterionEntry: CreateCriterionInput = { 
     criterion: {

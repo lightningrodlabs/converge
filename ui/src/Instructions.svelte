@@ -29,7 +29,7 @@
     <li>Propose and evaluate solutions based on those criteria</li>
   </ol>
 
-  <p>Get started and <button class="gotoButton" on:click={() => gotToAllCoordinations()}>View public deliberations</button> or <button class="gotoButton" on:click={() => goToCreate()}>Create a new deliberation</button></p>
+  <p>Get started and <button class="gotoButton" on:click={() => gotToAllCoordinations()}>View all deliberations</button> or <button class="gotoButton" on:click={() => goToCreate()}>Create a new deliberation</button></p>
   </div>
 </div>
 </div>

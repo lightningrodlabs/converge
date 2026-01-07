@@ -19,7 +19,7 @@ h2 {
 
 .notifications, .dashboard, .bulletin, .info {
   /* width: 24px; */
-  height: 26px;
+  /* height: 26px; */
   color: #585a5e;
   /* margin: 0 10px; */
   /* margin-right: 10px; */
@@ -29,9 +29,9 @@ h2 {
   display: flex;
 }
 
-.notifications:hover, .dashboard:hover, .bulletin:hover, .info:hover {
+/* .notifications:hover, .dashboard:hover, .bulletin:hover, .info:hover {
   background-color: #c0b8c3;
-}
+} */
 
 .dashboard-section {
   margin: 0.2rem 0;

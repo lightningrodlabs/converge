@@ -87,7 +87,9 @@
       display: flex;
       width: max-content;
       flex-direction: row;
-      margin-top: 3.5px;
+      align-items: center;
+      position: relative;
+      padding: 8px 12px;
     }
 
     .bulletin-icon > div, .dashboard-icon > div, .info-icon > div {
@@ -96,9 +98,37 @@
       width: max-content;
     }
 
+    .bulletin-icon:hover, .dashboard-icon:hover, .info-icon:hover {
+      background-color: #e6e9f8;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
     a.info-icon {
       text-decoration: none;
       color: inherit;
+    }
+
+    .current-view {
+      background-color: #e6e9f8;
+      border-radius: 8px 8px 0 0;
+      color:#d92ed9
+    }
+
+    .current-view:hover {
+      background-color: #e6e9f8;
+      cursor: default;
+      border-radius: 6px 6px 0 0;
+    }
+
+    .current-view::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -20px;
+      height: 20px;
+      background-color: #e6e9f8;
     }
     
     /* show new action on tablet and mobile */
@@ -155,12 +185,12 @@
 
         <li class="bulletin" on:click={goToBulletin}>
           {#if currentView == "all-deliberations"}
-          <div class="bulletin-icon" style="color:#d92ed9">
+          <div class="bulletin-icon current-view">
             <div class="nav-icon">
               <FaBullhorn />
             </div>
             <div>
-              All
+              All deliberations
             </div>
           </div>
           {:else}
@@ -169,7 +199,7 @@
               <FaBullhorn />
             </div>
             <div>
-              All
+              All deliberations
             </div>
           </div>
           {/if}
@@ -177,7 +207,7 @@
   
         <li class="dashboard" on:click={goToDashboard}>
           {#if currentView == "dashboard"}
-          <div class="dashboard-icon" style="color:#d92ed9">
+          <div class="dashboard-icon current-view">
             <div class="nav-icon">
               <FaList />
             </div>

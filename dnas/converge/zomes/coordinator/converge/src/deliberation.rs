@@ -140,14 +140,16 @@ pub fn get_all_deliberations_complete(_: ()) -> ExternResult<Vec<DeliberationCom
             )?
             .try_into()?;
 
-        let deliberators = get_links(
+        let deliberator_links = get_links(
             LinkQuery::try_new(
                 item.signed_action.hashed.hash.clone(),
                 LinkTypes::DeliberationToDeliberators,
             )?, GetStrategy::Local
-        )?
-        .into_iter()
-        .map(|link| {
+        )?;
+        
+        // Deduplicate deliberators by agent key, keeping most recent entry
+        let mut deliberators_map: std::collections::BTreeMap<Vec<u8>, (DeliberatorsWithCompleted, Timestamp)> = std::collections::BTreeMap::new();
+        for link in deliberator_links {
             let tag = link.tag;
             let tag_str = String::from_utf8(tag.0).unwrap();
             let agent_pub_key = AgentPubKey::from(
@@ -157,13 +159,29 @@ pub fn get_all_deliberations_complete(_: ()) -> ExternResult<Vec<DeliberationCom
                     })
                     .unwrap(),
             );
-            DeliberatorsWithCompleted {
+            let agent_bytes = agent_pub_key.get_raw_39().to_vec();
+            let deliberator_info = DeliberatorsWithCompleted {
                 deliberator: agent_pub_key,
                 completed: tag_str == "completed",
                 dateJoined: Some(link.timestamp)
+            };
+            
+            // Always keep the most recent entry for each agent
+            let timestamp = link.timestamp;
+            let should_insert = match deliberators_map.get(&agent_bytes) {
+                Some((_, existing_timestamp)) => timestamp > *existing_timestamp,
+                None => true,
+            };
+            
+            if should_insert {
+                deliberators_map.insert(agent_bytes, (deliberator_info, timestamp));
             }
-        })
-        .collect();
+        }
+        
+        let deliberators: Vec<DeliberatorsWithCompleted> = deliberators_map
+            .into_values()
+            .map(|(info, _)| info)
+            .collect();
 
         let criteria = get_links(
             LinkQuery::try_new(

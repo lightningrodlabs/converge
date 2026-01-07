@@ -11,14 +11,17 @@ import { joinDeliberation, leaveDeliberation } from '../../../publish';
 import { refetchDeliberations } from '../../../refetch';
 import { allDeliberations } from '../../../store.js';
 import { decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
+import FaChevronDown from 'svelte-icons/fa/FaChevronDown.svelte';
+import FaChevronUp from 'svelte-icons/fa/FaChevronUp.svelte';
 
 export let deliberator: AgentPubKey;
 let completedHashes: Array<ActionHash> = [];
+let completedExpanded = false;
 
 let deliberations = [];
 allDeliberations.subscribe(value => {
-  deliberations = value.filter(d => d.deliberators.filter(d => encodeHashToBase64(d.deliberator) === encodeHashToBase64(deliberator)).length > 0);
-  completedHashes = deliberations.filter(d => d.deliberators.filter(d => d.completed).length > 0).map(d => d.action_hash);
+  deliberations = value.filter(d => d.deliberators.filter(dlib => encodeHashToBase64(dlib.deliberator) === encodeHashToBase64(deliberator)).length > 0);
+  completedHashes = deliberations.filter(d => d.deliberators.filter(dlib => encodeHashToBase64(dlib.deliberator) === encodeHashToBase64(deliberator) && dlib.completed).length > 0).map(d => d.action_hash);
 });
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
@@ -106,7 +109,7 @@ onMount(async () => {
         <span on:click={() => navigate('deliberation', deliberation.action_hash)} style="width: 100%;">
           <DeliberationListItem {deliberation}></DeliberationListItem>
         </span>
-        <button class="complete-button" on:click={() => completeDeliberation(deliberation.action_hash)}>Mark complete</button>
+        <!-- <button class="complete-button" on:click={() => completeDeliberation(deliberation.action_hash)}>Mark complete</button> -->
       </div>
     {/if}
   {/each}
@@ -114,18 +117,29 @@ onMount(async () => {
 
 <!-- list all deliberations with hashes in completedHashes -->
 {#if completedHashes.length > 0}
-  <h3>Completed deliberations</h3>
-  {#each completedHashes as hash}
-    {@const deliberation = deliberations.find(d => d.action_hash === hash)}
-    {#if deliberation}
-    <div style="margin-bottom: 8px; display: flex; justify-content: space-between;">
-        <span on:click={() => navigate('deliberation', deliberation.action_hash)} style="width: 100%;">
-          <DeliberationListItem {deliberation}></DeliberationListItem>
-        </span>
-        <button class="complete-button" on:click={() => rejoinDeliberation(deliberation.action_hash)}>Rejoin</button>
-      </div>
-    {/if}
-  {/each}
+  <h3 on:click={() => completedExpanded = !completedExpanded} style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
+    {completedHashes.length} Completed deliberations
+    <span style="white-space: nowrap;">
+      {#if completedExpanded}
+        [- hide]
+      {:else}
+        [+ show]
+      {/if}
+    </span>
+  </h3>
+  {#if completedExpanded}
+    {#each completedHashes as hash}
+      {@const deliberation = deliberations.find(d => d.action_hash === hash)}
+      {#if deliberation}
+      <div style="margin-bottom: 8px; display: flex; justify-content: space-between;">
+          <span on:click={() => navigate('deliberation', deliberation.action_hash)} style="width: 100%;">
+            <DeliberationListItem {deliberation}></DeliberationListItem>
+          </span>
+          <button class="complete-button" on:click={() => rejoinDeliberation(deliberation.action_hash)}>Rejoin</button>
+        </div>
+      {/if}
+    {/each}
+  {/if}
 {/if}
 
 {/if}

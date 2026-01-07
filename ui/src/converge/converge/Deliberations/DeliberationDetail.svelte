@@ -249,8 +249,8 @@ async function joinDeliberation() {
     deliberatorsRaw = [...deliberatorsRaw, client.myPubKey]
     // dispatch('deliberation-joined', { deliberationHash: deliberationHash });
   } catch (e: any) {
-    errorSnackbar.labelText = `Error joining the deliberation: ${e.data.data}`;
-    errorSnackbar.show();
+    errorSnackbar.labelText = `Error joining the deliberation: ${e.data}`;
+    // errorSnackbar.show();
   }
 }
 

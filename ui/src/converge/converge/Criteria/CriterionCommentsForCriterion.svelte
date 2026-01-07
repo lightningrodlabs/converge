@@ -80,9 +80,13 @@ onMount(async () => {
     if (signal.value.zome_name !== 'converge') return;
     const payload = signal.value.payload as ConvergeSignal;
     if (payload.message == "criterion-comment-created") {
-      hashes = [...hashes, decodeHashFromBase64(JSON.parse(payload.context).criterionCommentHash)];
-      // console.log("hashes", hashes)
-      scrollToBottom();
+      const notificationCriterionHash = JSON.parse(payload.context)?.criterionHash;
+      // Only add the comment if it belongs to this criterion
+      if (notificationCriterionHash === encodeHashToBase64(criterionHash)) {
+        hashes = [...hashes, decodeHashFromBase64(JSON.parse(payload.context).criterionCommentHash)];
+        // console.log("hashes", hashes)
+        scrollToBottom();
+      }
     }
   });
 });

@@ -49,16 +49,30 @@ let client: AppClient = (getContext(clientContext) as any).getClient();
 let loading = true;
 let error: any = undefined;
 let intervalId: ReturnType<typeof setInterval> | undefined;
+let lastMouseActivity = Date.now();
 
 $: deliberations, loading, error;
+
+function handleMouseActivity() {
+  lastMouseActivity = Date.now();
+}
 
 onMount(async () => {
   myDNA = await getMyDna("converge", client);
   await refetchDeliberations(client);
   loading = false;
+  
+  // Track mouse activity
+  window.addEventListener('mousemove', handleMouseActivity);
+  window.addEventListener('mousedown', handleMouseActivity);
+  
   intervalId = setInterval(() => {
-    refetchDeliberations(client);
-  }, 60000);
+    const timeSinceLastActivity = Date.now() - lastMouseActivity;
+    // Only refetch if there was activity in the past minute
+    if (timeSinceLastActivity < 4 * 60 * 1000) {
+      refetchDeliberations(client);
+    }
+  }, 20 * 1000);
   // await fetchDeliberations();
   // client.on('signal', signal => {
   //   if (signal.value.zome_name !== 'converge') return;
@@ -73,6 +87,8 @@ onDestroy(() => {
   if (intervalId) {
     clearInterval(intervalId);
   }
+  window.removeEventListener('mousemove', handleMouseActivity);
+  window.removeEventListener('mousedown', handleMouseActivity);
 });
 
 // async function fetchDeliberations() {
