@@ -143,7 +143,7 @@ async function createCriterion() {
         payload: criterionCommentEntry,
       });
 
-      dispatch('criterion-comment-created', {context: JSON.stringify({criterionCommentHash: encodeHashToBase64(record.signed_action.hashed.hash), criterionHash: encodeHashToBase64(criterionHash)})});
+      dispatch('criterion-comment-created', {context: JSON.stringify({criterionCommentHash: encodeHashToBase64(record.signed_action.hashed.hash), criterionHash: encodeHashToBase64(alternativeTo)})});
     }
 
     title = '';

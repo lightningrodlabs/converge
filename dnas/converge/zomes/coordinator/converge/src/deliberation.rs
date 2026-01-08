@@ -105,28 +105,41 @@ pub struct DeliberationComplete {
 }
 
 #[hdk_extern]
-pub fn get_all_deliberations_complete(_: ()) -> ExternResult<Vec<DeliberationComplete>> {
-    let path = Path::from("all_deliberations");
-    let links = get_links(
-        LinkQuery::try_new(
-            path.path_entry_hash()?,
-            LinkTypes::AllDeliberations,
-        )?, GetStrategy::Local
-    )?;
-    let get_input: Vec<GetInput> = links
-        .into_iter()
-        .map(|link| GetInput::new(
-            ActionHash::try_from(link.target)
-                .map_err(|_| {
-                    wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))
-                })
-                .unwrap()
-                .into(),
-            GetOptions::default(),
-        ))
-        .collect();
-    let records = HDK.with(|hdk| hdk.borrow().get(get_input))?;
-    let records: Vec<Record> = records.into_iter().filter_map(|r| r).collect();
+pub fn get_all_deliberations_complete(hash: Option<ActionHash>) -> ExternResult<Vec<DeliberationComplete>> {
+    let mut records: Vec<Record> = vec![];
+    if hash.is_some() {
+        records.push(
+            get(hash.unwrap(), GetOptions::default())?
+                .ok_or(
+                    wasm_error!(
+                        WasmErrorInner::Guest(String::from("Could not find the Deliberation"))
+                    ),
+                )?
+        );
+    } else {
+        let path = Path::from("all_deliberations");
+        let links = get_links(
+            LinkQuery::try_new(
+                path.path_entry_hash()?,
+                LinkTypes::AllDeliberations,
+            )?, GetStrategy::Local
+        )?;
+        let get_input: Vec<GetInput> = links
+            .into_iter()
+            .map(|link| GetInput::new(
+                ActionHash::try_from(link.target)
+                    .map_err(|_| {
+                        wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))
+                    })
+                    .unwrap()
+                    .into(),
+                GetOptions::default(),
+            ))
+            .collect();
+        let records_input = HDK.with(|hdk| hdk.borrow().get(get_input))?;
+        records = records_input.into_iter().filter_map(|r| r).collect();
+    }
+
     let mut output: Vec<DeliberationComplete> = vec![];
     for item in records.iter() {
         let deliberation: Deliberation = item

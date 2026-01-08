@@ -47,7 +47,7 @@ main {
 .white-container {
   background-color: white;
   padding: 25px;
-  padding-top: 0;
+  padding-top: 12px;
   min-height: 70vh;
   /* min-width: 68%; */
   /* width: 94% !important; */

@@ -165,22 +165,23 @@ onMount(async () => {
         }])
         console.log("this is a new activity", payload)
         // lastMessage = messagesFull[payload.message];
-        if (
+      if (
         ['proposal-created', 'outcome-created', 'new-join', 'outcome-created']
-        .includes(payload.message)) {
+        .includes(payload.message)
+      ) {
+        console.log("Urgent message received, refetching deliberation...", payload.message)
           await new Promise(r => setTimeout(r, 5000)); // wait a bit to ensure data is ready
-          await refetchDeliberation(deliberationHash, client);
+          await refetchDeliberations(client, deliberationHash);
           if (payload.message === 'proposal-created') {
             console.log("Refetching proposals after deliberation update...")
             await refetchProposalsForDeliberation(deliberationHash, client);
             console.log("Proposals refetched")
           }
         }
-      } else if (payload.message == "criterion-comment-created") {
-        console.log("this is a new message", payload)
-        // refresh the page
-        // refresh comments for the criterion
-      }
+      } 
+      // else if (payload.message == "criterion-comment-created") {
+      //   console.log("this is a new message", payload)
+      // }
     }
     // console.log(payload)
   });
@@ -347,7 +348,7 @@ function expandSearch2() {
 <span>Error fetching the deliberation: {JSON.stringify(error)}</span>
 {:else}
 
-{#if outdated && lastMessage}
+<!-- {#if outdated && lastMessage}
 <div on:click={async () => {refetchDeliberations(client);
   await refetchProposalsForDeliberation(deliberationHash, client);
   await refetchEvaluationsForProposals(proposalHashes.map(p => p), client);
@@ -359,7 +360,7 @@ function expandSearch2() {
 <div style="cursor: pointer; display: flex; flex-direction: row; align-items: center; justify-content: center; background: transparent; padding: 4px;">
   <span style="margin-right: 8px">&nbsp;</span>
 </div>
-{/if}
+{/if} -->
 
 <div style="display: flex; flex-direction: column;">
   <!-- <div style="display: flex; flex-direction: row">
@@ -379,8 +380,9 @@ function expandSearch2() {
               console.log('refresh clicked');
               refreshing = true;
               await new Promise(r => setTimeout(r, 1000)); // allow spinning icon to show
-              await refetchDeliberation(deliberationHash, client);
-              await refetchProposalsForDeliberation(deliberationHash, client);
+              await refetchDeliberations(client, deliberationHash);
+              // await refetchDeliberation(deliberationHash, client);
+              // await refetchProposalsForDeliberation(deliberationHash, client);
               await refetchEvaluationsForProposals(proposalHashes.map(p => p), client);
               refreshing = false;
             }}

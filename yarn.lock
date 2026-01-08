@@ -1751,10 +1751,20 @@
     "@msgpack/msgpack" "^2.8.0"
     js-base64 "^3.7.2"
 
-"@theweave/cli@0.15.5":
-  version "0.15.5"
-  resolved "https://registry.yarnpkg.com/@theweave/cli/-/cli-0.15.5.tgz#f3fde0d52ba87a6cb93508e034501f9b60e96bff"
-  integrity sha512-TXhipxynV4HgVPvZ/g4GLKRm5Tf/vAHhzSDJzJDHYiPe+DY5rLq160I6aU/7KM6SkbODfToL4nTuVVmktYsk4Q==
+"@theweave/api@^0.6.1", "@theweave/api@^0.6.2":
+  version "0.6.3"
+  resolved "https://registry.yarnpkg.com/@theweave/api/-/api-0.6.3.tgz#076d2101944c736f4abb9563645091984781cf49"
+  integrity sha512-7OhuHmN9OzBJftZXlBtNvca4TxrMpZHGJ5hJNtworucH3WFrYhifRb+hUOgzs6Y/yiQAFloC/5ACzxVhuyAu4g==
+  dependencies:
+    "@holochain-open-dev/profiles" "^0.600.0"
+    "@holochain/client" "^0.20.0"
+    "@msgpack/msgpack" "^2.8.0"
+    js-base64 "^3.7.2"
+
+"@theweave/cli@0.15.11":
+  version "0.15.11"
+  resolved "https://registry.yarnpkg.com/@theweave/cli/-/cli-0.15.11.tgz#9a913706198070e9e21046bd9691896a3565332d"
+  integrity sha512-APzwMHg7/0FS3oRblA63rzW/avHkX3OiwYfzxtzhiGDTgDtf6uBOuEHZ7e+wQwNR1PomWySyh4zAqlF5GBaySA==
   dependencies:
     "@electron-toolkit/preload" "^2.0.0"
     "@electron-toolkit/utils" "^2.0.0"
@@ -1767,9 +1777,9 @@
     "@matthme/electron-updater" "6.3.0-alpha.1"
     "@msgpack/msgpack" "^2.8.0"
     "@sinclair/typebox" "0.33.12"
-    "@theweave/api" "^0.6.0"
-    "@theweave/moss-types" "0.5.0"
-    "@theweave/utils" "0.5.0"
+    "@theweave/api" "^0.6.2"
+    "@theweave/moss-types" "0.5.1"
+    "@theweave/utils" "0.5.1"
     adm-zip "0.5.14"
     bufferutil "4.0.8"
     commander "11.1.0"
@@ -1786,24 +1796,24 @@
     uuid "9.0.1"
     winston "3.11.0"
 
-"@theweave/moss-types@0.5.0", "@theweave/moss-types@^0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@theweave/moss-types/-/moss-types-0.5.0.tgz#1ece4df11709e6ee3b20c11094ca2a06e0468b13"
-  integrity sha512-Fr/TuuJhA947rY99BW7WzawawWsn8lFAT8iSWrH3grkrTNWHYXMYnayDryccVMrmP2o9stYjv2hv8u/lpfoQ3g==
+"@theweave/moss-types@0.5.1", "@theweave/moss-types@^0.5.1":
+  version "0.5.1"
+  resolved "https://registry.yarnpkg.com/@theweave/moss-types/-/moss-types-0.5.1.tgz#99279abac220985cd15f861059598314428da971"
+  integrity sha512-IY3VSj9bTcCLERB5IzHJ3Ln0l/DmMNjtniTKW9CjCedxWHZXBxF3sPzwib19/WEPSkG2DjBpxaB6m0PRulwl5Q==
   dependencies:
-    "@holochain/client" "^0.20.0-dev.2"
+    "@holochain/client" "^0.20.0"
     "@sinclair/typebox" "0.33.12"
-    "@theweave/api" "^0.6.0"
+    "@theweave/api" "^0.6.1"
 
-"@theweave/utils@0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@theweave/utils/-/utils-0.5.0.tgz#807a8582cc6dda03d59eb99d3be131d74567cd02"
-  integrity sha512-lSvmv8lsUntn9e3LLDIZZlvCkr7pNtC1/tJJY49oMMkB/pGBuMaYRXJtkL9jPR/3VdyAJEV6EqGQL2VYAMsbpg==
+"@theweave/utils@0.5.1":
+  version "0.5.1"
+  resolved "https://registry.yarnpkg.com/@theweave/utils/-/utils-0.5.1.tgz#3e58fc881be8a4dc414f91aa5010e810321906bf"
+  integrity sha512-04yXKfCHAutUJ48ZjxWxQAH7iJo8er29q0tpwBp9q8DI5aiPYXGhqrkmtWX0EcUS8w7AKh9ROH5vUL6hjRMQ/Q==
   dependencies:
-    "@holochain/client" "^0.20.0-dev.2"
+    "@holochain/client" "^0.20.0"
     "@msgpack/msgpack" "^2.7.2"
-    "@theweave/api" "^0.6.0"
-    "@theweave/moss-types" "^0.5.0"
+    "@theweave/api" "^0.6.1"
+    "@theweave/moss-types" "^0.5.1"
     compare-versions "6.1.1"
     js-base64 "^3.7.2"
     ts-md5 "1.3.1"

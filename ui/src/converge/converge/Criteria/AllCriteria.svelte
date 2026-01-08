@@ -91,29 +91,32 @@ onMount(async () => {
   await fetchAndSort()
 
   unsub = client.on('signal', async signal => {
-    console.log("Received signal in AllCriteria", signal)
+    // console.log("Received signal in AllCriteria", signal)
     if (signal.value.zome_name !== 'converge') return;
     const payload = signal.value.payload as any;
-    
-    // Handle custom activity notification signals
-    if (payload.message === 'criterion-created' && payload.deliberation_hash) {
-      // Check if this signal is for our deliberation
+
+    if (payload.deliberation_hash) {
       const signalDelibHash = Object.values(payload.deliberation_hash).join(',');
       const currentDelibHash = Array.isArray(deliberationHash) ? deliberationHash.join(',') : deliberationHash.toString();
-      
-      // is the signal from my agent?
-      const isMySignal = payload.agent_pub_key === (await client.appInfo()).agent_pub_key;
-      if (isMySignal) {
-        return; // Ignore signals from self
+      if (signalDelibHash !== currentDelibHash) {
+        return; // Signal is for a different deliberation
       }
-
-      if (signalDelibHash === currentDelibHash) {
+    }
+    
+    // Handle custom activity notification signals
+    if (payload.message === 'criterion-created') {
         // console.log("Criterion created signal for this deliberation - refreshing criteria");
         // console.log("Current criteria count:", hashes?.length || 0);
         // Just refresh the criteria list (our fetchCriteria handles deduplication)
         await new Promise(r => setTimeout(r, 5000)); // slight delay to ensure data consistency
         await fetchCriteria();
         // console.log("After refresh, criteria count:", hashes?.length || 0);
+      return;
+    } else if (payload.message === 'criterion-comment-created') {
+      // console.log("Criterion comment created signal received", payload)
+      const context = JSON.parse(payload.context);
+      if (context.criterion_hash) {
+        // Refresh ratings for that criterion
       }
       return;
     }

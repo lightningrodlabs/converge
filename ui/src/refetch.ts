@@ -2,14 +2,14 @@ import { decode } from "@msgpack/msgpack";
 import { encodeHashToBase64 } from "@holochain/client";
 import { setAllDeliberations, addSomeProposals, addSomeEvaluations, updateDeliberation } from "./store";
 
-export async function refetchDeliberations(client) {
+export async function refetchDeliberations(client, hash?) {
   try {
     const deliberations = await client.callZome({
       cap_secret: null,
       role_name: 'converge',
       zome_name: 'converge',
       fn_name: 'get_all_deliberations_complete',
-      payload: null,
+      payload: hash || null,
     });
     console.log("records", deliberations)
     // let criteria = deliberations.criteria?.map(hash => {encodeHashToBase64(hash)})

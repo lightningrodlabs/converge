@@ -95,6 +95,9 @@ onMount(async () => {
           unreadCommentsNumber = unreadCommentsNumber + 1;
         }
       }
+
+      await fetchSupport();
+      await fetchObjections();
     }
 
     // Handle criterion-rated activity notification (when someone else rates)
@@ -415,14 +418,18 @@ async function scrollToDiv() {
             IMPORTANT</span>
             <mwc-slider
               style="--mdc-theme-primary: blue;"
-              on:change={e => {
+              on:change={async (e) => {
                 addSupportPercentage = e.detail.value
                 mySupport = addSupportPercentage / scoringLevel;
                 // console.log(addSupportPercentage, mySupport)
                 if (addSupportPercentage == 0) {
-                  removeSupport()
+                  await removeSupport()
+                  await fetchSupport();
+                  await fetchObjections();
                 } else {
-                  addSupport()
+                  await addSupport()
+                  await fetchSupport();
+                  await fetchObjections();
                 }
               }}
               value={addSupportPercentage}
@@ -541,12 +548,16 @@ async function scrollToDiv() {
 </div>
   <!-- {#if showSlider} -->
   <!-- <div style="display: flex; flex-direction: row;"> -->
-    <CriterionPopup on:switched-tab={scrollToDiv} {criterionHash} {objections} {deliberationHash} {showSlider} bind:criterionPopupBoolean {criterion} {supporters} {sponsored} {support} {addSupportPercentage} {mySupport} on:transfer={(e) => {
+    <CriterionPopup on:switched-tab={scrollToDiv} {criterionHash} {objections} {deliberationHash} {showSlider} bind:criterionPopupBoolean {criterion} {supporters} {sponsored} {support} {addSupportPercentage} {mySupport} on:transfer={async (e) => {
+      await fetchSupport();
+      await fetchObjections();
       dispatch('transfer', e.detail);
     }}
     on:criterion-comment-created={(e) => {
       unreadCommentsNumber = Math.max(0, commentsNumber - countViewed(commentHashes));
       dispatch('criterion-comment-created', e.detail);
+      fetchSupport();
+      fetchObjections();
     }} />
   <!-- </div> -->
   <!-- {/if} -->
