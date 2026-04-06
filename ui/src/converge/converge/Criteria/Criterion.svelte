@@ -59,6 +59,12 @@ onMount(async () => {
   await fetchCriterion();
   await addToViewed(criterionHash, client);
   await fetchSupport();
+  // Retry once if no supporters found — handles the race where support
+  // was being written concurrently when this component first mounted.
+  if (supporters?.length === 0) {
+    await new Promise(r => setTimeout(r, 1500));
+    await fetchSupport();
+  }
   await fetchObjections();
   // console.log(objections)
   let criterionHashKey = criterionHash.join(',')
@@ -204,9 +210,11 @@ async function fetchSupport() {
         }, new Map()).values()
       );
 
-      // add to unsupported if no supporters
+      // add to unsupported if no supporters, remove if supporters found
       if (supporters.length === 0) {
         unsupportedCriteria = Array.from(new Set([...unsupportedCriteria, criterionHash]));
+      } else {
+        unsupportedCriteria = unsupportedCriteria.filter(h => h !== criterionHash);
       }
 
       support = supporters.reduce((sum, item) => {
@@ -539,6 +547,22 @@ async function scrollToDiv() {
       >
       <mwc-icon-button style="top: 8px; position: relative; background-color: #f1f1f1; border-radius: 100%; --mdc-icon-size: 10px;">
           <span style="font-size: 11px; top: -2px; left: -9px; position: relative;">Quote</span>
+      </mwc-icon-button>
+      </button>
+    {/if}
+
+    {#if sponsored && supporters?.length === 1}
+      <button style="height: 80%;
+      background-color: transparent;
+      border: none;"
+      on:click={async () => {
+        await removeSupport();
+        await fetchSupport();
+        await fetchObjections();
+      }}
+      >
+      <mwc-icon-button style="top: 8px; position: relative; background-color: #f1f1f1; border-radius: 100%; --mdc-icon-size: 10px;">
+        <span style="font-size: 11px; top: -1px; left: -6px; position: relative;">Hide</span>
       </mwc-icon-button>
       </button>
     {/if}

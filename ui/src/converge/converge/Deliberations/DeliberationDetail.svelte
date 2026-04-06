@@ -384,6 +384,7 @@ function expandSearch2() {
               // await refetchDeliberation(deliberationHash, client);
               // await refetchProposalsForDeliberation(deliberationHash, client);
               await refetchEvaluationsForProposals(proposalHashes.map(p => p), client);
+              reloadKey += 1;
               refreshing = false;
             }}
           >
@@ -578,9 +579,16 @@ function expandSearch2() {
   {#if proposalHashes.length === 0}
     <span style="font-style: italic;">Try adding a proposal. How could we meet our criteria?</span>
   {:else if proposalCount > 0}
-    {#each proposalHashes as proposalHash}
+    {#each proposalHashes as proposalHash (proposalHash)}
       {@const fullProposal = proposalsComplete[proposalHash]}
-      <ProposalListItem on:proposal-rated={() => {newActivity("proposal-rated")}} on:outcome-created={(v) => {dispatch('outcome-created', v)}} proposal={fullProposal} proposalHash={decodeHashFromBase64(proposalHash)} {deliberationHash} hashes={proposalHashes.map(h => decodeHashFromBase64(h))}  />
+      <ProposalListItem 
+        on:proposal-rated={() => {newActivity("proposal-rated")}} 
+        on:outcome-created={(v) => {dispatch('outcome-created', v)}} 
+        proposal={fullProposal} 
+        proposalHash={decodeHashFromBase64(proposalHash)} 
+        {deliberationHash} 
+        hashes={proposalHashes.map(h => decodeHashFromBase64(h))}  
+      />
       <!-- {JSON.stringify(fullProposal)} -->
     {/each}
   {/if}

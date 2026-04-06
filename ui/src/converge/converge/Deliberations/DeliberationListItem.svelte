@@ -9,13 +9,7 @@ import '@material/mwc-circular-progress';
 import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
-import EditDeliberation from './EditDeliberation.svelte'; 
 import { countViewed, addToViewed } from '../../../viewed.js';
-import CreateCriterion from '../Criteria/CreateCriterion.svelte';
-import AllCriteria from '../Criteria/AllCriteria.svelte';
-import CreateProposal from '../Proposals/CreateProposal.svelte';
-import AllProposals from '../Proposals/AllProposals.svelte';
-import type { ConvergeSignal } from '../types';
 import SvgIcon from '../SvgIcon.svelte';
 
 const dispatch = createEventDispatcher();
@@ -167,7 +161,7 @@ async function deleteDeliberation() {
         <strong>1</strong></div>
       </div> -->
       <div>
-        Outcomes
+        Nexts
         <div>
           <SvgIcon color="#757575" icon="faArrow"></SvgIcon>
           <strong>{deliberation.outcomes.length}</strong>

@@ -155,33 +155,37 @@ async function createCriterion() {
 
 
   if (supportPercentage > 0) {
-    try {
-      let tag = {
-        percentage: supportPercentage / 4,
-        transferedFrom: null
+    const tag = {
+      percentage: supportPercentage / 4,
+      transferedFrom: null
+    };
+    const maxRetries = 3;
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        await client.callZome({
+          cap_secret: null,
+          role_name: 'converge',
+          zome_name: 'converge',
+          fn_name: 'add_criterion_for_supporter',
+          payload: {
+            base_supporter: client.myPubKey,
+            target_criterion_hash: criterionHash,
+            tag: String(JSON.stringify(tag)),
+          },
+        });
+        break;
+      } catch (e) {
+        const msg = e?.message ?? e?.data?.data ?? '';
+        if (msg.includes('source chain head has moved') && attempt < maxRetries - 1) {
+          await new Promise(r => setTimeout(r, 150 * (attempt + 1)));
+          continue;
+        }
+        console.log(e);
+        break;
       }
-
-      let record = await client.callZome({
-        cap_secret: null,
-        role_name: 'converge',
-        zome_name: 'converge',
-        fn_name: 'add_criterion_for_supporter',
-        payload: {
-          base_supporter: client.myPubKey,
-          target_criterion_hash: criterionHash,
-          tag: String(JSON.stringify(tag)),
-        },
-      });
-      // if (record) {
-        // console.log(record)
-      // }
-      dispatch('criterion-created', {  });
-    } catch (e) {
-      console.log(e);
     }
-  } else {
-    dispatch('criterion-created', {  });
   }
+  dispatch('criterion-created', {  });
 
   dismissPopup()
 }

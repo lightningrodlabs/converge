@@ -23,13 +23,13 @@ const dispatch = createEventDispatcher();
 
 export let proposalHash: ActionHash;
 export let deliberationHash: ActionHash | undefined;
-// export let allProposalScores;
-export let filter;
 export let hashes;
-// export let sortableProposals;
-export let anyProposalPopup;
-export let userRatings;
 export let proposal: Proposal | undefined;
+// export let allProposalScores;
+// export let sortableProposals;
+let filter;
+let anyProposalPopup;
+let userRatings;
 // let deliberationHash: ActionHash | undefined;
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
