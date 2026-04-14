@@ -80,7 +80,7 @@
       throw new Error(`The proposalHash input is required for the ProposalDetail element`);
     }
     await fetchOutcome();
-    addToViewed(outcomeHash, client);
+    await addToViewed(outcomeHash, client);
     // await fetchDeliberation();
 
     dnaHash = await getMyDna("converge", client)

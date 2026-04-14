@@ -508,7 +508,14 @@ async function scrollToDiv() {
   <!-- SLIDER END -->
 
   <!-- COMMENTS BUTTON -->
-  <div style="flex-direction: column; font-size: .8em; width: 100%; text-align: right;">
+  <div style="flex-direction: column;
+    font-size: 0.8em;
+    width: 100%;
+    text-align: right;
+    display: flex;
+    flex-direction: row;
+    height: 0;
+    justify-content: right;">
     <button style="height: 80%; width: 80px; 
     background-color: transparent;
     border: none;" 

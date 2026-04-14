@@ -10,7 +10,6 @@ import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-textfield';
 import { encodeHashToBase64 } from "@holochain/client";
 import StarSlider from './StarSlider.svelte';
-import { joinDeliberation } from '../../../publish';
 
 export let criterionFormPopup; // Prop to control popup visibility
 export let alternativeTo: ActionHash;
@@ -31,8 +30,11 @@ let title: string = '';
 
 let errorSnackbar: Snackbar;
 let supportPercentage = 0;
+let isCreating = false;
 
-$: title, criterionFormPopup, supportPercentage;
+const SOURCE_CHAIN_MOVED_ERROR = 'source chain head has moved';
+
+$: title, criterionFormPopup, supportPercentage, isCreating;
 $: isCriterionValid = true && title !== '';
 
 function checkKey(e) {
@@ -81,10 +83,46 @@ async function fetchAlternative() {
   }
 }
 
+function getErrorMessage(error: any): string {
+  return String(error?.message ?? error?.data?.data ?? error ?? 'Unknown error');
+}
+
+async function callZomeWithRetry(request: Parameters<AppClient['callZome']>[0], maxRetries = 4) {
+  for (let attempt = 0; attempt < maxRetries; attempt += 1) {
+    try {
+      return await client.callZome(request);
+    } catch (error) {
+      const message = getErrorMessage(error).toLowerCase();
+      if (message.includes(SOURCE_CHAIN_MOVED_ERROR) && attempt < maxRetries - 1) {
+        await new Promise(resolve => setTimeout(resolve, 150 * (attempt + 1)));
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  throw new Error('Unable to complete zome call after retries');
+}
+
 async function createCriterion() {
+  if (isCreating) {
+    return;
+  }
+
+  isCreating = true;
+
   // Auto-join the deliberation if not already joined
   try {
-    await joinDeliberation(deliberationHash, client);
+    await callZomeWithRetry({
+      cap_secret: null,
+      role_name: 'converge',
+      zome_name: 'converge',
+      fn_name: 'add_deliberation_for_deliberator',
+      payload: {
+        base_deliberator: client.myPubKey,
+        target_deliberation_hash: deliberationHash,
+      },
+    });
   } catch (e) {
     // User may already be joined, continue
     console.log("Note: User may already be joined to deliberation", e);
@@ -101,19 +139,19 @@ async function createCriterion() {
   let criterionHash;
 
   try {
-    const record: Record = await client.callZome({
+    const record = await callZomeWithRetry({
       cap_secret: null,
       role_name: 'converge',
       zome_name: 'converge',
       fn_name: 'create_criterion',
       payload: criterionEntry,
-    });
+    }) as Record;
 
     criterionHash = record.signed_action.hashed.hash;
     // const criterionActionHash: ActionHash = record
 
     if (alternativeTo) {
-      const res = await client.callZome({
+      await callZomeWithRetry({
         cap_secret: null,
         role_name: 'converge',
         zome_name: 'converge',
@@ -135,59 +173,53 @@ async function createCriterion() {
         criterion_comment: criterionComment,
         criterion_hash: alternativeTo
       }
-      const record: Record = await client.callZome({
+      const commentRecord = await callZomeWithRetry({
         cap_secret: null,
         role_name: 'converge',
         zome_name: 'converge',
         fn_name: 'create_criterion_comment',
         payload: criterionCommentEntry,
-      });
+      }) as Record;
 
-      dispatch('criterion-comment-created', {context: JSON.stringify({criterionCommentHash: encodeHashToBase64(record.signed_action.hashed.hash), criterionHash: encodeHashToBase64(alternativeTo)})});
+      dispatch('criterion-comment-created', {context: JSON.stringify({criterionCommentHash: encodeHashToBase64(commentRecord.signed_action.hashed.hash), criterionHash: encodeHashToBase64(alternativeTo)})});
     }
 
     title = '';
   } catch (e) {
     console.log("error", e)
-    // errorSnackbar.labelText = `Error creating the criterion: ${e}`;
+    errorSnackbar.labelText = `Error creating the criterion: ${getErrorMessage(e)}`;
     errorSnackbar.show();
+    isCreating = false;
+    return;
   }
 
 
   if (supportPercentage > 0) {
-    const tag = {
-      percentage: supportPercentage / 4,
-      transferedFrom: null
-    };
-    const maxRetries = 3;
-    for (let attempt = 0; attempt < maxRetries; attempt++) {
-      try {
-        await client.callZome({
-          cap_secret: null,
-          role_name: 'converge',
-          zome_name: 'converge',
-          fn_name: 'add_criterion_for_supporter',
-          payload: {
-            base_supporter: client.myPubKey,
-            target_criterion_hash: criterionHash,
-            tag: String(JSON.stringify(tag)),
-          },
-        });
-        break;
-      } catch (e) {
-        const msg = e?.message ?? e?.data?.data ?? '';
-        if (msg.includes('source chain head has moved') && attempt < maxRetries - 1) {
-          await new Promise(r => setTimeout(r, 150 * (attempt + 1)));
-          continue;
-        }
-        console.log(e);
-        break;
-      }
+    try {
+      const tag = {
+        percentage: supportPercentage / 4,
+        transferedFrom: null
+      };
+
+      await callZomeWithRetry({
+        cap_secret: null,
+        role_name: 'converge',
+        zome_name: 'converge',
+        fn_name: 'add_criterion_for_supporter',
+        payload: {
+          base_supporter: client.myPubKey,
+          target_criterion_hash: criterionHash,
+          tag: String(JSON.stringify(tag)),
+        },
+      });
+    } catch (e) {
+      console.log(e);
     }
   }
   dispatch('criterion-created', {  });
 
   dismissPopup()
+  isCreating = false;
 }
 
 </script>
@@ -270,8 +302,8 @@ async function createCriterion() {
           <mwc-button 
             style="display: inline-block"
             raised
-            label="Create Criterion"
-            disabled={!isCriterionValid}
+            label={isCreating ? 'Creating...' : 'Create Criterion'}
+            disabled={!isCriterionValid || isCreating}
             on:mousedown={() => createCriterion()}
           ></mwc-button>
         </div>

@@ -92,7 +92,7 @@ onMount(async () => {
   console.log("fetching deliberation");
   await refetchProposalsForDeliberation(deliberationHash, client);
   loading = false;
-  addToViewed(proposalHash, client);
+  await addToViewed(proposalHash, client);
 
   window.addEventListener("keydown", checkKey);
   

@@ -4,6 +4,8 @@ import { writable } from 'svelte/store';
 export const notifications = writable([]);
 export const viewed = writable([]);
 
+let viewedWriteQueue = Promise.resolve();
+
 export function notifications_update(new_notifications) {
     let ordered = new_notifications.sort((a, b) => parseFloat(b.timestamp) - parseFloat(a.timestamp));
     notifications.update(v => ordered)
@@ -42,7 +44,13 @@ async function createViewed(viewedHash, client) {
     }
 }
 
-export function addToViewed(hash, client) {
+function queueViewedWrite(task: () => Promise<void>) {
+    const queued = viewedWriteQueue.then(task, task);
+    viewedWriteQueue = queued.catch(() => undefined);
+    return queued;
+}
+
+export async function addToViewed(hash, client) {
     let alreadyViewed = checkIfViewed(encodeHashToBase64(hash));
     if (alreadyViewed) {
         return;
@@ -51,7 +59,7 @@ export function addToViewed(hash, client) {
         v.push(encodeHashToBase64(hash));
         return v;
     });
-    createViewed(hash, client);
+    await queueViewedWrite(() => createViewed(hash, client));
 }
 
 export function checkIfViewed(hash) {

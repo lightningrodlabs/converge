@@ -86,7 +86,7 @@ onMount(async () => {
   }
   await fetchProposal();
   console.log("proposalHash", proposalHash)
-  addToViewed(proposalHash, client);
+  await addToViewed(proposalHash, client);
   // await fetchDeliberation();
 });
 
