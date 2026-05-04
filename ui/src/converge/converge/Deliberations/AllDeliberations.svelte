@@ -27,7 +27,7 @@ allDeliberations.subscribe(value => {
       const notification: FrameNotification = {
           title: "Joined Deliberation",
           body: "Someone joined the deliberation",
-          notification_type: "change",
+          notification_type: "decision",
           icon_src: undefined,
           urgency: "low",
           timestamp: deliberator.dateJoined ? Math.round(deliberator.dateJoined / 1000) : 0,

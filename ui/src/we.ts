@@ -179,16 +179,18 @@ export const appletServices: AppletServices = {
     wal: WAL,
     recordInfo: RecordInfo
   ): Promise<AssetInfo | undefined> => {
-    console.log("looking for asset!")
+    // console.log("looking for asset!")
     // return {
     //   icon_src: `data:image/svg+xml;utf8,${ICON2}`,
     //   name: "Deliberation: hello world",
     // };
     const entryType: string = recordInfo.entryType
+    // console.log("entryType", entryType)
     if (entryType == "deliberation") {
       let dnaHash = await getMyDna(ROLE_NAME, appletClient)
       let deliberation: Deliberation;
       let record: any;
+      // console.log("hrl", wal.hrl)
       
       try {
         record = await appletClient.callZome({
@@ -198,8 +200,9 @@ export const appletServices: AppletServices = {
           fn_name: 'get_deliberation',
           payload: wal.hrl[1],
         });
+        // console.log("record", record)
         if (record) {
-          console.log(record)
+          // console.log(record)
           deliberation = decode((record.record.entry as any).Present.entry) as Deliberation;
         }
       } catch (e) {

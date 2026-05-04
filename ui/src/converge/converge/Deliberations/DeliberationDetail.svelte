@@ -158,7 +158,7 @@ onMount(async () => {
         weClient?.notifyFrame([{
           title: `New activity in ${deliberation.title}`,
           body: messagesFull[payload.message],
-          notification_type: "change",
+          notification_type: "decision",
           icon_src: undefined,
           urgency: "low",
           timestamp: Date.now()

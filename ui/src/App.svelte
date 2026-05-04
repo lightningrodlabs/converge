@@ -160,7 +160,7 @@
                         case "deliberation":
                           currentView = "deliberation-asset"
                           currentHash = weClient.renderInfo.view.wal.hrl[1]
-                          // console.log("weClient.renderInfo.view", weClient.renderInfo.view)
+                          console.log("weClient.renderInfo.view", weClient.renderInfo.view)
                           // hrlWithContext = weClient.renderInfo.view.hrlWithContext
                           break;
                         case "proposal":
@@ -257,7 +257,7 @@
         weClient?.notifyFrame([{
           title: messagesShort[payload.message],
           body: messagesFull[payload.message],
-          notification_type: "change",
+          notification_type: "decision",
           icon_src: undefined,
           urgency: "high",
           timestamp: Date.now()

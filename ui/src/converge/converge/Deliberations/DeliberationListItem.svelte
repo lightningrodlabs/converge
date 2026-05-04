@@ -16,7 +16,11 @@ const dispatch = createEventDispatcher();
 
 export let deliberation: Deliberation | undefined;
 
-export let deliberationHash: ActionHash;
+export let deliberationHash: ActionHash | undefined = undefined;
+
+$: if (!deliberationHash && (deliberation as any)?.action_hash) {
+  deliberationHash = (deliberation as any).action_hash;
+}
 
 let client: AppClient = (getContext(clientContext) as any).getClient();
 

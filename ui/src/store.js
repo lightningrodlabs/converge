@@ -1,5 +1,6 @@
 import { encodeHashToBase64 } from '@holochain/client';
 import { writable } from 'svelte/store';
+import { decode } from '@msgpack/msgpack';
 
 export const view = writable("home");
 export const viewHash = writable(new Uint8Array([]));
@@ -27,10 +28,11 @@ export function setAllDeliberations(deliberations) {
 export function updateDeliberation(updatedDeliberation) {
     console.log("updateDeliberation called with:", updatedDeliberation);
     allDeliberations.update(v => {
+        let found = false;
         let newDeliberations = v.map(d => {
             if (encodeHashToBase64(d.action_hash) === encodeHashToBase64(updatedDeliberation.record.signed_action.hashed.hash)) {
+                found = true;
                 console.log("Found matching deliberation, updating proposals from", d.proposals.length, "to", updatedDeliberation.proposals.length);
-                // Convert RecordWithLinks to DeliberationComplete structure
                 return {
                     ...d,
                     proposals: updatedDeliberation.proposals.map(link => link.target),
@@ -40,6 +42,16 @@ export function updateDeliberation(updatedDeliberation) {
             }
             return d;
         });
+        if (!found) {
+            newDeliberations.push({
+                action_hash: updatedDeliberation.record.signed_action.hashed.hash,
+                deliberation: decode(updatedDeliberation.record.entry.Present.entry),
+                proposals: updatedDeliberation.proposals.map(link => link.target),
+                criteria: updatedDeliberation.criteria.map(link => link.target),
+                outcomes: updatedDeliberation.outcomes.map(link => link.target),
+                deliberators: [],
+            });
+        }
         return newDeliberations;
     });
 }
