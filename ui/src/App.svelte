@@ -23,7 +23,7 @@
   import Header from './converge/converge/Header.svelte';
   import DeliberationsForDeliberator from './converge/converge/Deliberations/DeliberationsForDeliberator.svelte';
   import { MyProfile } from '@holochain-open-dev/profiles/dist/elements/my-profile.js';
-  import { WeaveClient, isWeaveContext, initializeHotReload, type WAL, type Hrl } from '@theweave/api';  
+  import { WeaveClient, isWeaveContext, initializeHotReload, type WAL, type Hrl } from '@theweave/api';
   import Holochain from "./assets/holochain.png";
   import type { Deliberation, ConvergeSignal } from './converge/converge/types';
   import { appletServices } from './we';
@@ -66,11 +66,11 @@
               fn_name: 'get_deliberations_for_deliberator',
               payload: client.myPubKey,
           });
-        
-          let all_records = [...records.completed, ...records.uncompleted]
-          
-          if (all_records.length > 0) {
+
+          if (records.uncompleted.length > 0) {
               navigate('dashboard');
+          } else if (records.completed.length > 0) {
+              navigate('all-deliberations');
           } else {
               navigate('instructions');
           }
@@ -160,7 +160,7 @@
                         case "deliberation":
                           currentView = "deliberation-asset"
                           currentHash = weClient.renderInfo.view.wal.hrl[1]
-                          // console.log("weClient.renderInfo.view", weClient.renderInfo.view)
+                          console.log("weClient.renderInfo.view", weClient.renderInfo.view)
                           // hrlWithContext = weClient.renderInfo.view.hrlWithContext
                           break;
                         case "proposal":
@@ -257,7 +257,7 @@
         weClient?.notifyFrame([{
           title: messagesShort[payload.message],
           body: messagesFull[payload.message],
-          notification_type: "change",
+          notification_type: "decision",
           icon_src: undefined,
           urgency: "high",
           timestamp: Date.now()

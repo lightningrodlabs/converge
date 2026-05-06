@@ -412,7 +412,7 @@ async function addRating() {
             <button on:click={e => {
               removeRatingAndFetch();
             }}
-             style="white-space: pre-line;">Remove evaluation</button>
+             class="remove-evaluation">Remove evaluation</button>
           </div>
           <!-- <div style="text-align: center; flex-direction: row; mfont-size: .8em"> -->
             <!-- <button on:click={() => openEvaluation = false}>Cancel</button> -->
@@ -440,7 +440,7 @@ async function addRating() {
             MET</span>
           </div>
           <div style="opacity: 0; text-align: center; flex-direction: row; font-size: 1em">
-            <button style="white-space: pre-line;">Remove evaluation</button>
+            <button class="remove-evaluation">Remove evaluation</button>
           </div>
         {:else}
           <div style="text-align: center; flex-direction: row; font-size: 1em;">
@@ -510,3 +510,23 @@ async function addRating() {
 {/key}
 {/if}
 {/if}
+
+<style>
+  .remove-evaluation {
+    background: none;
+    border: none;
+    color: red;
+    cursor: pointer;
+    font-size: 0.9em;
+    padding: 0;
+    margin-top: 8px;
+    white-space: pre-line;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background-color: rgba(255, 0, 0, 0.05);
+  }
+  .remove-evaluation:hover {
+    color: darkred;
+    background-color: rgba(255, 0, 0, 0.1);
+  }
+</style>

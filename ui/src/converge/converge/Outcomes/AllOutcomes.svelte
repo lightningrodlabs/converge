@@ -76,7 +76,7 @@
 <div style="font-style: italic; margin-bottom: 1em;">This is a space for links to other tools inside Moss that will continue the decision-making process.
 </div>
 <div style="display: flex; flex-direction: column">
-  {#each hashes as hash}
+  {#each hashes as hash (hash)}
     {#if deliberationHash}
       <!-- {JSON.stringify(hash)} -->
     <!-- {JSON.stringify(sortableProposals)} -->

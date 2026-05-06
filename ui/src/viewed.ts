@@ -4,6 +4,8 @@ import { writable } from 'svelte/store';
 export const notifications = writable([]);
 export const viewed = writable([]);
 
+let viewedWriteQueue = Promise.resolve();
+
 export function notifications_update(new_notifications) {
     let ordered = new_notifications.sort((a, b) => parseFloat(b.timestamp) - parseFloat(a.timestamp));
     notifications.update(v => ordered)
@@ -14,26 +16,41 @@ export function setViewed(hashes) {
 }
 
 async function createViewed(viewedHash, client) {  
-    console.log("client", client)
     const viewedEntry = { 
         viewed_hash: viewedHash,
         viewed_date: new Date().getSeconds() * 1000,
     };
-        
-    try {
-        await client.callZome({
-            cap_secret: null,
-            role_name: 'converge',
-            zome_name: 'converge',
-            fn_name: 'create_viewed',
-            payload: viewedEntry,
-        });
-    } catch (e) {
-        console.log(e)
+
+    const maxRetries = 3;
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+        try {
+            await client.callZome({
+                cap_secret: null,
+                role_name: 'converge',
+                zome_name: 'converge',
+                fn_name: 'create_viewed',
+                payload: viewedEntry,
+            });
+            return;
+        } catch (e) {
+            const msg = e?.message ?? e?.data?.data ?? '';
+            if (msg.includes('source chain head has moved') && attempt < maxRetries - 1) {
+                await new Promise(res => setTimeout(res, 150 * (attempt + 1)));
+                continue;
+            }
+            console.log(e);
+            return;
+        }
     }
 }
 
-export function addToViewed(hash, client) {
+function queueViewedWrite(task: () => Promise<void>) {
+    const queued = viewedWriteQueue.then(task, task);
+    viewedWriteQueue = queued.catch(() => undefined);
+    return queued;
+}
+
+export async function addToViewed(hash, client) {
     let alreadyViewed = checkIfViewed(encodeHashToBase64(hash));
     if (alreadyViewed) {
         return;
@@ -42,7 +59,7 @@ export function addToViewed(hash, client) {
         v.push(encodeHashToBase64(hash));
         return v;
     });
-    createViewed(hash, client);
+    await queueViewedWrite(() => createViewed(hash, client));
 }
 
 export function checkIfViewed(hash) {

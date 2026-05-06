@@ -63,4 +63,9 @@ $: nickname = $profile.status=="complete" && $profile.value ? $profile.value.ent
     .avatar-row .nickname{
         margin-left: 0.5em;
     }
+    agent-avatar {
+        /* force circle */
+        border-radius: 50%;
+        object-fit: cover;
+    }
 </style>

@@ -1,5 +1,5 @@
 <script lang="ts">
-import { createEventDispatcher, onMount, getContext } from 'svelte';
+import { createEventDispatcher, onMount, onDestroy, getContext } from 'svelte';
 import '@material/mwc-circular-progress';
 import type { EntryHash, Record, AgentPubKey, ActionHash, AppClient, NewEntryAction } from '@holochain/client';
 import { clientContext } from '../../../contexts';
@@ -23,6 +23,8 @@ let sortableCriteria = {};
 let showUnsupportedCriteria = false;
 // let numberOfUnsupportedCriteria = 0;
 let unsupportedCriteria = [];
+let refreshInterval: ReturnType<typeof setInterval> | undefined;
+let unsub: () => void;
 
 export const sortCriteria = async () => {
 // setTimeout(() => {
@@ -88,23 +90,79 @@ onMount(async () => {
 
   await fetchAndSort()
 
-  client.on('signal', signal => {
-    // console.log("signal", signal)
+  unsub = client.on('signal', async signal => {
+    // console.log("Received signal in AllCriteria", signal)
     if (signal.value.zome_name !== 'converge') return;
-    const payload = signal.value.payload as ConvergeSignal;
-    if (payload.type !== 'EntryCreated') return;
-    if (payload.app_entry.type !== 'Criterion') return;
-    console.log("signal", signal)
+    const payload = signal.value.payload as any;
 
-    // hashes = [...hashes, payload.action.hashed.hash];
-    // sortedCriteria = [...sortedCriteria, payload.action.hashed.hash];
-    // fetchCriteria()
-    fetchAndSort()
+    if (payload.deliberation_hash) {
+      const signalDelibHash = Object.values(payload.deliberation_hash).join(',');
+      const currentDelibHash = Array.isArray(deliberationHash) ? deliberationHash.join(',') : deliberationHash.toString();
+      if (signalDelibHash !== currentDelibHash) {
+        return; // Signal is for a different deliberation
+      }
+    }
+    
+    // Handle custom activity notification signals
+    if (payload.message === 'criterion-created') {
+        // console.log("Criterion created signal for this deliberation - refreshing criteria");
+        // console.log("Current criteria count:", hashes?.length || 0);
+        // Just refresh the criteria list (our fetchCriteria handles deduplication)
+        await new Promise(r => setTimeout(r, 5000)); // slight delay to ensure data consistency
+        await fetchCriteria();
+        // console.log("After refresh, criteria count:", hashes?.length || 0);
+      return;
+    } else if (payload.message === 'criterion-comment-created') {
+      // console.log("Criterion comment created signal received", payload)
+      const context = JSON.parse(payload.context);
+      if (context.criterion_hash) {
+        // Refresh ratings for that criterion
+      }
+      return;
+    }
+    
+    // Handle standard ConvergeSignal format (if used elsewhere)
+    if (payload.type === 'EntryCreated' && payload.app_entry?.type === 'Criterion') {
+      // console.log("Criterion signal received", payload)
+      const newCriterionHash = payload.action.hashed.hash;
+      const hashToString = (hash) => Array.isArray(hash) ? hash.join(',') : hash.toString();
+      
+      if (!hashes) {
+        hashes = [];
+      }
+      
+      const existingHashStrings = new Set(hashes.map(hashToString));
+      
+      if (!existingHashStrings.has(hashToString(newCriterionHash))) {
+        hashes = [...hashes, newCriterionHash];
+        sortedCriteria = [newCriterionHash, ...sortedCriteria];
+        criteriaCount = hashes.length;
+        // console.log("Added new criterion from signal", newCriterionHash);
+      }
+    }
   });
+
+  // Set up interval to refresh criteria every 60 seconds
+  // Note: This only checks for NEW criteria and appends them
+  // Existing criteria components are not recreated, preserving their state
+  refreshInterval = setInterval(async () => {
+    await fetchCriteria();
+  }, 60000);
+});
+
+onDestroy(() => {
+  // Clean up the interval when component is destroyed
+  if (refreshInterval) {
+    clearInterval(refreshInterval);
+  }
+  if (unsub) {
+    unsub();
+  }
 });
 
 async function fetchCriteria() {
   try {
+    // console.log("fetchCriteria called, current hashes:", hashes?.length || 0);
     const records = await client.callZome({
       cap_secret: null,
       role_name: 'converge',
@@ -112,19 +170,50 @@ async function fetchCriteria() {
       fn_name: 'get_criteria_for_deliberation',
       payload: deliberationHash,
     });
-    criteriaCount = records.length;
-    hashes = records.map(r => r.signed_action.hashed.hash);
-    sortedCriteria = hashes;
-    sortedCriteria.reverse()
-    console.log("fetched criteria", sortedCriteria)
+    
+    const newHashes = records.map(r => r.signed_action.hashed.hash);
+    const newCount = records.length;
+    // console.log("Received from backend:", newCount, "criteria");
+    
+    // Convert hashes to strings for comparison
+    const hashToString = (hash) => Array.isArray(hash) ? hash.join(',') : hash.toString();
+    
+    if (!hashes || hashes.length === 0) {
+      // First load - set everything
+      criteriaCount = newCount;
+      hashes = newHashes;
+      sortedCriteria = [...newHashes];
+      sortedCriteria.reverse();
+      // console.log("fetched criteria (initial load)", sortedCriteria.length, "criteria");
+    } else {
+      // Check for new criteria only
+      const existingHashStrings = new Set(hashes.map(hashToString));
+      const newCriteriaHashes = newHashes.filter(hash => !existingHashStrings.has(hashToString(hash)));
+      
+      // console.log("Checking for new criteria. Existing:", hashes.length, "New found:", newCriteriaHashes.length);
+      
+      if (newCriteriaHashes.length > 0) {
+        // Add new criteria to the beginning of the list (since we reverse)
+        hashes = [...hashes, ...newCriteriaHashes];
+        sortedCriteria = [...newCriteriaHashes.reverse(), ...sortedCriteria];
+        criteriaCount = hashes.length;
+        // console.log("fetched criteria (added new)", newCriteriaHashes.length, "new criteria. Total now:", hashes.length);
+      } else {
+        // console.log("fetched criteria (no new criteria found)");
+      }
+      
+      // Update count in case some were deleted (we just won't remove them from UI to preserve state)
+      criteriaCount = newCount;
+    }
   } catch (e) {
+    console.error("Error fetching criteria:", e);
     error = e;
   }
   loading = false;
 }
 
-async function joinSignal() {
-  dispatch('criterion-rated',{})
+async function joinSignal(event) {
+  dispatch('criterion-rated', event.detail)
 }
 
 </script>

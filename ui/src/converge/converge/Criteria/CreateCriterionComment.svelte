@@ -88,7 +88,7 @@ async function createCriterionComment() {
       payload: criterionCommentEntry,
     });
 
-    addToViewed(record.signed_action.hashed.hash, client);
+    await addToViewed(record.signed_action.hashed.hash, client);
 
     comment = ''
     commentReference = null;
@@ -125,7 +125,7 @@ async function createCriterionCommentCustom(inputComment, comment_reference, obj
         payload: criterionCommentEntry,
       });
 
-      addToViewed(record.signed_action.hashed.hash, client);
+      await addToViewed(record.signed_action.hashed.hash, client);
 
       comment = ''
       commentReference = null;

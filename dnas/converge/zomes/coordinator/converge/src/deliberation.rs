@@ -105,28 +105,41 @@ pub struct DeliberationComplete {
 }
 
 #[hdk_extern]
-pub fn get_all_deliberations_complete(_: ()) -> ExternResult<Vec<DeliberationComplete>> {
-    let path = Path::from("all_deliberations");
-    let links = get_links(
-        LinkQuery::try_new(
-            path.path_entry_hash()?,
-            LinkTypes::AllDeliberations,
-        )?, GetStrategy::Local
-    )?;
-    let get_input: Vec<GetInput> = links
-        .into_iter()
-        .map(|link| GetInput::new(
-            ActionHash::try_from(link.target)
-                .map_err(|_| {
-                    wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))
-                })
-                .unwrap()
-                .into(),
-            GetOptions::default(),
-        ))
-        .collect();
-    let records = HDK.with(|hdk| hdk.borrow().get(get_input))?;
-    let records: Vec<Record> = records.into_iter().filter_map(|r| r).collect();
+pub fn get_all_deliberations_complete(hash: Option<ActionHash>) -> ExternResult<Vec<DeliberationComplete>> {
+    let mut records: Vec<Record> = vec![];
+    if hash.is_some() {
+        records.push(
+            get(hash.unwrap(), GetOptions::default())?
+                .ok_or(
+                    wasm_error!(
+                        WasmErrorInner::Guest(String::from("Could not find the Deliberation"))
+                    ),
+                )?
+        );
+    } else {
+        let path = Path::from("all_deliberations");
+        let links = get_links(
+            LinkQuery::try_new(
+                path.path_entry_hash()?,
+                LinkTypes::AllDeliberations,
+            )?, GetStrategy::Local
+        )?;
+        let get_input: Vec<GetInput> = links
+            .into_iter()
+            .map(|link| GetInput::new(
+                ActionHash::try_from(link.target)
+                    .map_err(|_| {
+                        wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))
+                    })
+                    .unwrap()
+                    .into(),
+                GetOptions::default(),
+            ))
+            .collect();
+        let records_input = HDK.with(|hdk| hdk.borrow().get(get_input))?;
+        records = records_input.into_iter().filter_map(|r| r).collect();
+    }
+
     let mut output: Vec<DeliberationComplete> = vec![];
     for item in records.iter() {
         let deliberation: Deliberation = item
@@ -140,14 +153,16 @@ pub fn get_all_deliberations_complete(_: ()) -> ExternResult<Vec<DeliberationCom
             )?
             .try_into()?;
 
-        let deliberators = get_links(
+        let deliberator_links = get_links(
             LinkQuery::try_new(
                 item.signed_action.hashed.hash.clone(),
                 LinkTypes::DeliberationToDeliberators,
             )?, GetStrategy::Local
-        )?
-        .into_iter()
-        .map(|link| {
+        )?;
+        
+        // Deduplicate deliberators by agent key, keeping most recent entry
+        let mut deliberators_map: std::collections::BTreeMap<Vec<u8>, (DeliberatorsWithCompleted, Timestamp)> = std::collections::BTreeMap::new();
+        for link in deliberator_links {
             let tag = link.tag;
             let tag_str = String::from_utf8(tag.0).unwrap();
             let agent_pub_key = AgentPubKey::from(
@@ -157,13 +172,29 @@ pub fn get_all_deliberations_complete(_: ()) -> ExternResult<Vec<DeliberationCom
                     })
                     .unwrap(),
             );
-            DeliberatorsWithCompleted {
+            let agent_bytes = agent_pub_key.get_raw_39().to_vec();
+            let deliberator_info = DeliberatorsWithCompleted {
                 deliberator: agent_pub_key,
                 completed: tag_str == "completed",
                 dateJoined: Some(link.timestamp)
+            };
+            
+            // Always keep the most recent entry for each agent
+            let timestamp = link.timestamp;
+            let should_insert = match deliberators_map.get(&agent_bytes) {
+                Some((_, existing_timestamp)) => timestamp > *existing_timestamp,
+                None => true,
+            };
+            
+            if should_insert {
+                deliberators_map.insert(agent_bytes, (deliberator_info, timestamp));
             }
-        })
-        .collect();
+        }
+        
+        let deliberators: Vec<DeliberatorsWithCompleted> = deliberators_map
+            .into_values()
+            .map(|(info, _)| info)
+            .collect();
 
         let criteria = get_links(
             LinkQuery::try_new(

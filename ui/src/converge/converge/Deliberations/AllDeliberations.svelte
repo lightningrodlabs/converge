@@ -1,5 +1,5 @@
 <script lang="ts">
-import { onMount, getContext } from 'svelte';
+import { onMount, onDestroy, getContext } from 'svelte';
 import '@material/mwc-circular-progress';
 import type { EntryHash, Record, AgentPubKey, ActionHash, AppClient, NewEntryAction } from '@holochain/client';
 import { clientContext } from '../../../contexts';
@@ -11,6 +11,7 @@ import DeliberationListItem from './DeliberationListItem.svelte';
 import { allDeliberations } from '../../../store.js';
 import type { FrameNotification, WAL } from '@theweave/api';
 import { getMyDna } from '../../../util';
+    import SvgIcon from '../../../SvgIcon.svelte';
 
 let myDNA;
 let deliberations = [];
@@ -26,7 +27,7 @@ allDeliberations.subscribe(value => {
       const notification: FrameNotification = {
           title: "Joined Deliberation",
           body: "Someone joined the deliberation",
-          notification_type: "change",
+          notification_type: "decision",
           icon_src: undefined,
           urgency: "low",
           timestamp: deliberator.dateJoined ? Math.round(deliberator.dateJoined / 1000) : 0,
@@ -47,16 +48,31 @@ let client: AppClient = (getContext(clientContext) as any).getClient();
 // let hashes: Array<ActionHash> | undefined;
 let loading = true;
 let error: any = undefined;
+let intervalId: ReturnType<typeof setInterval> | undefined;
+let lastMouseActivity = Date.now();
 
 $: deliberations, loading, error;
+
+function handleMouseActivity() {
+  lastMouseActivity = Date.now();
+}
 
 onMount(async () => {
   myDNA = await getMyDna("converge", client);
   await refetchDeliberations(client);
   loading = false;
-  setInterval(() => {
-    refetchDeliberations(client);
-  }, 60000);
+  
+  // Track mouse activity
+  window.addEventListener('mousemove', handleMouseActivity);
+  window.addEventListener('mousedown', handleMouseActivity);
+  
+  intervalId = setInterval(() => {
+    const timeSinceLastActivity = Date.now() - lastMouseActivity;
+    // Only refetch if there was activity in the past minute
+    if (timeSinceLastActivity < 4 * 60 * 1000) {
+      refetchDeliberations(client);
+    }
+  }, 20 * 1000);
   // await fetchDeliberations();
   // client.on('signal', signal => {
   //   if (signal.value.zome_name !== 'converge') return;
@@ -65,6 +81,14 @@ onMount(async () => {
   //   if (payload.app_entry.type !== 'Deliberation') return;
   //   hashes = [...hashes, payload.action.hashed.hash];
   // });
+});
+
+onDestroy(() => {
+  if (intervalId) {
+    clearInterval(intervalId);
+  }
+  window.removeEventListener('mousemove', handleMouseActivity);
+  window.removeEventListener('mousedown', handleMouseActivity);
 });
 
 // async function fetchDeliberations() {
@@ -85,7 +109,26 @@ onMount(async () => {
 
 </script>
 
-<h2>All Deliberations</h2>
+<h2 style="display: flex;">All Deliberations
+  <!-- refresh -->
+   <span 
+    title="Search for new deliberations"
+    class={'refresh-icon ' + (loading ? 'spinning' : '')}
+    style="height: 20px;"
+    on:click={async () => {
+      console.log('refresh clicked');
+      loading = true;
+      await new Promise(r => setTimeout(r, 1000)); // allow spinning icon to show
+      await refetchDeliberations(client);
+      loading = false;
+    }}
+   >
+    <SvgIcon
+      icon="faArrosRotate"
+      size="20px"
+    />
+  </span>
+</h2>
 
 {#if loading}
 <div style="display: flex; flex: 1; align-items: center; justify-content: center">

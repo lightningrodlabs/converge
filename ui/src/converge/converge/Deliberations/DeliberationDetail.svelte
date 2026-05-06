@@ -1,5 +1,5 @@
 <script lang="ts">
-import { createEventDispatcher, onMount, getContext } from 'svelte';
+import { createEventDispatcher, onMount, onDestroy, getContext } from 'svelte';
 import '@material/mwc-circular-progress';
 import { decode } from '@msgpack/msgpack';
 import { type Record, type ActionHash, type AppAgentClient, type EntryHash, type AgentPubKey, type DnaHash, encodeHashToBase64 } from '@holochain/client';
@@ -30,7 +30,7 @@ import type { WALUrl } from '../../../util';
 import AllOutcomes from '../Outcomes/AllOutcomes.svelte';
 import CreateOutcome from '../Outcomes/CreateOutcome.svelte';
 import { allDeliberations, allProposals } from '../../../store.js';
-import { refetchDeliberations, refetchProposalsForDeliberation, refetchEvaluationsForProposals } from '../../../refetch';
+import { refetchDeliberations, refetchProposalsForDeliberation, refetchEvaluationsForProposals, refetchDeliberation } from '../../../refetch';
 import ProposalListItem from '../Proposals/ProposalListItem.svelte';
 import { decodeHashFromBase64 } from '@holochain/client';
 
@@ -44,6 +44,7 @@ let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
 let outdated = false;
 let loading = true;
+let refreshing = false;
 let error: any = undefined;
 
 let record: Record | undefined;
@@ -74,6 +75,7 @@ let detectSort;
 let outcomesTab;
 let outcomeCount;
 let reloadKey = 0;
+let refreshInterval: ReturnType<typeof setInterval> | undefined;
 
 allProposals.subscribe(value => {
   proposalsComplete = value;
@@ -107,10 +109,11 @@ onMount(async () => {
   if (value) {
     const deliberationComplete = value.find(d => encodeHashToBase64(d.action_hash) == encodeHashToBase64(deliberationHash));
     if (deliberationComplete) {
+      console.log("Store updated, proposals count:", deliberationComplete.proposals.length);
       deliberation = deliberationComplete.deliberation;
       criteria = deliberationComplete.criteria;
       criteriaCount = deliberationComplete.criteria.length;
-       proposalHashes = deliberationComplete.proposals.map(p => encodeHashToBase64(p));
+      proposalHashes = deliberationComplete.proposals.map(p => encodeHashToBase64(p));
       proposalCount = deliberationComplete.proposals.length;
       outcomes = deliberationComplete.outcomes;
       outcomeCount = deliberationComplete.outcomes.length;
@@ -127,11 +130,12 @@ onMount(async () => {
   //   throw new Error(`The deliberationHash input is required for the DeliberationDetail element`);
   // }
   // await fetchDeliberation();
-  await refetchDeliberations(client);
+  // await refetchDeliberations(client);
+  await refetchDeliberation(deliberationHash, client);
   await refetchProposalsForDeliberation(deliberationHash, client);
   await refetchEvaluationsForProposals(proposalHashes.map(p => p), client);
 
-  client.on('signal', signal => {
+  client.on('signal', async signal => {
     if (deliberation) {
 
       // console.log("signal", signal)
@@ -149,26 +153,52 @@ onMount(async () => {
       }
       if (updateMessages.includes(payload.message) && (payload.deliberation_hash.join(',') == deliberationHash.join(','))) {
         // console.log("activity received", payload)
-        outdated = true;
+        // outdated = true;
         
         weClient?.notifyFrame([{
           title: `New activity in ${deliberation.title}`,
           body: messagesFull[payload.message],
-          notification_type: "change",
+          notification_type: "decision",
           icon_src: undefined,
           urgency: "low",
           timestamp: Date.now()
         }])
-        
-        lastMessage = messagesFull[payload.message];
-      } else if (payload.message == "criterion-comment-created") {
-        console.log("this is a new message", payload)
-        // refresh the page
-        // refresh comments for the criterion
-      }
+        console.log("this is a new activity", payload)
+        // lastMessage = messagesFull[payload.message];
+      if (
+        ['proposal-created', 'outcome-created', 'new-join', 'outcome-created']
+        .includes(payload.message)
+      ) {
+        console.log("Urgent message received, refetching deliberation...", payload.message)
+          await new Promise(r => setTimeout(r, 5000)); // wait a bit to ensure data is ready
+          await refetchDeliberations(client, deliberationHash);
+          if (payload.message === 'proposal-created') {
+            console.log("Refetching proposals after deliberation update...")
+            await refetchProposalsForDeliberation(deliberationHash, client);
+            console.log("Proposals refetched")
+          }
+        }
+      } 
+      // else if (payload.message == "criterion-comment-created") {
+      //   console.log("this is a new message", payload)
+      // }
     }
     // console.log(payload)
   });
+
+  // Set up interval to refresh data every 60 seconds
+  refreshInterval = setInterval(async () => {
+    await refetchDeliberation(deliberationHash, client);
+    await refetchProposalsForDeliberation(deliberationHash, client);
+    await refetchEvaluationsForProposals(proposalHashes.map(p => p), client);
+  }, 60000);
+});
+
+onDestroy(() => {
+  // Clean up the interval when component is destroyed
+  if (refreshInterval) {
+    clearInterval(refreshInterval);
+  }
 });
 
 const copyWalToPocket = () => {
@@ -194,7 +224,8 @@ async function sendActivityNotice(event, context = "") {
         deliberation_hash: deliberationHash,
         message: event,
         title: deliberation.title,
-        context: context
+        context: context,
+        agent: client.myPubKey
       },
     });
   } catch (e: any) {
@@ -219,8 +250,8 @@ async function joinDeliberation() {
     deliberatorsRaw = [...deliberatorsRaw, client.myPubKey]
     // dispatch('deliberation-joined', { deliberationHash: deliberationHash });
   } catch (e: any) {
-    errorSnackbar.labelText = `Error joining the deliberation: ${e.data.data}`;
-    errorSnackbar.show();
+    errorSnackbar.labelText = `Error joining the deliberation: ${e.data}`;
+    // errorSnackbar.show();
   }
 }
 
@@ -317,7 +348,7 @@ function expandSearch2() {
 <span>Error fetching the deliberation: {JSON.stringify(error)}</span>
 {:else}
 
-{#if outdated && lastMessage}
+<!-- {#if outdated && lastMessage}
 <div on:click={async () => {refetchDeliberations(client);
   await refetchProposalsForDeliberation(deliberationHash, client);
   await refetchEvaluationsForProposals(proposalHashes.map(p => p), client);
@@ -329,7 +360,7 @@ function expandSearch2() {
 <div style="cursor: pointer; display: flex; flex-direction: row; align-items: center; justify-content: center; background: transparent; padding: 4px;">
   <span style="margin-right: 8px">&nbsp;</span>
 </div>
-{/if}
+{/if} -->
 
 <div style="display: flex; flex-direction: column;">
   <!-- <div style="display: flex; flex-direction: row">
@@ -340,7 +371,29 @@ function expandSearch2() {
   <div style="display: flex; flex-direction: row; justify-content: space-between;">
     <div style="display: flex; flex-direction: column">
       <div style="display: flex; flex-direction: row; margin-bottom: 0px">
-        <h1 style="margin-top: 4px; margin-bottom:4px">{ deliberation.title }</h1>
+        <h1 style="margin-top: 4px; margin-bottom:4px">{ deliberation.title }
+          <!-- refresh button -->
+          <span 
+            title="Search for new deliberations"
+            class={'refresh-icon ' + (refreshing ? 'spinning' : '')}
+            on:click={async () => {
+              console.log('refresh clicked');
+              refreshing = true;
+              await new Promise(r => setTimeout(r, 1000)); // allow spinning icon to show
+              await refetchDeliberations(client, deliberationHash);
+              // await refetchDeliberation(deliberationHash, client);
+              // await refetchProposalsForDeliberation(deliberationHash, client);
+              await refetchEvaluationsForProposals(proposalHashes.map(p => p), client);
+              reloadKey += 1;
+              refreshing = false;
+            }}
+          >
+            <SvgIcon
+              icon="faArrosRotate"
+              size="20px"
+            />
+          </span>
+        </h1>
       </div>
       
       <div style="display: flex; flex-direction: row; margin-bottom: 6px">
@@ -496,7 +549,7 @@ function expandSearch2() {
   <!-- {#if criteriaSort == "support"} -->
   
   {#key reloadKey}
-  <AllCriteria on:criterion-rated={() => {newActivity("criterion-rated")}} deliberationHash={deliberationHash} 
+  <AllCriteria on:criterion-rated={(e) => {newActivity("criterion-rated", JSON.stringify(e.detail))}} deliberationHash={deliberationHash} 
     on:criterion-comment-created={(e) => {newActivity("criterion-comment-created", e.detail.context)}}
     filter={criteriaFilter} sort={criteriaSort} bind:sortedCriteria bind:criteriaCount bind:sortCriteria  />
   {/key}
@@ -526,9 +579,16 @@ function expandSearch2() {
   {#if proposalHashes.length === 0}
     <span style="font-style: italic;">Try adding a proposal. How could we meet our criteria?</span>
   {:else if proposalCount > 0}
-    {#each proposalHashes as proposalHash}
+    {#each proposalHashes as proposalHash (proposalHash)}
       {@const fullProposal = proposalsComplete[proposalHash]}
-      <ProposalListItem on:proposal-rated={() => {newActivity("proposal-rated")}} on:outcome-created={(v) => {dispatch('outcome-created', v)}} proposal={fullProposal} proposalHash={decodeHashFromBase64(proposalHash)} {deliberationHash} hashes={proposalHashes.map(h => decodeHashFromBase64(h))}  />
+      <ProposalListItem 
+        on:proposal-rated={() => {newActivity("proposal-rated")}} 
+        on:outcome-created={(v) => {dispatch('outcome-created', v)}} 
+        proposal={fullProposal} 
+        proposalHash={decodeHashFromBase64(proposalHash)} 
+        {deliberationHash} 
+        hashes={proposalHashes.map(h => decodeHashFromBase64(h))}  
+      />
       <!-- {JSON.stringify(fullProposal)} -->
     {/each}
   {/if}

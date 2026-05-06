@@ -47,7 +47,7 @@ main {
 .white-container {
   background-color: white;
   padding: 25px;
-  padding-top: 0;
+  padding-top: 12px;
   min-height: 70vh;
   /* min-width: 68%; */
   /* width: 94% !important; */
@@ -212,9 +212,9 @@ nav logo {
   margin: 0 12px;
 }
 
-.notifications, .dashboard, .bulletin {
+.notifications, .dashboard, .bulletin, .info {
   /* width: 24px; */
-  height: 26px;
+  height: 33px;
   color: #d6ddeb;
   /* margin: 0 10px; */
   margin-right: 10px;

@@ -23,13 +23,13 @@ const dispatch = createEventDispatcher();
 
 export let proposalHash: ActionHash;
 export let deliberationHash: ActionHash | undefined;
-export let allProposalScores;
-export let filter;
 export let hashes;
-export let sortableProposals;
-export let anyProposalPopup;
-export let userRatings;
 export let proposal: Proposal | undefined;
+// export let allProposalScores;
+// export let sortableProposals;
+let filter;
+let anyProposalPopup;
+let userRatings;
 // let deliberationHash: ActionHash | undefined;
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
@@ -86,7 +86,7 @@ onMount(async () => {
   }
   await fetchProposal();
   console.log("proposalHash", proposalHash)
-  addToViewed(proposalHash, client);
+  await addToViewed(proposalHash, client);
   // await fetchDeliberation();
 });
 
@@ -247,7 +247,7 @@ async function deleteProposal() {
 <div class="two-sides">
   <div style="display: flex; flex: 1; flex-direction: column">
     <div style="display: flex; flex-direction: row; margin-bottom: 3px">
-      <span style="white-space: pre-line">{ proposal.title }</span>
+      <span style="white-space: pre-line">{ proposal?.title }</span>
     </div>
 
     <!-- <div style="flex: 1; display: flex; flex-direction: row;">
@@ -268,7 +268,7 @@ async function deleteProposal() {
     
     <div class="overflow-content" style="display: flex; flex-direction: row; font-size: 0.8em; position: relative; margin-top: 3px;">
       <span style="white-space: pre-line; max-height: 44px; overflow: hidden;">
-        { proposal.description }
+        { proposal?.description }
       </span>
     </div>
 

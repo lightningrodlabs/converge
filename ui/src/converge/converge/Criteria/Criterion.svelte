@@ -59,6 +59,12 @@ onMount(async () => {
   await fetchCriterion();
   await addToViewed(criterionHash, client);
   await fetchSupport();
+  // Retry once if no supporters found — handles the race where support
+  // was being written concurrently when this component first mounted.
+  if (supporters?.length === 0) {
+    await new Promise(r => setTimeout(r, 1500));
+    await fetchSupport();
+  }
   await fetchObjections();
   // console.log(objections)
   let criterionHashKey = criterionHash.join(',')
@@ -80,6 +86,11 @@ onMount(async () => {
     if (signal.value.zome_name !== 'converge') return;
     const payload = signal.value.payload as ConvergeSignal;
 
+    // Only handle specific message types this component cares about
+    if (!payload.message || !['criterion-comment-created', 'criterion-rated'].includes(payload.message)) {
+      return;
+    }
+
     if (payload.message == "criterion-comment-created") {
       console.log("this is a new message", payload)
       if (JSON.stringify(payload.deliberation_hash), JSON.stringify(deliberationHash)) {
@@ -90,6 +101,48 @@ onMount(async () => {
           unreadCommentsNumber = unreadCommentsNumber + 1;
         }
       }
+
+      await fetchSupport();
+      await fetchObjections();
+    }
+
+    // Handle criterion-rated activity notification (when someone else rates)
+    if (payload.message == "criterion-rated") {
+      // Skip signals from my own actions
+      const signalAgent = payload.agent ? Object.values(payload.agent).join(',') : null;
+      const myAgent = client.myPubKey.join(',');
+      
+      if (signalAgent === myAgent) {
+        // console.log("Skipping own signal");
+        return;
+      }
+      
+      // console.log("criterion-rated signal received from another user", payload)
+      
+      const signalDelibHash = Object.values(payload.deliberation_hash).join(',');
+      const currentDelibHash = Array.isArray(deliberationHash) ? deliberationHash.join(',') : deliberationHash.toString();
+      
+      if (signalDelibHash === currentDelibHash) {
+        // Check if this signal is for this specific criterion
+        try {
+          const contextData = JSON.parse(payload.context);
+          const notificationCriterionHash = contextData.criterionHash;
+          const currentCriterionHash = encodeHashToBase64(criterionHash);
+          
+          // console.log("Comparing hashes:", notificationCriterionHash, currentCriterionHash);
+          
+          if (notificationCriterionHash === currentCriterionHash) {
+            // console.log("Refreshing this criterion's data from remote signal");
+            // Refresh support and objections for this criterion only
+            // This updates data from other users' ratings
+            await fetchSupport();
+            await fetchObjections();
+          }
+        } catch (e) {
+          console.error("Error parsing criterion-rated context:", e);
+        }
+      }
+      return;
     }
 
     if (!['LinkCreated', 'LinkDeleted'].includes(payload.type)) return;
@@ -157,9 +210,11 @@ async function fetchSupport() {
         }, new Map()).values()
       );
 
-      // add to unsupported if no supporters
+      // add to unsupported if no supporters, remove if supporters found
       if (supporters.length === 0) {
         unsupportedCriteria = Array.from(new Set([...unsupportedCriteria, criterionHash]));
+      } else {
+        unsupportedCriteria = unsupportedCriteria.filter(h => h !== criterionHash);
       }
 
       support = supporters.reduce((sum, item) => {
@@ -247,7 +302,7 @@ async function addSupport() {
         tag: String(JSON.stringify(tag)),
       },
     });
-    dispatch('criterion-rated', { criterionHash: criterionHash });
+    dispatch('criterion-rated', { criterionHash: encodeHashToBase64(criterionHash) });
     // openSupport = false;
     // if (record) {
     //   console.log("record: ")
@@ -371,14 +426,18 @@ async function scrollToDiv() {
             IMPORTANT</span>
             <mwc-slider
               style="--mdc-theme-primary: blue;"
-              on:change={e => {
+              on:change={async (e) => {
                 addSupportPercentage = e.detail.value
                 mySupport = addSupportPercentage / scoringLevel;
                 // console.log(addSupportPercentage, mySupport)
                 if (addSupportPercentage == 0) {
-                  removeSupport()
+                  await removeSupport()
+                  await fetchSupport();
+                  await fetchObjections();
                 } else {
-                  addSupport()
+                  await addSupport()
+                  await fetchSupport();
+                  await fetchObjections();
                 }
               }}
               value={addSupportPercentage}
@@ -449,7 +508,14 @@ async function scrollToDiv() {
   <!-- SLIDER END -->
 
   <!-- COMMENTS BUTTON -->
-  <div style="flex-direction: column; font-size: .8em; width: 100%; text-align: right;">
+  <div style="flex-direction: column;
+    font-size: 0.8em;
+    width: 100%;
+    text-align: right;
+    display: flex;
+    flex-direction: row;
+    height: 0;
+    justify-content: right;">
     <button style="height: 80%; width: 80px; 
     background-color: transparent;
     border: none;" 
@@ -491,18 +557,38 @@ async function scrollToDiv() {
       </mwc-icon-button>
       </button>
     {/if}
+
+    {#if sponsored && supporters?.length === 1}
+      <button style="height: 80%;
+      background-color: transparent;
+      border: none;"
+      on:click={async () => {
+        await removeSupport();
+        await fetchSupport();
+        await fetchObjections();
+      }}
+      >
+      <mwc-icon-button style="top: 8px; position: relative; background-color: #f1f1f1; border-radius: 100%; --mdc-icon-size: 10px;">
+        <span style="font-size: 11px; top: -1px; left: -6px; position: relative;">Hide</span>
+      </mwc-icon-button>
+      </button>
+    {/if}
   </div>
 
 </div>
 </div>
   <!-- {#if showSlider} -->
   <!-- <div style="display: flex; flex-direction: row;"> -->
-    <CriterionPopup on:switched-tab={scrollToDiv} {criterionHash} {objections} {deliberationHash} {showSlider} bind:criterionPopupBoolean {criterion} {supporters} {sponsored} {support} {addSupportPercentage} {mySupport} on:transfer={(e) => {
+    <CriterionPopup on:switched-tab={scrollToDiv} {criterionHash} {objections} {deliberationHash} {showSlider} bind:criterionPopupBoolean {criterion} {supporters} {sponsored} {support} {addSupportPercentage} {mySupport} on:transfer={async (e) => {
+      await fetchSupport();
+      await fetchObjections();
       dispatch('transfer', e.detail);
     }}
     on:criterion-comment-created={(e) => {
       unreadCommentsNumber = Math.max(0, commentsNumber - countViewed(commentHashes));
       dispatch('criterion-comment-created', e.detail);
+      fetchSupport();
+      fetchObjections();
     }} />
   <!-- </div> -->
   <!-- {/if} -->

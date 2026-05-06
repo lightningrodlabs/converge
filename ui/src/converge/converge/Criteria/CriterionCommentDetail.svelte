@@ -74,7 +74,7 @@ onMount(async () => {
     throw new Error(`The criterionCommentHash input is required for the CriterionCommentDetail element`);
   }
   await fetchCriterionComment();
-  addToViewed(criterionCommentHash, client);
+  await addToViewed(criterionCommentHash, client);
   loading = false;
 });
 
