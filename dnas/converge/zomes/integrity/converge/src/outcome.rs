@@ -8,28 +8,28 @@ pub struct Outcome {
     pub proposal: Option<ActionHash>,
 }
 pub fn validate_create_outcome(
-    _action: EntryCreationAction,
+    _action: TypedAction<EntryCreationData>,
     _outcome: Outcome,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Valid)
 }
 pub fn validate_update_outcome(
-    _action: Update,
+    _action: TypedAction<UpdateData>,
     _outcome: Outcome,
-    _original_action: EntryCreationAction,
+    _original_action: TypedAction<EntryCreationData>,
     _original_outcome: Outcome,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Invalid(String::from("Outcomes cannot be updated")))
 }
 pub fn validate_delete_outcome(
-    _action: Delete,
-    _original_action: EntryCreationAction,
+    _action: TypedAction<DeleteData>,
+    _original_action: TypedAction<EntryCreationData>,
     _original_outcome: Outcome,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Valid)
 }
 pub fn validate_create_link_all_outcomes(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     _base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -50,8 +50,8 @@ pub fn validate_create_link_all_outcomes(
     Ok(ValidateCallbackResult::Valid)
 }
 pub fn validate_delete_link_all_outcomes(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,

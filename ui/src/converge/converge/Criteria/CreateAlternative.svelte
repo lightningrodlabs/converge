@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, getContext, createEventDispatcher } from 'svelte';
   import '@material/mwc-circular-progress';
-  import type { Record, EntryHash, ActionHash, AgentPubKey, AppAgentClient, NewEntryAction } from '@holochain/client';
+  import type { Record, EntryHash, ActionHash, AgentPubKey, AppAgentClient } from '@holochain/client';
   import { clientContext } from '../../../contexts';
   import { decode } from '@msgpack/msgpack';
   import CreateCriterion from './CreateCriterion.svelte';
@@ -47,7 +47,7 @@
       if (linkType !== 'CriterionToCriteria') return;
       // console.log(payload)
       fetchAlternatives()
-      // alternatives = [...hashes, payload.action.hashed.content.target_address];
+      // alternatives = [...hashes, (payload.action.hashed.content.data as CreateLink).target_address];
     });
   });
 

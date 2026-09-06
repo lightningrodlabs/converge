@@ -444,14 +444,14 @@ function expandSearch2() {
         <!-- {JSON.stringify(deliberation.discussion)} -->
         {#if isWeaveContext() && deliberation.discussion}
           {@const conversation = weaveUrlToWAL(deliberation.discussion)}
-          {#await weClient.assetInfo(conversation)}
+          {#await weClient.assets.assetInfo(conversation)}
             <sl-button size="small" loading></sl-button>
           {:then { attachableInfo }}
           <button class="discussion-button"
             on:click={(e)=>{
               e.stopPropagation()
               // activeTab = "discussion"
-              weClient.openWal(conversation)
+              weClient.openAsset(conversation)
               // weClient.openAppletBlock(hrlWithContext.hrl[0], "active_boards", hrlWithContext.context)
             }} >
               <SvgIcon icon="faComments" size="22px"/>

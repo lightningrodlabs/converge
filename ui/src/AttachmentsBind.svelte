@@ -5,7 +5,7 @@
     // import type { Board } from "./board";
     import SvgIcon from "./SvgIcon.svelte";
     import type { AppletInfo } from "@theweave/api";
-    import { HoloHashMap, type EntryHashMap } from "@holochain-open-dev/utils";
+    import { HoloHashMap, type EntryHashMap } from "@holochain/client";
     import type { EntryHash } from "@holochain/client";
     import { hashEqual } from "./util";
     import { weClientStored } from './store.js';

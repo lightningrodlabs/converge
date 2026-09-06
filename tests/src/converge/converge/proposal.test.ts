@@ -1,7 +1,7 @@
 import { assert, test } from "vitest";
 
-import { runScenario, pause, CallableCell } from '@holochain/tryorama';
-import { NewEntryAction, ActionHash, Record, AppBundleSource, fakeDnaHash, fakeActionHash, fakeAgentPubKey, fakeEntryHash } from '@holochain/client';
+import { dhtSync, runScenario, CallableCell } from '@holochain-open-dev/tryorama';
+import { ActionHash, Record, fakeDnaHash, fakeActionHash, fakeAgentPubKey, fakeEntryHash } from '@holochain/client';
 import { decode } from '@msgpack/msgpack';
 
 import { createProposal, sampleProposal } from './common.js';
@@ -13,7 +13,7 @@ test('create Proposal', async () => {
     const testAppPath = process.cwd() + '/../workdir/converge.happ';
 
     // Set up the app to be installed 
-    const appSource = { appBundleSource: { path: testAppPath } };
+    const appSource = { appBundleSource: { type: 'path' as const, value: testAppPath } };
 
     // Add 2 players with the test app to the Scenario. The returned players
     // can be destructured.
@@ -36,7 +36,7 @@ test('create and read Proposal', async () => {
     const testAppPath = process.cwd() + '/../workdir/converge.happ';
 
     // Set up the app to be installed 
-    const appSource = { appBundleSource: { path: testAppPath } };
+    const appSource = { appBundleSource: { type: 'path' as const, value: testAppPath } };
 
     // Add 2 players with the test app to the Scenario. The returned players
     // can be destructured.
@@ -53,7 +53,7 @@ test('create and read Proposal', async () => {
     assert.ok(record);
 
     // Wait for the created entry to be propagated to the other node.
-    await pause(1200);
+    await dhtSync([alice, bob], alice.cells[0].cell_id[0]);
 
     // Bob gets the created Proposal
     const createReadOutput: Record = await bob.cells[0].callZome({
@@ -73,7 +73,7 @@ test('create and delete Proposal', async () => {
     const testAppPath = process.cwd() + '/../workdir/converge.happ';
 
     // Set up the app to be installed 
-    const appSource = { appBundleSource: { path: testAppPath } };
+    const appSource = { appBundleSource: { type: 'path' as const, value: testAppPath } };
 
     // Add 2 players with the test app to the Scenario. The returned players
     // can be destructured.
@@ -96,7 +96,7 @@ test('create and delete Proposal', async () => {
     assert.ok(deleteActionHash);
 
     // Wait for the entry deletion to be propagated to the other node.
-    await pause(1200);
+    await dhtSync([alice, bob], alice.cells[0].cell_id[0]);
         
     // Bob tries to get the deleted Proposal
     const readDeletedOutput = await bob.cells[0].callZome({

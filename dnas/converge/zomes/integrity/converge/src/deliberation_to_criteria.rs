@@ -1,6 +1,6 @@
 use hdi::prelude::*;
 pub fn validate_create_link_deliberation_to_criteria(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -34,8 +34,8 @@ pub fn validate_create_link_deliberation_to_criteria(
     Ok(ValidateCallbackResult::Valid)
 }
 pub fn validate_delete_link_deliberation_to_criteria(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -43,7 +43,7 @@ pub fn validate_delete_link_deliberation_to_criteria(
     Ok(ValidateCallbackResult::Valid)
 }
 pub fn validate_create_link_criterion_to_deliberations(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -77,8 +77,8 @@ pub fn validate_create_link_criterion_to_deliberations(
     Ok(ValidateCallbackResult::Valid)
 }
 pub fn validate_delete_link_criterion_to_deliberations(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,

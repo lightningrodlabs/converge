@@ -64,7 +64,7 @@ onMount(async () => {
   //   if (payload.type !== 'LinkCreated') return;
   //   if (payload.link_type !== 'DeliberationToProposals') return;
 
-  //   proposals = [...proposals, payload.action.hashed.content.target_address];
+  //   proposals = [...proposals, (payload.action.hashed.content.data as CreateLink).target_address];
   // });
 });
 

@@ -15,7 +15,7 @@ import AttachmentsDialog from "../../../AttachmentsDialog.svelte"
 import SvgIcon from "../../../SvgIcon.svelte";
 import { WeaveClient, isWeaveContext, initializeHotReload, type WAL, type Hrl, weaveUrlFromWal } from '@theweave/api';
 import AttachmentsBind from '../../../AttachmentsBind.svelte';
-import { HoloHashMap, type EntryHashMap } from "@holochain-open-dev/utils";
+import { HoloHashMap, type EntryHashMap } from "@holochain/client";
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 import { weClientStored } from '../../../store.js';
 import app from '../../../main';

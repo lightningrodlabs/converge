@@ -8,7 +8,7 @@
   import FaHome from 'svelte-icons/fa/FaHome.svelte';
   import { navigate, view } from '../../store.js';
   import { clientContext } from '../../contexts';
-  import type { EntryHash, Record, AgentPubKey, ActionHash, AppClient, NewEntryAction } from '@holochain/client';
+  import type { EntryHash, Record, AgentPubKey, ActionHash, AppClient } from '@holochain/client';
   import { onMount, setContext, getContext } from 'svelte';
   import { decode } from '@msgpack/msgpack';
   import "@holochain-open-dev/profiles/dist/elements/agent-avatar.js";

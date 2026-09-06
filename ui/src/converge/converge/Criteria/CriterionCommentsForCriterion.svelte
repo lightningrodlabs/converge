@@ -2,7 +2,7 @@
 import { onMount, afterUpdate, getContext, createEventDispatcher } from 'svelte';
 import '@material/mwc-circular-progress';
 import '@material/mwc-checkbox';
-import type { Record, EntryHash, ActionHash, AgentPubKey, AppAgentClient, NewEntryAction } from '@holochain/client';
+import type { Record, EntryHash, ActionHash, AgentPubKey, AppAgentClient } from '@holochain/client';
 import { decodeHashFromBase64, encodeHashToBase64 } from "@holochain/client";
 import { clientContext } from '../../../contexts';
 import CriterionCommentDetail from './CriterionCommentDetail.svelte';
@@ -71,7 +71,7 @@ onMount(async () => {
   //   let linkType = Object.keys(payload.link_type)[0]
   //   console.log(linkType)
   //   if (linkType !== 'CriterionToCriterionComments') return;
-  //   hashes = [...hashes, payload.action.hashed.content.target_address];
+  //   hashes = [...hashes, (payload.action.hashed.content.data as CreateLink).target_address];
   //   scrollToBottom();
   // });
 

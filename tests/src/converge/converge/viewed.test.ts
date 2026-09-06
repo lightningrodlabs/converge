@@ -1,15 +1,13 @@
 import { assert, test } from "vitest";
 
-import { runScenario, dhtSync, CallableCell } from '@holochain/tryorama';
+import { runScenario, dhtSync, CallableCell } from '@holochain-open-dev/tryorama';
 import {
-  NewEntryAction,
   ActionHash,
   Record,
   Link,
   CreateLink,
   DeleteLink,
   SignedActionHashed,
-  AppBundleSource,
   fakeActionHash,
   fakeAgentPubKey,
   fakeEntryHash
@@ -25,7 +23,7 @@ test('create Viewed', async () => {
     const testAppPath = process.cwd() + '/../workdir/converge.happ';
 
     // Set up the app to be installed 
-    const appSource = { appBundleSource: { path: testAppPath } };
+    const appSource = { appBundleSource: { type: 'path' as const, value: testAppPath } };
 
     // Add 2 players with the test app to the Scenario. The returned players
     // can be destructured.
@@ -48,7 +46,7 @@ test('create and read Viewed', async () => {
     const testAppPath = process.cwd() + '/../workdir/converge.happ';
 
     // Set up the app to be installed 
-    const appSource = { appBundleSource: { path: testAppPath } };
+    const appSource = { appBundleSource: { type: 'path' as const, value: testAppPath } };
 
     // Add 2 players with the test app to the Scenario. The returned players
     // can be destructured.
@@ -86,7 +84,7 @@ test('create and delete Viewed', async () => {
     const testAppPath = process.cwd() + '/../workdir/converge.happ';
 
     // Set up the app to be installed 
-    const appSource = { appBundleSource: { path: testAppPath } };
+    const appSource = { appBundleSource: { type: 'path' as const, value: testAppPath } };
 
     // Add 2 players with the test app to the Scenario. The returned players
     // can be destructured.

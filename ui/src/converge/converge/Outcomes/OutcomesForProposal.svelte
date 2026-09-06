@@ -1,7 +1,7 @@
 <script lang="ts">
 import { onMount, getContext } from 'svelte';
 import '@material/mwc-circular-progress';
-import type { Record, EntryHash, ActionHash, AgentPubKey, AppAgentClient, NewEntryAction } from '@holochain/client';
+import type { Record, EntryHash, ActionHash, AgentPubKey, AppAgentClient, CreateLink } from '@holochain/client';
 import { clientContext } from '../../../contexts';
 import type { ConvergeSignal } from '../types';
 import OutcomeLink from './OutcomeLink.svelte';
@@ -43,7 +43,7 @@ onMount(async () => {
     if (payload.type !== 'LinkCreated') return;
     if (payload.link_type !== 'ProposalToOutcomes') return;
 
-    hashes = [...hashes, payload.action.hashed.content.target_address];
+    hashes = [...hashes, (payload.action.hashed.content.data as CreateLink).target_address];
   });
 });
 

@@ -1,7 +1,12 @@
 import { defineConfig } from '@theweave/cli';
 
 export default defineConfig({
-  toolCurations: [],
+  toolCurations: [
+    {
+      url: 'https://raw.githubusercontent.com/lightningrodlabs/weave-tool-curation/refs/heads/main/0.16/lists/curations-0.16.json',
+      useLists: ['default'],
+    },
+  ],
   groups: [
     {
       name: 'Lightning Rod Labs',

@@ -1,7 +1,7 @@
 use hdi::prelude::*;
 
 pub fn validate_create_link_proposal_to_evaluators(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     _target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -30,8 +30,8 @@ pub fn validate_create_link_proposal_to_evaluators(
 }
 
 pub fn validate_delete_link_proposal_to_evaluators(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,

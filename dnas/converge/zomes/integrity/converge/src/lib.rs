@@ -99,49 +99,49 @@ pub fn validate_agent_joining(
 #[hdk_extern]
 pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
     match op.flattened::<EntryTypes, LinkTypes>()? {
-        FlatOp::StoreEntry(store_entry) => {
+        FlatOp::CreateEntry(store_entry) => {
             match store_entry {
                 OpEntry::CreateEntry { app_entry, action } => {
                     match app_entry {
                         EntryTypes::Deliberation(deliberation) => {
                             validate_create_deliberation(
-                                EntryCreationAction::Create(action),
+                                action.into(),
                                 deliberation,
                             )
                         }
                         EntryTypes::Criterion(criterion) => {
                             validate_create_criterion(
-                                EntryCreationAction::Create(action),
+                                action.into(),
                                 criterion,
                             )
                         }
                         EntryTypes::Proposal(proposal) => {
                             validate_create_proposal(
-                                EntryCreationAction::Create(action),
+                                action.into(),
                                 proposal,
                             )
                         }
                         EntryTypes::Outcome(outcome) => {
                             validate_create_outcome(
-                                EntryCreationAction::Create(action),
+                                action.into(),
                                 outcome,
                             )
                         }
                         EntryTypes::CriterionComment(criterion_comment) => {
                             validate_create_criterion_comment(
-                                EntryCreationAction::Create(action),
+                                action.into(),
                                 criterion_comment,
                             )
                         }
                         EntryTypes::Settings(settings) => {
                             validate_create_settings(
-                                EntryCreationAction::Create(action),
+                                action.into(),
                                 settings,
                             )
                         }
                         EntryTypes::Viewed(viewed) => {
                             validate_create_viewed(
-                                EntryCreationAction::Create(action),
+                                action.into(),
                                 viewed,
                             )
                         }
@@ -151,43 +151,43 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     match app_entry {
                         EntryTypes::Deliberation(deliberation) => {
                             validate_create_deliberation(
-                                EntryCreationAction::Update(action),
+                                action.into(),
                                 deliberation,
                             )
                         }
                         EntryTypes::Criterion(criterion) => {
                             validate_create_criterion(
-                                EntryCreationAction::Update(action),
+                                action.into(),
                                 criterion,
                             )
                         }
                         EntryTypes::Proposal(proposal) => {
                             validate_create_proposal(
-                                EntryCreationAction::Update(action),
+                                action.into(),
                                 proposal,
                             )
                         }
                         EntryTypes::Outcome(outcome) => {
                             validate_create_outcome(
-                                EntryCreationAction::Update(action),
+                                action.into(),
                                 outcome,
                             )
                         }
                         EntryTypes::CriterionComment(criterion_comment) => {
                             validate_create_criterion_comment(
-                                EntryCreationAction::Update(action),
+                                action.into(),
                                 criterion_comment,
                             )
                         }
                         EntryTypes::Settings(settings) => {
                             validate_create_settings(
-                                EntryCreationAction::Update(action),
+                                action.into(),
                                 settings,
                             )
                         }
                         EntryTypes::Viewed(viewed) => {
                             validate_create_viewed(
-                                EntryCreationAction::Update(action),
+                                action.into(),
                                 viewed,
                             )
                         }
@@ -196,7 +196,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 _ => Ok(ValidateCallbackResult::Valid),
             }
         }
-        FlatOp::RegisterUpdate(update_entry) => {
+        FlatOp::Update(update_entry) => {
             match update_entry {
                 _ => {
                     Ok(
@@ -207,7 +207,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 }
             }
         }
-        FlatOp::RegisterDelete(delete_entry) => {
+        FlatOp::Delete(delete_entry) => {
             match delete_entry {
                 _ => {
                     Ok(
@@ -218,13 +218,13 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 }
             }
         }
-        FlatOp::RegisterCreateLink {
-            link_type,
-            base_address,
-            target_address,
-            tag,
-            action,
-        } => {
+        FlatOp::Link(OpLink::CreateLink { link_type, action }) => {
+            // 0.6 destructured these three at the match site; 0.7 keeps them on the
+            // action's data. hdi 0.7.3 op.rs:493-509 read all three off this same
+            // CreateLink action, so the values handed on below are identical.
+            let base_address = action.data.base_address.clone();
+            let target_address = action.data.target_address.clone();
+            let tag = action.data.tag.clone();
             match link_type {
                 LinkTypes::DeliberationUpdates => {
                     validate_create_link_deliberation_updates(
@@ -428,14 +428,14 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 }
             }
         }
-        FlatOp::RegisterDeleteLink {
-            link_type,
-            base_address,
-            target_address,
-            tag,
-            original_action,
-            action,
-        } => {
+        FlatOp::Link(OpLink::DeleteLink { original_action, link_type, action }) => {
+            // 0.6's flattener (hdi 0.7.3 op.rs:511-531) built base/target/tag for this
+            // op from the CREATE link action, so all three come off original_action.
+            // NOT from hdi 0.8's OpLink::base_address(), which returns the delete
+            // action's base for this case.
+            let base_address = original_action.data.base_address.clone();
+            let target_address = original_action.data.target_address.clone();
+            let tag = original_action.data.tag.clone();
             match link_type {
                 LinkTypes::DeliberationUpdates => {
                     validate_delete_link_deliberation_updates(
@@ -664,66 +664,68 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 }
             }
         }
-        FlatOp::StoreRecord(store_record) => {
+        FlatOp::CreateRecord(store_record) => {
             match store_record {
                 OpRecord::CreateEntry { app_entry, action } => {
                     match app_entry {
                         EntryTypes::Deliberation(deliberation) => {
                             validate_create_deliberation(
-                                EntryCreationAction::Create(action),
+                                action.into(),
                                 deliberation,
                             )
                         }
                         EntryTypes::Criterion(criterion) => {
                             validate_create_criterion(
-                                EntryCreationAction::Create(action),
+                                action.into(),
                                 criterion,
                             )
                         }
                         EntryTypes::Proposal(proposal) => {
                             validate_create_proposal(
-                                EntryCreationAction::Create(action),
+                                action.into(),
                                 proposal,
                             )
                         }
                         EntryTypes::Outcome(outcome) => {
                             validate_create_outcome(
-                                EntryCreationAction::Create(action),
+                                action.into(),
                                 outcome,
                             )
                         }
                         EntryTypes::CriterionComment(criterion_comment) => {
                             validate_create_criterion_comment(
-                                EntryCreationAction::Create(action),
+                                action.into(),
                                 criterion_comment,
                             )
                         }
                         EntryTypes::Settings(settings) => {
                             validate_create_settings(
-                                EntryCreationAction::Create(action),
+                                action.into(),
                                 settings,
                             )
                         }
                         EntryTypes::Viewed(viewed) => {
                             validate_create_viewed(
-                                EntryCreationAction::Create(action),
+                                action.into(),
                                 viewed,
                             )
                         }
                     }
                 }
-                OpRecord::UpdateEntry {
-                    original_action_hash,
-                    app_entry,
-                    action,
-                    ..
-                } => {
+                OpRecord::UpdateEntry { app_entry, action, .. } => {
+                    // 0.6's OpRecord::UpdateEntry carried a redundant original_action_hash
+                    // field; 0.7 dropped it. It was copied from this action's data.
+                    let original_action_hash = action
+                        .data
+                        .original_action_address
+                        .clone();
                     let original_record = must_get_valid_record(original_action_hash)?;
                     let original_action = original_record.action().clone();
-                    let original_action = match original_action {
-                        Action::Create(create) => EntryCreationAction::Create(create),
-                        Action::Update(update) => EntryCreationAction::Update(update),
-                        _ => {
+                    let original_action = match TypedAction::<
+                        EntryCreationData,
+                    >::try_from(original_action) {
+                        Ok(original_action) => original_action,
+                        Err(_) => {
                             return Ok(
                                 ValidateCallbackResult::Invalid(
                                     "Original action for an update must be a Create or Update action"
@@ -735,7 +737,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     match app_entry {
                         EntryTypes::Deliberation(deliberation) => {
                             let result = validate_create_deliberation(
-                                EntryCreationAction::Update(action.clone()),
+                                action.clone().into(),
                                 deliberation.clone(),
                             )?;
                             if let ValidateCallbackResult::Valid = result {
@@ -766,7 +768,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         EntryTypes::Criterion(criterion) => {
                             let result = validate_create_criterion(
-                                EntryCreationAction::Update(action.clone()),
+                                action.clone().into(),
                                 criterion.clone(),
                             )?;
                             if let ValidateCallbackResult::Valid = result {
@@ -797,7 +799,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         EntryTypes::Proposal(proposal) => {
                             let result = validate_create_proposal(
-                                EntryCreationAction::Update(action.clone()),
+                                action.clone().into(),
                                 proposal.clone(),
                             )?;
                             if let ValidateCallbackResult::Valid = result {
@@ -828,7 +830,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         EntryTypes::Outcome(outcome) => {
                             let result = validate_create_outcome(
-                                EntryCreationAction::Update(action.clone()),
+                                action.clone().into(),
                                 outcome.clone(),
                             )?;
                             if let ValidateCallbackResult::Valid = result {
@@ -859,7 +861,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         EntryTypes::CriterionComment(criterion_comment) => {
                             let result = validate_create_criterion_comment(
-                                EntryCreationAction::Update(action.clone()),
+                                action.clone().into(),
                                 criterion_comment.clone(),
                             )?;
                             if let ValidateCallbackResult::Valid = result {
@@ -890,7 +892,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         EntryTypes::Settings(settings) => {
                             let result = validate_create_settings(
-                                EntryCreationAction::Update(action.clone()),
+                                action.clone().into(),
                                 settings.clone(),
                             )?;
                             if let ValidateCallbackResult::Valid = result {
@@ -921,7 +923,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         EntryTypes::Viewed(viewed) => {
                             let result = validate_create_viewed(
-                                EntryCreationAction::Update(action.clone()),
+                                action.clone().into(),
                                 viewed.clone(),
                             )?;
                             if let ValidateCallbackResult::Valid = result {
@@ -952,13 +954,16 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                     }
                 }
-                OpRecord::DeleteEntry { original_action_hash, action, .. } => {
+                OpRecord::DeleteEntry { action, .. } => {
+                    // 0.6 carried original_action_hash on the variant; it was this field.
+                    let original_action_hash = action.data.deletes_address.clone();
                     let original_record = must_get_valid_record(original_action_hash)?;
                     let original_action = original_record.action().clone();
-                    let original_action = match original_action {
-                        Action::Create(create) => EntryCreationAction::Create(create),
-                        Action::Update(update) => EntryCreationAction::Update(update),
-                        _ => {
+                    let original_action = match TypedAction::<
+                        EntryCreationData,
+                    >::try_from(original_action) {
+                        Ok(original_action) => original_action,
+                        Err(_) => {
                             return Ok(
                                 ValidateCallbackResult::Invalid(
                                     "Original action for a delete must be a Create or Update action"
@@ -1055,13 +1060,12 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                     }
                 }
-                OpRecord::CreateLink {
-                    base_address,
-                    target_address,
-                    tag,
-                    link_type,
-                    action,
-                } => {
+                OpRecord::CreateLink { link_type, action } => {
+                    // 0.6's variant carried base/target/tag; 0.7 dropped them. hdi 0.7.3
+                    // op.rs:69-85 copied all three off this create action.
+                    let base_address = action.data.base_address.clone();
+                    let target_address = action.data.target_address.clone();
+                    let tag = action.data.tag.clone();
                     match link_type {
                         LinkTypes::DeliberationUpdates => {
                             validate_create_link_deliberation_updates(
@@ -1265,11 +1269,18 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                     }
                 }
-                OpRecord::DeleteLink { original_action_hash, base_address, action } => {
+                OpRecord::DeleteLink { action } => {
+                    // 0.6's variant carried original_action_hash and base_address; 0.7
+                    // dropped both. hdi 0.7.3 op.rs:87-93 read them off THIS delete
+                    // action (link_add_address / base_address), not off the create link.
+                    let original_action_hash = action.data.link_add_address.clone();
+                    let base_address = action.data.base_address.clone();
                     let record = must_get_valid_record(original_action_hash)?;
-                    let create_link = match record.action() {
-                        Action::CreateLink(create_link) => create_link.clone(),
-                        _ => {
+                    let create_link = match TypedAction::<
+                        CreateLinkData,
+                    >::try_from(record.action().clone()) {
+                        Ok(create_link) => create_link,
+                        Err(_) => {
                             return Ok(
                                 ValidateCallbackResult::Invalid(
                                     "The action that a DeleteLink deletes must be a CreateLink"
@@ -1293,8 +1304,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::AllDeliberations => {
@@ -1302,8 +1313,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::DeliberationToCriteria => {
@@ -1311,8 +1322,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::CriterionToDeliberations => {
@@ -1320,8 +1331,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::DeliberationToProposals => {
@@ -1329,8 +1340,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::ProposalToDeliberations => {
@@ -1338,8 +1349,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::DeliberationToOutcomes => {
@@ -1347,8 +1358,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::OutcomeToDeliberations => {
@@ -1356,8 +1367,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::SupporterToCriteria => {
@@ -1365,8 +1376,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::CriterionToSupporters => {
@@ -1374,8 +1385,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::ProposalToCriteria => {
@@ -1383,8 +1394,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::ObjectorToCriteria => {
@@ -1392,8 +1403,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::CriterionToObjectors => {
@@ -1401,8 +1412,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::AllCriteria => {
@@ -1410,8 +1421,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::AllProposals => {
@@ -1419,8 +1430,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::AllOutcomes => {
@@ -1428,8 +1439,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::DeliberatorToDeliberations => {
@@ -1437,8 +1448,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::DeliberationToDeliberators => {
@@ -1446,8 +1457,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::CriterionToCriteria => {
@@ -1455,8 +1466,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::CriterionCommentUpdates => {
@@ -1464,8 +1475,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::AllCriterionComments => {
@@ -1473,8 +1484,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::CriterionToCriterionComments => {
@@ -1482,8 +1493,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::SettingsUpdates => {
@@ -1491,8 +1502,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::ProposalToOutcomes => {
@@ -1500,8 +1511,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                         LinkTypes::ProposalToEvaluators => {
@@ -1509,8 +1520,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 action,
                                 create_link.clone(),
                                 base_address,
-                                create_link.target_address,
-                                create_link.tag,
+                                create_link.target_address.clone(),
+                                create_link.tag.clone(),
                             )
                         }
                     }
@@ -1528,13 +1539,26 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 _ => Ok(ValidateCallbackResult::Valid),
             }
         }
-        FlatOp::RegisterAgentActivity(agent_activity) => {
+        FlatOp::AgentActivity(agent_activity) => {
             match agent_activity {
                 OpActivity::CreateAgent { agent, action } => {
-                    let previous_action = must_get_action(action.prev_action)?;
-                    match previous_action.action() {
-                        Action::AgentValidationPkg(
-                            AgentValidationPkg { membrane_proof, .. },
+                    // 0.6's Create.prev_action was an infallible field; 0.7's
+                    // TypedAction::prev_action() is Option (None only for the genesis
+                    // Dna action, which a CreateAgent never is).
+                    let prev_action_hash = action
+                        .prev_action()
+                        .cloned()
+                        .ok_or(
+                            wasm_error!(
+                                WasmErrorInner::Guest(
+                                    "CreateAgent action must have a previous action".to_string(),
+                                )
+                            ),
+                        )?;
+                    let previous_action = must_get_action(prev_action_hash)?;
+                    match &previous_action.action().data {
+                        ActionData::AgentValidationPkg(
+                            AgentValidationPkgData { membrane_proof, .. },
                         ) => validate_agent_joining(agent, membrane_proof),
                         _ => {
                             Ok(

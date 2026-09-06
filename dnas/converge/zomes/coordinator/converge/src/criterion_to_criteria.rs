@@ -2,6 +2,7 @@ use hdk::prelude::*;
 use converge_integrity::*;
 
 use std::collections::HashSet;
+use hdk::hdi::flat_op::TypedAction;
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AddCriterionForCriterionInput {
     pub base_criterion_hash: ActionHash,
@@ -65,14 +66,19 @@ pub fn get_alternative_link(link_hash: ActionHash) -> ExternResult<Alternative> 
     let mut criterion_hash: ActionHash;
     debug!("criterion hash");
     if let Some(l) = link.clone() {
-        let o: CreateLink = l.signed_action.hashed.content.try_into().unwrap();
-        tag = String::from_utf8(o.tag.0).unwrap();
-        base_criterion_hash = ActionHash::try_from(o.base_address)
+        let o: TypedAction<CreateLinkData> = l
+            .signed_action
+            .hashed
+            .content
+            .try_into()
+            .unwrap();
+        tag = String::from_utf8(o.data.tag.0).unwrap();
+        base_criterion_hash = ActionHash::try_from(o.data.base_address)
             .map_err(|_| {
                 wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))
             })
             .unwrap();
-        criterion_hash = ActionHash::try_from(o.target_address)
+        criterion_hash = ActionHash::try_from(o.data.target_address)
             .map_err(|_| {
                 wasm_error!(WasmErrorInner::Guest("Expected actionhash".into()))
             })

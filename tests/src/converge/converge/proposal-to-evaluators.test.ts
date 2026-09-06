@@ -2,18 +2,16 @@ import { assert, test } from "vitest";
 
 import {
   ActionHash,
-  AppBundleSource,
   CreateLink,
   DeleteLink,
   fakeActionHash,
   fakeAgentPubKey,
   fakeEntryHash,
   Link,
-  NewEntryAction,
   Record,
   SignedActionHashed,
 } from "@holochain/client";
-import { CallableCell, dhtSync, runScenario } from "@holochain/tryorama";
+import { CallableCell, dhtSync, runScenario } from "@holochain-open-dev/tryorama";
 import { decode } from "@msgpack/msgpack";
 
 import { createProposal } from "./common.js";
@@ -25,7 +23,7 @@ test("link a Proposal to a Evaluator", async () => {
     const testAppPath = process.cwd() + "/../workdir/converge.happ";
 
     // Set up the app to be installed
-    const appSource = { appBundleSource: { path: testAppPath } };
+    const appSource = { appBundleSource: { type: 'path' as const, value: testAppPath } };
 
     // Add 2 players with the test app to the Scenario. The returned players
     // can be destructured.
@@ -87,7 +85,7 @@ test("link a Proposal to a Evaluator", async () => {
     assert.equal(linksOutput.length, 0);
 
     // Bob gets the deleted links
-    let deletedLinksOutput: Array<[SignedActionHashed<CreateLink>, SignedActionHashed<DeleteLink>[]]> = await bob
+    let deletedLinksOutput: Array<[SignedActionHashed, SignedActionHashed[]]> = await bob
       .cells[0].callZome({
         zome_name: "converge",
         fn_name: "get_deleted_evaluators_for_proposal",

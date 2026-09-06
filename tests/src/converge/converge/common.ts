@@ -1,5 +1,5 @@
-import { CallableCell } from '@holochain/tryorama';
-import { NewEntryAction, ActionHash, Record, AppBundleSource, fakeActionHash, fakeAgentPubKey, fakeEntryHash, fakeDnaHash } from '@holochain/client';
+import { CallableCell } from '@holochain-open-dev/tryorama';
+import { ActionHash, Record, fakeActionHash, fakeAgentPubKey, fakeEntryHash, fakeDnaHash } from '@holochain/client';
 
 
 
@@ -33,11 +33,24 @@ export async function sampleCriterion(cell: CallableCell, partialCriterion = {})
     };
 }
 
-export async function createCriterion(cell: CallableCell, criterion = undefined): Promise<Record> {
+// `create_criterion` takes `CreateCriterionInput { criterion, deliberation }`, not a
+// bare Criterion. The scaffolded helper sent the bare entry, which fails to
+// deserialize in the coordinator. A Criterion is always created against a
+// Deliberation, so create one when the caller does not supply a hash.
+export async function createCriterion(
+    cell: CallableCell,
+    criterion = undefined,
+    deliberationHash: ActionHash | undefined = undefined,
+): Promise<Record> {
+    const deliberation = deliberationHash
+        ?? (await createDeliberation(cell)).signed_action.hashed.hash;
     return cell.callZome({
       zome_name: "converge",
       fn_name: "create_criterion",
-      payload: criterion || await sampleCriterion(cell),
+      payload: {
+        criterion: criterion || await sampleCriterion(cell),
+        deliberation,
+      },
     });
 }
 
@@ -53,11 +66,22 @@ export async function sampleProposal(cell: CallableCell, partialProposal = {}) {
     };
 }
 
-export async function createProposal(cell: CallableCell, proposal = undefined): Promise<Record> {
+// `create_proposal` takes `CreateProposalInput { proposal, deliberation }`; same
+// scaffold mismatch as createCriterion above.
+export async function createProposal(
+    cell: CallableCell,
+    proposal = undefined,
+    deliberationHash: ActionHash | undefined = undefined,
+): Promise<Record> {
+    const deliberation = deliberationHash
+        ?? (await createDeliberation(cell)).signed_action.hashed.hash;
     return cell.callZome({
       zome_name: "converge",
       fn_name: "create_proposal",
-      payload: proposal || await sampleProposal(cell),
+      payload: {
+        proposal: proposal || await sampleProposal(cell),
+        deliberation,
+      },
     });
 }
 
@@ -77,11 +101,23 @@ export async function sampleCriterionComment(cell: CallableCell, partialCriterio
     };
 }
 
-export async function createCriterionComment(cell: CallableCell, criterionComment = undefined): Promise<Record> {
+// `create_criterion_comment` takes
+// `CreateCriterionCommentInput { criterion_comment, criterion_hash }`; same
+// scaffold mismatch. A comment always hangs off a Criterion.
+export async function createCriterionComment(
+    cell: CallableCell,
+    criterionComment = undefined,
+    criterionHash: ActionHash | undefined = undefined,
+): Promise<Record> {
+    const criterion_hash = criterionHash
+        ?? (await createCriterion(cell)).signed_action.hashed.hash;
     return cell.callZome({
       zome_name: "converge",
       fn_name: "create_criterion_comment",
-      payload: criterionComment || await sampleCriterionComment(cell),
+      payload: {
+        criterion_comment: criterionComment || await sampleCriterionComment(cell),
+        criterion_hash,
+      },
     });
 }
 

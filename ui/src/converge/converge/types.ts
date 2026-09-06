@@ -4,36 +4,31 @@ import type {
   DnaHash,
   SignedActionHashed,
   EntryHash, 
-  AgentPubKey,
-  Create,
-  Update,
-  Delete,
-  CreateLink,
-  DeleteLink
+  AgentPubKey
 } from '@holochain/client';
 
 import type { HrlB64WithContext, Hrl } from '@theweave/api';
 
 export type ConvergeSignal = {
   type: 'EntryCreated';
-  action: SignedActionHashed<Create>;
+  action: SignedActionHashed;
   app_entry: EntryTypes;
 } | {
   type: 'EntryUpdated';
-  action: SignedActionHashed<Update>;
+  action: SignedActionHashed;
   app_entry: EntryTypes;
   original_app_entry: EntryTypes;
 } | {
   type: 'EntryDeleted';
-  action: SignedActionHashed<Delete>;
+  action: SignedActionHashed;
   original_app_entry: EntryTypes;
 } | {
   type: 'LinkCreated';
-  action: SignedActionHashed<CreateLink>;
+  action: SignedActionHashed;
   link_type: string;
 } | {
   type: 'LinkDeleted';
-  action: SignedActionHashed<DeleteLink>;
+  action: SignedActionHashed;
   link_type: string;
 };
 

@@ -7,28 +7,28 @@ pub struct Proposal {
     pub attachments: Option<Vec<String>>,
 }
 pub fn validate_create_proposal(
-    _action: EntryCreationAction,
+    _action: TypedAction<EntryCreationData>,
     _proposal: Proposal,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Valid)
 }
 pub fn validate_update_proposal(
-    _action: Update,
+    _action: TypedAction<UpdateData>,
     _proposal: Proposal,
-    _original_action: EntryCreationAction,
+    _original_action: TypedAction<EntryCreationData>,
     _original_proposal: Proposal,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Invalid(String::from("Proposals cannot be updated")))
 }
 pub fn validate_delete_proposal(
-    _action: Delete,
-    _original_action: EntryCreationAction,
+    _action: TypedAction<DeleteData>,
+    _original_action: TypedAction<EntryCreationData>,
     _original_proposal: Proposal,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Valid)
 }
 pub fn validate_create_link_all_proposals(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     _base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -49,8 +49,8 @@ pub fn validate_create_link_all_proposals(
     Ok(ValidateCallbackResult::Valid)
 }
 pub fn validate_delete_link_all_proposals(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,

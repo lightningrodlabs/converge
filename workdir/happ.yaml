@@ -12,7 +12,4 @@ roles:
       modifiers:
         network_seed: ~
         properties: ~
-        quantum_time: ~
-      installed_hash: ~
-      _version: ~
       clone_limit: 0

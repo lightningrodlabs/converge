@@ -135,15 +135,6 @@
             case "main":
               // here comes your rendering logic for the main view
               break;
-            case "block":
-              switch(weClient.renderInfo.view.block) {
-                case "active_boards":
-                  currentView = "dashboard"
-                  break;
-                default:
-                  throw new Error("Unknown applet-view block type:"+weClient.renderInfo.view.block);
-              }
-              break;
             case "creatable":
               switch (weClient.renderInfo.view.name) {
                 case "Deliberation":

@@ -9,28 +9,28 @@ pub struct Deliberation {
     pub discussion: Option<String>,
 }
 pub fn validate_create_deliberation(
-    _action: EntryCreationAction,
+    _action: TypedAction<EntryCreationData>,
     _deliberation: Deliberation,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Valid)
 }
 pub fn validate_update_deliberation(
-    _action: Update,
+    _action: TypedAction<UpdateData>,
     _deliberation: Deliberation,
-    _original_action: EntryCreationAction,
+    _original_action: TypedAction<EntryCreationData>,
     _original_deliberation: Deliberation,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Valid)
 }
 pub fn validate_delete_deliberation(
-    _action: Delete,
-    _original_action: EntryCreationAction,
+    _action: TypedAction<DeleteData>,
+    _original_action: TypedAction<EntryCreationData>,
     _original_deliberation: Deliberation,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Valid)
 }
 pub fn validate_create_link_deliberation_updates(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -64,8 +64,8 @@ pub fn validate_create_link_deliberation_updates(
     Ok(ValidateCallbackResult::Valid)
 }
 pub fn validate_delete_link_deliberation_updates(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
@@ -77,7 +77,7 @@ pub fn validate_delete_link_deliberation_updates(
     )
 }
 pub fn validate_create_link_all_deliberations(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     _base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -98,8 +98,8 @@ pub fn validate_create_link_all_deliberations(
     Ok(ValidateCallbackResult::Valid)
 }
 pub fn validate_delete_link_all_deliberations(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,

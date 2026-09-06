@@ -6,28 +6,28 @@ pub struct Viewed {
     pub viewed_date: Timestamp,
 }
 pub fn validate_create_viewed(
-    _action: EntryCreationAction,
+    _action: TypedAction<EntryCreationData>,
     _viewed: Viewed,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Valid)
 }
 pub fn validate_update_viewed(
-    _action: Update,
+    _action: TypedAction<UpdateData>,
     _viewed: Viewed,
-    _original_action: EntryCreationAction,
+    _original_action: TypedAction<EntryCreationData>,
     _original_viewed: Viewed,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Invalid(String::from("Vieweds cannot be updated")))
 }
 pub fn validate_delete_viewed(
-    _action: Delete,
-    _original_action: EntryCreationAction,
+    _action: TypedAction<DeleteData>,
+    _original_action: TypedAction<EntryCreationData>,
     _original_viewed: Viewed,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Valid)
 }
 pub fn validate_create_link_all_viewed(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     _base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -54,8 +54,8 @@ pub fn validate_create_link_all_viewed(
     Ok(ValidateCallbackResult::Valid)
 }
 pub fn validate_delete_link_all_viewed(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,

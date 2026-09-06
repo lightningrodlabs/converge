@@ -1,7 +1,7 @@
 import { assert, test } from "vitest";
 
-import { runScenario, pause, CallableCell } from '@holochain/tryorama';
-import { NewEntryAction, ActionHash, Record, AppBundleSource,  fakeActionHash, fakeAgentPubKey, fakeEntryHash } from '@holochain/client';
+import { dhtSync, runScenario, CallableCell } from '@holochain-open-dev/tryorama';
+import { ActionHash, Record, fakeActionHash, fakeAgentPubKey, fakeEntryHash } from '@holochain/client';
 import { decode } from '@msgpack/msgpack';
 
 import { createProposal } from './common.js';
@@ -14,7 +14,7 @@ test('link a Proposal to a Criterion', async () => {
     const testAppPath = process.cwd() + '/../workdir/converge.happ';
 
     // Set up the app to be installed 
-    const appSource = { appBundleSource: { path: testAppPath } };
+    const appSource = { appBundleSource: { type: 'path' as const, value: testAppPath } };
 
     // Add 2 players with the test app to the Scenario. The returned players
     // can be destructured.
@@ -47,7 +47,7 @@ test('link a Proposal to a Criterion', async () => {
       }
     });
     
-    await pause(1200);
+    await dhtSync([alice, bob], alice.cells[0].cell_id[0]);
     
     // Bob gets the links again
     linksOutput = await bob.cells[0].callZome({
@@ -68,7 +68,7 @@ test('link a Proposal to a Criterion', async () => {
       }
     });
     
-    await pause(1200);
+    await dhtSync([alice, bob], alice.cells[0].cell_id[0]);
 
     // Bob gets the links again
     linksOutput = await bob.cells[0].callZome({

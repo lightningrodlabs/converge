@@ -5,28 +5,28 @@ pub struct Settings {
     pub discussion_app: String,
 }
 pub fn validate_create_settings(
-    _action: EntryCreationAction,
+    _action: TypedAction<EntryCreationData>,
     _settings: Settings,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Valid)
 }
 pub fn validate_update_settings(
-    _action: Update,
+    _action: TypedAction<UpdateData>,
     _settings: Settings,
-    _original_action: EntryCreationAction,
+    _original_action: TypedAction<EntryCreationData>,
     _original_settings: Settings,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Valid)
 }
 pub fn validate_delete_settings(
-    _action: Delete,
-    _original_action: EntryCreationAction,
+    _action: TypedAction<DeleteData>,
+    _original_action: TypedAction<EntryCreationData>,
     _original_settings: Settings,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Valid)
 }
 pub fn validate_create_link_settings_updates(
-    _action: CreateLink,
+    _action: TypedAction<CreateLinkData>,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
     _tag: LinkTag,
@@ -68,8 +68,8 @@ pub fn validate_create_link_settings_updates(
     Ok(ValidateCallbackResult::Valid)
 }
 pub fn validate_delete_link_settings_updates(
-    _action: DeleteLink,
-    _original_action: CreateLink,
+    _action: TypedAction<DeleteLinkData>,
+    _original_action: TypedAction<CreateLinkData>,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
