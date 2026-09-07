@@ -196,24 +196,311 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 _ => Ok(ValidateCallbackResult::Valid),
             }
         }
+        // 2026-09-07 (fix round 1). These two arms used to be the scaffold's blanket
+        // `_ => Invalid("Entry cannot be {updated,deleted}")`. That blanket overrode all
+        // seven `validate_update_*` and all seven `validate_delete_*` functions, so ten
+        // coordinator externs and three Edit*.svelte components were unreachable. The
+        // arms now dispatch to the per-type validators, exactly as the record-authority
+        // `OpRecord::UpdateEntry` / `OpRecord::DeleteEntry` arms further down already did.
+        // No per-type validator's logic changed: Criterion, Proposal, Outcome and Viewed
+        // updates are still rejected, now with their own per-type messages.
         FlatOp::Update(update_entry) => {
             match update_entry {
-                _ => {
-                    Ok(
-                        ValidateCallbackResult::Invalid(
-                            String::from("Entry cannot be updated"),
-                        ),
-                    )
+                OpUpdate::Entry { app_entry, action } => {
+                    // The original is not carried on the op in either hdi version; the
+                    // record-authority arm below fetches it the same way.
+                    let original_action_hash = action
+                        .data
+                        .original_action_address
+                        .clone();
+                    let original_record = must_get_valid_record(original_action_hash)?;
+                    let original_action = original_record.action().clone();
+                    let original_action = match TypedAction::<
+                        EntryCreationData,
+                    >::try_from(original_action) {
+                        Ok(original_action) => original_action,
+                        Err(_) => {
+                            return Ok(
+                                ValidateCallbackResult::Invalid(
+                                    "Original action for an update must be a Create or Update action"
+                                        .to_string(),
+                                ),
+                            );
+                        }
+                    };
+                    match app_entry {
+                        EntryTypes::Deliberation(deliberation) => {
+                            let original_deliberation: Option<Deliberation> = original_record
+                                .entry()
+                                .to_app_option()
+                                .map_err(|e| wasm_error!(e))?;
+                            let original_deliberation = match original_deliberation {
+                                Some(deliberation) => deliberation,
+                                None => {
+                                    return Ok(
+                                        ValidateCallbackResult::Invalid(
+                                            "The updated entry type must be the same as the original entry type"
+                                                .to_string(),
+                                        ),
+                                    );
+                                }
+                            };
+                            validate_update_deliberation(
+                                action,
+                                deliberation,
+                                original_action,
+                                original_deliberation,
+                            )
+                        }
+                        EntryTypes::Criterion(criterion) => {
+                            let original_criterion: Option<Criterion> = original_record
+                                .entry()
+                                .to_app_option()
+                                .map_err(|e| wasm_error!(e))?;
+                            let original_criterion = match original_criterion {
+                                Some(criterion) => criterion,
+                                None => {
+                                    return Ok(
+                                        ValidateCallbackResult::Invalid(
+                                            "The updated entry type must be the same as the original entry type"
+                                                .to_string(),
+                                        ),
+                                    );
+                                }
+                            };
+                            validate_update_criterion(
+                                action,
+                                criterion,
+                                original_action,
+                                original_criterion,
+                            )
+                        }
+                        EntryTypes::Proposal(proposal) => {
+                            let original_proposal: Option<Proposal> = original_record
+                                .entry()
+                                .to_app_option()
+                                .map_err(|e| wasm_error!(e))?;
+                            let original_proposal = match original_proposal {
+                                Some(proposal) => proposal,
+                                None => {
+                                    return Ok(
+                                        ValidateCallbackResult::Invalid(
+                                            "The updated entry type must be the same as the original entry type"
+                                                .to_string(),
+                                        ),
+                                    );
+                                }
+                            };
+                            validate_update_proposal(
+                                action,
+                                proposal,
+                                original_action,
+                                original_proposal,
+                            )
+                        }
+                        EntryTypes::Outcome(outcome) => {
+                            let original_outcome: Option<Outcome> = original_record
+                                .entry()
+                                .to_app_option()
+                                .map_err(|e| wasm_error!(e))?;
+                            let original_outcome = match original_outcome {
+                                Some(outcome) => outcome,
+                                None => {
+                                    return Ok(
+                                        ValidateCallbackResult::Invalid(
+                                            "The updated entry type must be the same as the original entry type"
+                                                .to_string(),
+                                        ),
+                                    );
+                                }
+                            };
+                            validate_update_outcome(
+                                action,
+                                outcome,
+                                original_action,
+                                original_outcome,
+                            )
+                        }
+                        EntryTypes::CriterionComment(criterion_comment) => {
+                            let original_criterion_comment: Option<CriterionComment> = original_record
+                                .entry()
+                                .to_app_option()
+                                .map_err(|e| wasm_error!(e))?;
+                            let original_criterion_comment = match original_criterion_comment {
+                                Some(criterion_comment) => criterion_comment,
+                                None => {
+                                    return Ok(
+                                        ValidateCallbackResult::Invalid(
+                                            "The updated entry type must be the same as the original entry type"
+                                                .to_string(),
+                                        ),
+                                    );
+                                }
+                            };
+                            validate_update_criterion_comment(
+                                action,
+                                criterion_comment,
+                                original_action,
+                                original_criterion_comment,
+                            )
+                        }
+                        EntryTypes::Settings(settings) => {
+                            let original_settings: Option<Settings> = original_record
+                                .entry()
+                                .to_app_option()
+                                .map_err(|e| wasm_error!(e))?;
+                            let original_settings = match original_settings {
+                                Some(settings) => settings,
+                                None => {
+                                    return Ok(
+                                        ValidateCallbackResult::Invalid(
+                                            "The updated entry type must be the same as the original entry type"
+                                                .to_string(),
+                                        ),
+                                    );
+                                }
+                            };
+                            validate_update_settings(
+                                action,
+                                settings,
+                                original_action,
+                                original_settings,
+                            )
+                        }
+                        EntryTypes::Viewed(viewed) => {
+                            let original_viewed: Option<Viewed> = original_record
+                                .entry()
+                                .to_app_option()
+                                .map_err(|e| wasm_error!(e))?;
+                            let original_viewed = match original_viewed {
+                                Some(viewed) => viewed,
+                                None => {
+                                    return Ok(
+                                        ValidateCallbackResult::Invalid(
+                                            "The updated entry type must be the same as the original entry type"
+                                                .to_string(),
+                                        ),
+                                    );
+                                }
+                            };
+                            validate_update_viewed(
+                                action,
+                                viewed,
+                                original_action,
+                                original_viewed,
+                            )
+                        }
+                    }
                 }
+                // Private entries arrive as `OpUpdate::PrivateEntry`, which carries no
+                // entry data; the agent-key and cap variants are not app entries. The 0.6
+                // scaffold left all of these Valid on the entry authority, and the
+                // record-authority arms below do the same.
+                _ => Ok(ValidateCallbackResult::Valid),
             }
         }
         FlatOp::Delete(delete_entry) => {
-            match delete_entry {
-                _ => {
-                    Ok(
+            let action = delete_entry.action;
+            let original_action_hash = action.data.deletes_address.clone();
+            let original_record = must_get_valid_record(original_action_hash)?;
+            let original_action = original_record.action().clone();
+            let original_action = match TypedAction::<
+                EntryCreationData,
+            >::try_from(original_action) {
+                Ok(original_action) => original_action,
+                Err(_) => {
+                    return Ok(
                         ValidateCallbackResult::Invalid(
-                            String::from("Entry cannot be deleted"),
+                            "Original action for a delete must be a Create or Update action"
+                                .to_string(),
                         ),
+                    );
+                }
+            };
+            let app_entry_type = match original_action.entry_type() {
+                EntryType::App(app_entry_type) => app_entry_type,
+                _ => {
+                    return Ok(ValidateCallbackResult::Valid);
+                }
+            };
+            let entry = match original_record.entry().as_option() {
+                Some(entry) => entry,
+                None => {
+                    if original_action.entry_type().visibility().is_public() {
+                        return Ok(
+                            ValidateCallbackResult::Invalid(
+                                "Original record for a delete of a public entry must contain an entry"
+                                    .to_string(),
+                            ),
+                        );
+                    } else {
+                        return Ok(ValidateCallbackResult::Valid);
+                    }
+                }
+            };
+            let original_app_entry = match EntryTypes::deserialize_from_type(
+                app_entry_type.zome_index.clone(),
+                app_entry_type.entry_index.clone(),
+                &entry,
+            )? {
+                Some(app_entry) => app_entry,
+                None => {
+                    return Ok(
+                        ValidateCallbackResult::Invalid(
+                            "Original app entry must be one of the defined entry types for this zome"
+                                .to_string(),
+                        ),
+                    );
+                }
+            };
+            match original_app_entry {
+                EntryTypes::Deliberation(original_deliberation) => {
+                    validate_delete_deliberation(
+                        action,
+                        original_action,
+                        original_deliberation,
+                    )
+                }
+                EntryTypes::Criterion(original_criterion) => {
+                    validate_delete_criterion(
+                        action,
+                        original_action,
+                        original_criterion,
+                    )
+                }
+                EntryTypes::Proposal(original_proposal) => {
+                    validate_delete_proposal(
+                        action,
+                        original_action,
+                        original_proposal,
+                    )
+                }
+                EntryTypes::Outcome(original_outcome) => {
+                    validate_delete_outcome(
+                        action,
+                        original_action,
+                        original_outcome,
+                    )
+                }
+                EntryTypes::CriterionComment(original_criterion_comment) => {
+                    validate_delete_criterion_comment(
+                        action,
+                        original_action,
+                        original_criterion_comment,
+                    )
+                }
+                EntryTypes::Settings(original_settings) => {
+                    validate_delete_settings(
+                        action,
+                        original_action,
+                        original_settings,
+                    )
+                }
+                EntryTypes::Viewed(original_viewed) => {
+                    validate_delete_viewed(
+                        action,
+                        original_action,
+                        original_viewed,
                     )
                 }
             }

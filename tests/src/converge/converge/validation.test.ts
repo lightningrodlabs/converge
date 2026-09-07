@@ -3,7 +3,15 @@ import { assert, test } from "vitest";
 import { dhtSync, runScenario } from "@holochain-open-dev/tryorama";
 import { ActionHash, Record } from "@holochain/client";
 
-import { createCriterion, createDeliberation, sampleDeliberation } from "./common.js";
+import {
+  createCriterion,
+  createCriterionComment,
+  createDeliberation,
+  createSettings,
+  sampleCriterionComment,
+  sampleDeliberation,
+  sampleSettings,
+} from "./common.js";
 
 /**
  * Coverage for the `converge_integrity` validate callback across the op arms this
@@ -23,8 +31,8 @@ import { createCriterion, createDeliberation, sampleDeliberation } from "./commo
  *   - `FlatOp::CreateEntry`  / `OpEntry::CreateEntry`   (entry authority, both agents)
  *   - `FlatOp::CreateRecord` / `OpRecord::CreateLink`   (author, 2 link types)
  *   - `FlatOp::Link(OpLink::CreateLink)`                (link authority, both agents)
- *   - `FlatOp::Update`                                  (rejected — see below)
- *   - `FlatOp::Delete`                                  (rejected — see below)
+ *   - `FlatOp::Update`  / `OpUpdate::Entry`             (entry authority — see below)
+ *   - `FlatOp::Delete`  / `OpDelete`                    (entry authority — see below)
  *   - `FlatOp::AgentActivity`                           (every action on every chain)
  *
  * Not reached: the delete-link arms (no coordinator extern deletes a link that
@@ -86,50 +94,95 @@ test("integrity zome accepts a Deliberation and its Criterion links on both agen
 }, 300_000);
 
 /**
- * `converge_integrity` rejects every entry update and every entry delete
- * unconditionally (`FlatOp::Update` -> Invalid("Entry cannot be updated"),
- * `FlatOp::Delete` -> Invalid("Entry cannot be deleted")). That is the 0.6
- * behaviour, carried across verbatim; the 0.7 change was the variant rename
- * only. It is asserted here so a future change to those arms is visible, and
- * because it is the only negative path this DNA can be driven through.
+ * Update and delete dispatch, added 2026-09-07.
+ *
+ * Until then `validate` carried the scaffold's blanket
+ * `FlatOp::Update => Invalid("Entry cannot be updated")` and
+ * `FlatOp::Delete => Invalid("Entry cannot be deleted")`, which overrode all
+ * fourteen per-type `validate_update_*` / `validate_delete_*` functions and made
+ * ten coordinator externs and three `Edit*.svelte` components unreachable. Both
+ * arms now dispatch to the per-type validators, so each type's declared rule is
+ * what applies:
+ *
+ *   Deliberation / CriterionComment / Settings  `validate_update_*` -> Valid
+ *   Criterion / Proposal / Outcome / Viewed     `validate_update_*` -> Invalid,
+ *                                               with their own messages
+ *   all seven                                   `validate_delete_*` -> Valid
+ *
+ * The four rejecting types have no `update_*` coordinator extern, so their
+ * `Invalid` messages are not reachable from this suite; they were proven by
+ * building a throwaway `update_criterion` extern, which returned
+ * `Validation failed while committing: Criteria cannot be updated` rather than
+ * the old blanket string. That extern is deliberately not committed.
  */
-test("integrity zome rejects entry updates and deletes", async () => {
+test("integrity zome allows the updates and deletes its per-type validators allow", async () => {
   await runScenario(async (scenario) => {
     const testAppPath = process.cwd() + "/../workdir/converge.happ";
     const appSource = { appBundleSource: { type: "path" as const, value: testAppPath } };
     const [alice] = await scenario.addPlayersWithApps([appSource]);
+    const cell = alice.cells[0];
 
-    const deliberation: Record = await createDeliberation(alice.cells[0]);
+    // --- Deliberation: validate_update_deliberation -> Valid --------------------
+    const deliberation: Record = await createDeliberation(cell);
     const deliberationHash: ActionHash = deliberation.signed_action.hashed.hash;
 
-    let updateError: any;
-    try {
-      await alice.cells[0].callZome({
-        zome_name: "converge",
-        fn_name: "update_deliberation",
-        payload: {
-          original_deliberation_hash: deliberationHash,
-          previous_deliberation_hash: deliberationHash,
-          updated_deliberation: await sampleDeliberation(alice.cells[0], { title: "changed" }),
-        },
-      });
-    } catch (e) {
-      updateError = e;
-    }
-    assert.ok(updateError, "update_deliberation must be rejected");
-    assert.include(String(updateError), "Entry cannot be updated");
+    const updatedDeliberation: Record = await cell.callZome({
+      zome_name: "converge",
+      fn_name: "update_deliberation",
+      payload: {
+        original_deliberation_hash: deliberationHash,
+        previous_deliberation_hash: deliberationHash,
+        updated_deliberation: await sampleDeliberation(cell, { title: "changed" }),
+      },
+    });
+    assert.ok(updatedDeliberation, "update_deliberation must be accepted");
 
-    let deleteError: any;
-    try {
-      await alice.cells[0].callZome({
-        zome_name: "converge",
-        fn_name: "delete_deliberation",
-        payload: deliberationHash,
-      });
-    } catch (e) {
-      deleteError = e;
-    }
-    assert.ok(deleteError, "delete_deliberation must be rejected");
-    assert.include(String(deleteError), "Entry cannot be deleted");
+    // --- Settings (private entry): validate_update_settings -> Valid ------------
+    const settings: Record = await createSettings(cell);
+    const settingsHash: ActionHash = settings.signed_action.hashed.hash;
+
+    const updatedSettings: Record = await cell.callZome({
+      zome_name: "converge",
+      fn_name: "update_settings",
+      payload: {
+        original_settings_hash: settingsHash,
+        previous_settings_hash: settingsHash,
+        updated_settings: await sampleSettings(cell, { discussion_app: "changed" }),
+      },
+    });
+    assert.ok(updatedSettings, "update_settings must be accepted");
+
+    // --- CriterionComment: validate_update_criterion_comment -> Valid -----------
+    const criterion: Record = await createCriterion(cell, undefined, deliberationHash);
+    const criterionHash: ActionHash = criterion.signed_action.hashed.hash;
+
+    const comment: Record = await createCriterionComment(cell, undefined, criterionHash);
+    const commentHash: ActionHash = comment.signed_action.hashed.hash;
+
+    const updatedComment: Record = await cell.callZome({
+      zome_name: "converge",
+      fn_name: "update_criterion_comment",
+      payload: {
+        original_criterion_comment_hash: commentHash,
+        previous_criterion_comment_hash: commentHash,
+        updated_criterion_comment: await sampleCriterionComment(cell, { comment: "changed" }),
+      },
+    });
+    assert.ok(updatedComment, "update_criterion_comment must be accepted");
+
+    // --- Deletes: all seven validate_delete_* return Valid ----------------------
+    const deletedCriterion: ActionHash = await cell.callZome({
+      zome_name: "converge",
+      fn_name: "delete_criterion",
+      payload: criterionHash,
+    });
+    assert.ok(deletedCriterion, "delete_criterion must be accepted");
+
+    const deletedDeliberation: ActionHash = await cell.callZome({
+      zome_name: "converge",
+      fn_name: "delete_deliberation",
+      payload: deliberationHash,
+    });
+    assert.ok(deletedDeliberation, "delete_deliberation must be accepted");
   });
-});
+}, 300_000);
